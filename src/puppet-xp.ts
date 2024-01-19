@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import cuid from 'cuid'
 import path from 'path'
 import fs from 'fs'
@@ -60,7 +61,7 @@ class PuppetXp extends PUPPET.Puppet {
     super(options)
     log.verbose('PuppetXp', 'constructor(%s)', JSON.stringify(options))
 
-    this.wsClient = new WebSocketClient('ws://127.0.0.1:5555');
+    this.wsClient = new WebSocketClient('ws://127.0.0.1:5555')
 
     // FIXME: use LRU cache for message store so that we can reduce memory usage
     this.messageStore = {}
@@ -79,8 +80,8 @@ class PuppetXp extends PUPPET.Puppet {
     await this.onAgentReady()
 
     this.wsClient.on('hook', (message) => {
-      console.log('Received:', message);
-  });
+      console.log('Received:', message)
+    })
 
     this.sidecar.on('hook', ({ method, args }) => {
       log.verbose('PuppetXp', 'onHook(%s, %s)', method, JSON.stringify(args))
@@ -476,14 +477,9 @@ class PuppetXp extends PUPPET.Puppet {
   async onStop () {
     log.verbose('PuppetXp', 'onStop()')
 
-    this.sidecar.removeAllListeners()
-
     if (this.logonoff()) {
       await this.logout()
     }
-
-    await detach(this.sidecar)
-    this.#sidecar = undefined
   }
 
   override login (contactId: string): void {

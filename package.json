@@ -34,7 +34,7 @@
     "lint": "npm run lint:es && npm run lint:ts && npm run lint:md",
     "lint:md": "markdownlint README.md",
     "lint:ts": "tsc --isolatedModules --noEmit",
-    "lint:es": "eslint \"src/**/*.ts\" \"tests/**/*.spec.ts\" --ignore-pattern tests/fixtures/",
+    "lint:es": "eslint --fix \"src/**/*.ts\" \"tests/**/*.spec.ts\" --ignore-pattern tests/fixtures/",
     "lint:fix": "eslint --fix \"src/**/*.ts\" \"tests/**/*.spec.ts\"",
     "test": "npm run lint && npm run test:unit",
     "test:pack": "bash -x scripts/npm-pack-testing.sh",
@@ -68,6 +68,7 @@
     "@types/cuid": "^2.0.1",
     "@types/node": "^20.10.5",
     "@types/qrcode-terminal": "^0.12.2",
+    "@types/ws": "^8.5.10",
     "@types/xml2js": "^0.4.9",
     "husky": "^7.0.4",
     "qrcode-terminal": "^0.12.0",
@@ -78,9 +79,12 @@
     "wechaty-puppet": "^1.10.2"
   },
   "dependencies": {
+    "@types/axios": "^0.14.0",
+    "axios": "^1.6.5",
     "cuid": "^2.1.8",
-    "xml2js": "^0.4.23",
+    "wechaty": "^1.20.2",
     "ws": "^8.16.0",
+    "xml2js": "^0.4.23",
     "xmlreader": "^0.2.3"
   },
   "files": [
