@@ -24,13 +24,18 @@ import {
 } from 'sidecar'
 
 import { 
-  WeChatSidecar, 
+  WebSocketClient, 
   // XpSidecar 
 } from '../src/wechat-sidecar.js'
 
 async function main() {
   console.info('WeChat Sidecar starting...')
   // new XpSidecar({ wechatVersion: '3.9.2.23' })
+
+  const wsClient = new WebSocketClient('ws://127.0.0.1:5555');
+wsClient.on('message', (message) => {
+    console.log('Received:', message);
+});
 
   const sidecar = new WeChatSidecar()
   await attach(sidecar)
@@ -170,14 +175,6 @@ async function main() {
       // await sidecar.sendAtMsg(toId, 'dong',talkerId)
     }
   }
-
-  const clean = async () => {
-    console.info('Sidecar detaching...')
-    await detach(sidecar)
-  }
-
-  process.on('SIGINT', clean)
-  process.on('SIGTERM', clean)
 }
 
 main()

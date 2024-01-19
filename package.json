@@ -1,7 +1,7 @@
 {
-  "name": "wechaty-puppet-xp",
-  "version": "1.13.7",
-  "description": "Puppet XP for Wechaty",
+  "name": "wechaty-puppet-exe",
+  "version": "0.1.0",
+  "description": "Puppet EXE for Wechaty",
   "type": "module",
   "exports": {
     ".": {
@@ -42,7 +42,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wechaty/puppet-xp.git"
+    "url": "git+https://github.com/wechaty/puppet-exe.git"
   },
   "keywords": [
     "chatie",
@@ -54,37 +54,33 @@
     "puppet",
     "mock"
   ],
-  "author": "Huan LI <zixia@zixia.net>",
+  "author": "Chao Lu <atorber@163.com>",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/wechaty/puppet-xp/issues"
+    "url": "https://github.com/wechaty/puppet-exe/issues"
   },
-  "homepage": "https://github.com/wechaty/puppet-xp#readme",
+  "homepage": "https://github.com/wechaty/puppet-exe#readme",
   "devDependencies": {
     "@chatie/eslint-config": "^1.0.4",
     "@chatie/git-scripts": "^0.7.7",
     "@chatie/semver": "^0.4.7",
     "@chatie/tsconfig": "^4.5.3",
     "@types/cuid": "^2.0.1",
-    "@types/faker": "^5.5.9",
-    "@types/frida-gum": "^18.5.1",
     "@types/node": "^20.10.5",
     "@types/qrcode-terminal": "^0.12.2",
     "@types/xml2js": "^0.4.9",
-    "frida-compile": "^16.4.1",
     "husky": "^7.0.4",
     "qrcode-terminal": "^0.12.0",
     "tstest": "^1.0.1",
-    "typed-emitter": "^1.4.0",
-    "wechaty": "^1.20.2"
+    "typed-emitter": "^1.4.0"
   },
   "peerDependencies": {
     "wechaty-puppet": "^1.10.2"
   },
   "dependencies": {
     "cuid": "^2.1.8",
-    "sidecar": "^0.17.8",
     "xml2js": "^0.4.23",
+    "ws": "^8.16.0",
     "xmlreader": "^0.2.3"
   },
   "files": [

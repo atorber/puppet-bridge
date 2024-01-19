@@ -1,21 +1,3 @@
-/**
- *   Wechaty - https://github.com/chatie/wechaty
- *
- *   @copyright 2016-2018 Huan LI <zixia@zixia.net>
- *
- *   Licensed under the Apache License, Version 2.0 (the "License");
- *   you may not use this file except in compliance with the License.
- *   You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- *   Unless required by applicable law or agreed to in writing, software
- *   distributed under the License is distributed on an "AS IS" BASIS,
- *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *   See the License for the specific language governing permissions and
- *   limitations under the License.
- *
- */
 import cuid from 'cuid'
 import path from 'path'
 import fs from 'fs'
@@ -33,10 +15,6 @@ import {
   FileBox,
   FileBoxType,
 } from 'file-box'
-import {
-  attach,
-  detach,
-} from 'sidecar'
 
 import {
   CHATIE_OFFICIAL_ACCOUNT_QRCODE,
@@ -44,7 +22,7 @@ import {
   VERSION,
 } from './config.js'
 
-import { WeChatSidecar } from './wechat-sidecar.js'
+import { WebSocketClient } from './wechat-sidecar.js'
 import { ImageDecrypt } from './pure-functions/image-decrypt.js'
 import { XmlDecrypt } from './pure-functions/xml-msgpayload.js'
 // import type { Contact } from 'wechaty'
@@ -73,10 +51,7 @@ class PuppetXp extends PUPPET.Puppet {
 
   private selfInfo: any
 
-  #sidecar?: WeChatSidecar
-  protected get sidecar (): WeChatSidecar {
-    return this.#sidecar!
-  }
+  private wsClient: WebSocketClient
 
   constructor (
     public override options: PuppetXpOptions = { wechatVersion:'3.9.2.23' },
@@ -84,6 +59,8 @@ class PuppetXp extends PUPPET.Puppet {
     log.info('options...', JSON.stringify(options))
     super(options)
     log.verbose('PuppetXp', 'constructor(%s)', JSON.stringify(options))
+
+    this.wsClient = new WebSocketClient('ws://127.0.0.1:5555');
 
     // FIXME: use LRU cache for message store so that we can reduce memory usage
     this.messageStore = {}
@@ -98,19 +75,12 @@ class PuppetXp extends PUPPET.Puppet {
 
   async onStart () {
     log.verbose('PuppetXp', 'onStart()')
-
-    if (this.#sidecar) {
-      // Huan(2021-09-13): need to call `detach` to make sure the sidecar will be closed?
-      await detach(this.#sidecar)
-      this.#sidecar = undefined
-      log.warn('PuppetXp', 'onStart() this.#sidecar exists? will be replaced by a new one.')
-    }
-
-    this.#sidecar = new WeChatSidecar()
-
-    await attach(this.sidecar)
     // await this.onLogin()
     await this.onAgentReady()
+
+    this.wsClient.on('hook', (message) => {
+      console.log('Received:', message);
+  });
 
     this.sidecar.on('hook', ({ method, args }) => {
       log.verbose('PuppetXp', 'onHook(%s, %s)', method, JSON.stringify(args))
