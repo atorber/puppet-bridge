@@ -1,6 +1,6 @@
 #!/usr/bin/env -S node --no-warnings --loader ts-node/esm
 /**
- * wechaty-puppet-xp示例代码，可以作为模版编写自己的业务逻辑.
+ * wechaty-puppet-bridge示例代码，可以作为模版编写自己的业务逻辑.
  *  
 **/
 import 'dotenv/config.js'
@@ -151,7 +151,7 @@ const onMessage = async (msg: Message) => {
 
 // const bot = WechatyBuilder.build({
 //     name: 'ding-dong-bot',
-//     puppet: 'wechaty-puppet-xp',
+//     puppet: 'wechaty-puppet-bridge',
 //     puppetOptions: {
 //         version: '3.9.2.23',
 //     }

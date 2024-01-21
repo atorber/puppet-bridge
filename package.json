@@ -1,6 +1,6 @@
 {
   "name": "wechaty-puppet-bridge",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Puppet Bridge for Wechaty",
   "type": "module",
   "exports": {
@@ -23,7 +23,7 @@
     "copy:esm": "shx cp -R commonjs/ dist/esm/",
     "copy:cjs": "shx cp -R commonjs/ dist/cjs/",
     "start": "cross-env NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/ding-dong-bot.ts",
-    "quick-start": "cross-env NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/quick-start.ts",
+    "start:quick": "cross-env NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/quick-start.ts",
     "start:raw": "cross-env BROLOG_LEVEL=silly NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/raw-bridge.ts",
     "start:raw:nobuild": "cross-env BROLOG_LEVEL=info NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/raw-bridge.ts",
     "start:raw:info": "cross-env BROLOG_LEVEL=info NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/raw-bridge.ts",
@@ -64,6 +64,7 @@
     "@chatie/git-scripts": "^0.7.7",
     "@chatie/semver": "^0.4.7",
     "@chatie/tsconfig": "^4.5.3",
+    "@types/axios": "^0.14.0",
     "@types/cuid": "^2.0.1",
     "@types/node": "^20.11.5",
     "@types/qrcode-terminal": "^0.12.2",
@@ -72,17 +73,18 @@
     "husky": "^7.0.4",
     "qrcode-terminal": "^0.12.0",
     "tstest": "^1.0.1",
-    "typed-emitter": "^1.4.0"
+    "typed-emitter": "^1.4.0",
+    "wechaty": "^1.20.2",
+    "typescript": "^4.9.5",
+    "@types/faker": "^5.5.9",
+    "wechaty-puppet-bridge": "^0.2.0"
   },
   "peerDependencies": {
     "wechaty-puppet": "^1.10.2"
   },
   "dependencies": {
-    "@types/axios": "^0.14.0",
     "axios": "^1.6.5",
     "cuid": "^2.1.8",
-    "typescript": "^4.9.5",
-    "wechaty": "^1.20.2",
     "ws": "^8.16.0",
     "xml2js": "^0.4.23",
     "xmlreader": "^0.2.3"

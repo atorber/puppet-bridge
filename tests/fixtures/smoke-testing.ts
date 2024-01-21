@@ -3,7 +3,7 @@
 import {
   PuppetBridge,
   VERSION,
-}                 from 'wechaty-puppet-xp'
+}                 from 'wechaty-puppet-bridge'
 
 async function main () {
   if (VERSION === '0.0.0') {
@@ -11,7 +11,7 @@ async function main () {
   }
 
   const puppet = new PuppetBridge()
-  console.info(`Puppet Xp v${puppet.version()} smoke testing passed.`)
+  console.info(`Puppet Bridge v${puppet.version()} smoke testing passed.`)
   return 0
 }
 
