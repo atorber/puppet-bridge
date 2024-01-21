@@ -19,7 +19,7 @@
 import type * as PUPPET   from 'wechaty-puppet'
 
 import {
-  PuppetXp,
+  PuppetBridge,
 }               from '../src/mod.js'
 
 import qrcodeTerminal from 'qrcode-terminal'
@@ -29,7 +29,7 @@ import qrcodeTerminal from 'qrcode-terminal'
  * 1. Declare your Bot!
  *
  */
-const puppet = new PuppetXp({
+const puppet = new PuppetBridge({
   nickName: '大师',
 })
 

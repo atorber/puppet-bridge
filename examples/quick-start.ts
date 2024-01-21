@@ -12,7 +12,7 @@ import {
   types,
 } from 'wechaty'
 import { FileBox } from 'file-box'
-import { PuppetXp } from '../src/puppet-bridge.js'
+import { PuppetBridge } from '../src/puppet-bridge.js'
 import qrcodeTerminal from 'qrcode-terminal'
 import timersPromise from 'timers/promises'
 
@@ -244,7 +244,7 @@ async function onMessage (message: Message) {
 
 }
 
-const puppet = new PuppetXp()
+const puppet = new PuppetBridge()
 const bot = WechatyBuilder.build({
   name: 'ding-dong-bot',
   puppet,

@@ -44,9 +44,9 @@ async function wait (ms: number) {
 const userInfo = os.userInfo()
 const rootPath = `${userInfo.homedir}\\Documents\\WeChat Files\\`
 
-export type PuppetXpOptions = PUPPET.PuppetOptions
+export type PuppetBridgeOptions = PUPPET.PuppetOptions
 
-class PuppetXp extends PUPPET.Puppet {
+class PuppetBridge extends PUPPET.Puppet {
 
   static override readonly VERSION = VERSION
 
@@ -65,14 +65,14 @@ class PuppetXp extends PUPPET.Puppet {
   private currentUserNameBySet = ''
 
   constructor (
-    public override options: PuppetXpOptions = { nickName:'' },
+    public override options: PuppetBridgeOptions = { nickName:'' },
   ) {
     log.info('options...', JSON.stringify(options))
     if (!options['nickName']) {
       throw new Error('nickName is not set')
     }
     super(options)
-    log.verbose('PuppetXp', 'constructor(%s)', JSON.stringify(options))
+    log.verbose('PuppetBridge', 'constructor(%s)', JSON.stringify(options))
 
     this.currentUserNameBySet = options['nickName'] as string
     this.bridge = new Bridge('ws://127.0.0.1:5555')
@@ -89,7 +89,7 @@ class PuppetXp extends PUPPET.Puppet {
   }
 
   async onStart () {
-    log.verbose('PuppetXp', 'onStart()')
+    log.verbose('PuppetBridge', 'onStart()')
     // await this.onLogin()
 
     this.onScan('')
@@ -138,7 +138,7 @@ class PuppetXp extends PUPPET.Puppet {
       //     break
 
       //   default:
-      //     log.warn('PuppetXp', 'onHook(%s,...) lack of handing', method, JSON.stringify(args))
+      //     log.warn('PuppetBridge', 'onHook(%s,...) lack of handing', method, JSON.stringify(args))
       //     break
       // }
     })
@@ -146,7 +146,7 @@ class PuppetXp extends PUPPET.Puppet {
   }
 
   private async onAgentReady () {
-    log.verbose('PuppetXp', 'onAgentReady()')
+    log.verbose('PuppetBridge', 'onAgentReady()')
     // const isLoggedIn = await this.Bridge.isLoggedIn()
     // if (!isLoggedIn) {
     //   await this.Bridge.callLoginQrcode(false)
@@ -197,7 +197,7 @@ class PuppetXp extends PUPPET.Puppet {
   }
 
   private onScan (args: any) {
-    log.verbose('PuppetXp', 'onScan()')
+    log.verbose('PuppetBridge', 'onScan()')
     if (!args) {
       return
     }
@@ -219,7 +219,7 @@ class PuppetXp extends PUPPET.Puppet {
     const pairWaitTip: string = args[7]
 
     log.info(
-      'PuppetXp',
+      'PuppetBridge',
       'onScan() data: %s',
       JSON.stringify(
         {
@@ -234,7 +234,7 @@ class PuppetXp extends PUPPET.Puppet {
         }, null, 2))
 
     if (pairWaitTip) {
-      log.warn('PuppetXp', 'onScan() pairWaitTip: "%s"', pairWaitTip)
+      log.warn('PuppetBridge', 'onScan() pairWaitTip: "%s"', pairWaitTip)
     }
 
     this.scanEventData = {
@@ -259,8 +259,8 @@ class PuppetXp extends PUPPET.Puppet {
       case 1:
         try {
           xml2js.parseString(String(xml), { explicitArray: false, ignoreAttrs: true }, function (err: any, json: any) {
-            log.verbose('PuppetXp', 'xml2json err:%s', err)
-            //  log.verbose('PuppetXp', 'json content:%s', JSON.stringify(json))
+            log.verbose('PuppetBridge', 'xml2json err:%s', err)
+            //  log.verbose('PuppetBridge', 'json content:%s', JSON.stringify(json))
             if (json.msgsource && json.msgsource.atuserlist === 'atuserlist') {
               type = PUPPET.types.Message.GroupNote
             } else {
@@ -321,8 +321,8 @@ class PuppetXp extends PUPPET.Puppet {
           xml2js.parseString(xml, { explicitArray: false, ignoreAttrs: true }, function (err: any, json: { msg: { appmsg: { type: String } } }) {
             // log.info(err)
             // log.info(JSON.stringify(json))
-            log.verbose('PuppetXp', 'xml2json err:%s', err)
-            log.verbose('PuppetXp', 'json content:%s', JSON.stringify(json))
+            log.verbose('PuppetBridge', 'xml2json err:%s', err)
+            log.verbose('PuppetBridge', 'json content:%s', JSON.stringify(json))
             switch (json.msg.appmsg.type) {
               case '5':
                 type = PUPPET.types.Message.Url
@@ -519,7 +519,7 @@ class PuppetXp extends PUPPET.Puppet {
   }
 
   async onStop () {
-    log.verbose('PuppetXp', 'onStop()')
+    log.verbose('PuppetBridge', 'onStop()')
 
     if (this.logonoff()) {
       await this.logout()
@@ -527,24 +527,24 @@ class PuppetXp extends PUPPET.Puppet {
   }
 
   override login (contactId: string): void {
-    log.verbose('PuppetXp', 'login()')
+    log.verbose('PuppetBridge', 'login()')
     super.login(contactId)
   }
 
   override ding (data?: string): void {
-    log.silly('PuppetXp', 'ding(%s)', data || '')
+    log.silly('PuppetBridge', 'ding(%s)', data || '')
     setTimeout(() => this.emit('dong', { data: data || '' }), 1000)
   }
 
   notSupported (name: string): void {
-    log.info(`${name} is not supported by PuppetXp yet.`)
+    log.info(`${name} is not supported by PuppetBridge yet.`)
   }
 
   private async loadContactList () {
     const contactList = await this.bridge.get_contact_list()
     log.info('contactList get success, wait for contactList init ...')
     for (const contactInfo of contactList) {
-      log.verbose('PuppetXp', 'contactInfo:%s', JSON.stringify(contactInfo))
+      log.verbose('PuppetBridge', 'contactInfo:%s', JSON.stringify(contactInfo))
 
       if (contactInfo.wxid.indexOf('@chatroom') !== -1) {
         const room = {
@@ -653,19 +653,19 @@ class PuppetXp extends PUPPET.Puppet {
    *
    */
   override async contactSelfQRCode (): Promise<string> {
-    log.verbose('PuppetXp', 'contactSelfQRCode()')
+    log.verbose('PuppetBridge', 'contactSelfQRCode()')
     return CHATIE_OFFICIAL_ACCOUNT_QRCODE
   }
 
   override async contactSelfName (name: string): Promise<void> {
-    log.verbose('PuppetXp', 'contactSelfName(%s)', name)
+    log.verbose('PuppetBridge', 'contactSelfName(%s)', name)
     if (!name) {
       return this.selfInfo.name
     }
   }
 
   override async contactSelfSignature (signature: string): Promise<void> {
-    log.verbose('PuppetXp', 'contactSelfSignature(%s)', signature)
+    log.verbose('PuppetBridge', 'contactSelfSignature(%s)', signature)
   }
 
   /**
@@ -677,7 +677,7 @@ class PuppetXp extends PUPPET.Puppet {
   override contactAlias(contactId: string, alias: string | null): Promise<void>
 
   override async contactAlias (contactId: string, alias?: string | null): Promise<void | string> {
-    log.verbose('PuppetXp', 'contactAlias(%s, %s)', contactId, alias)
+    log.verbose('PuppetBridge', 'contactAlias(%s, %s)', contactId, alias)
     const contact = await this.contactRawPayload(contactId)
     // if (typeof alias === 'undefined') {
     //   throw new Error('to be implement')
@@ -689,22 +689,22 @@ class PuppetXp extends PUPPET.Puppet {
   override async contactPhone(contactId: string, phoneList: string[]): Promise<void>
 
   override async contactPhone (contactId: string, phoneList?: string[]): Promise<string[] | void> {
-    log.verbose('PuppetXp', 'contactPhone(%s, %s)', contactId, phoneList)
+    log.verbose('PuppetBridge', 'contactPhone(%s, %s)', contactId, phoneList)
     if (typeof phoneList === 'undefined') {
       return []
     }
   }
 
   override async contactCorporationRemark (contactId: string, corporationRemark: string) {
-    log.verbose('PuppetXp', 'contactCorporationRemark(%s, %s)', contactId, corporationRemark)
+    log.verbose('PuppetBridge', 'contactCorporationRemark(%s, %s)', contactId, corporationRemark)
   }
 
   override async contactDescription (contactId: string, description: string) {
-    log.verbose('PuppetXp', 'contactDescription(%s, %s)', contactId, description)
+    log.verbose('PuppetBridge', 'contactDescription(%s, %s)', contactId, description)
   }
 
   override async contactList (): Promise<string[]> {
-    log.verbose('PuppetXp', 'contactList()')
+    log.verbose('PuppetBridge', 'contactList()')
     const idList = Object.keys(this.contactStore)
     return idList
   }
@@ -713,7 +713,7 @@ class PuppetXp extends PUPPET.Puppet {
   override async contactAvatar(contactId: string, file: FileBoxInterface): Promise<void>
 
   override async contactAvatar (contactId: string, file?: FileBoxInterface): Promise<void | FileBoxInterface> {
-    log.verbose('PuppetXp', 'contactAvatar(%s)', contactId)
+    log.verbose('PuppetBridge', 'contactAvatar(%s)', contactId)
 
     /**
    * 1. set
@@ -730,12 +730,12 @@ class PuppetXp extends PUPPET.Puppet {
   }
 
   override async contactRawPayloadParser (payload: PUPPET.payloads.Contact) {
-    // log.verbose('PuppetXp', 'contactRawPayloadParser(%s)', JSON.stringify(payload))
+    // log.verbose('PuppetBridge', 'contactRawPayloadParser(%s)', JSON.stringify(payload))
     return payload
   }
 
   override async contactRawPayload (id: string): Promise<PUPPET.payloads.Contact> {
-    //  log.verbose('PuppetXp----------------------', 'contactRawPayload(%s,%s)', id, this.contactStore[id]?.name)
+    //  log.verbose('PuppetBridge----------------------', 'contactRawPayload(%s,%s)', id, this.contactStore[id]?.name)
     return this.contactStore[id] || {} as any
   }
 
@@ -756,7 +756,7 @@ class PuppetXp extends PUPPET.Puppet {
   override async messageContact (
     messageId: string,
   ): Promise<string> {
-    log.verbose('PuppetXp', 'messageContact(%s)', messageId)
+    log.verbose('PuppetBridge', 'messageContact(%s)', messageId)
     const message = this.messageStore[messageId]
     return await XmlDecrypt(message?.text || '', message?.type || PUPPET.types.Message.Unknown)
   }
@@ -766,7 +766,7 @@ class PuppetXp extends PUPPET.Puppet {
     imageType: PUPPET.types.Image,
   ): Promise<FileBoxInterface> {
 
-    // log.info('PuppetXp', 'messageImage(%s, %s, %s)',
+    // log.info('PuppetBridge', 'messageImage(%s, %s, %s)',
     //   messageId,
     //   imageType,
     //   PUPPET.types.Image[imageType],
@@ -825,7 +825,7 @@ class PuppetXp extends PUPPET.Puppet {
   override async messageRecall (
     messageId: string,
   ): Promise<boolean> {
-    log.verbose('PuppetXp', 'messageRecall(%s)', messageId)
+    log.verbose('PuppetBridge', 'messageRecall(%s)', messageId)
     this.notSupported('messageRecall')
     return false
   }
@@ -895,19 +895,19 @@ class PuppetXp extends PUPPET.Puppet {
   }
 
   override async messageUrl (messageId: string): Promise<PUPPET.payloads.UrlLink> {
-    log.verbose('PuppetXp', 'messageUrl(%s)', messageId)
+    log.verbose('PuppetBridge', 'messageUrl(%s)', messageId)
     const message = this.messageStore[messageId]
     return await XmlDecrypt(message?.text || '', message?.type || PUPPET.types.Message.Unknown)
   }
 
   override async messageMiniProgram (messageId: string): Promise<PUPPET.payloads.MiniProgram> {
-    log.verbose('PuppetXp', 'messageMiniProgram(%s)', messageId)
+    log.verbose('PuppetBridge', 'messageMiniProgram(%s)', messageId)
     const message = this.messageStore[messageId]
     return await XmlDecrypt(message?.text || '', message?.type || PUPPET.types.Message.Unknown)
   }
 
   override async messageLocation (messageId: string): Promise<PUPPET.payloads.Location> {
-    log.verbose('PuppetXp', 'messageLocation(%s)', messageId)
+    log.verbose('PuppetBridge', 'messageLocation(%s)', messageId)
     const message = this.messageStore[messageId]
     return await XmlDecrypt(message?.text || '', message?.type || PUPPET.types.Message.Unknown)
   }
@@ -918,7 +918,7 @@ class PuppetXp extends PUPPET.Puppet {
   }
 
   override async messageRawPayload (id: string): Promise<PUPPET.payloads.Message> {
-    log.verbose('PuppetXp', 'messageRawPayload(%s)', id)
+    log.verbose('PuppetBridge', 'messageRawPayload(%s)', id)
     if (!this.isLoggedIn) {
       throw new Error('not logged in')
     }
@@ -986,7 +986,7 @@ class PuppetXp extends PUPPET.Puppet {
     conversationId: string,
     contactId: string,
   ): Promise<void> {
-    log.verbose('PuppetXp', 'messageSendUrl(%s, %s)', conversationId, contactId)
+    log.verbose('PuppetBridge', 'messageSendUrl(%s, %s)', conversationId, contactId)
 
     this.notSupported('SendContact')
 
@@ -998,7 +998,7 @@ class PuppetXp extends PUPPET.Puppet {
     conversationId: string,
     urlLinkPayload: PUPPET.payloads.UrlLink,
   ): Promise<void> {
-    log.verbose('PuppetXp', 'messageSendUrl(%s, %s)', conversationId, JSON.stringify(urlLinkPayload))
+    log.verbose('PuppetBridge', 'messageSendUrl(%s, %s)', conversationId, JSON.stringify(urlLinkPayload))
     this.notSupported('SendUrl')
     // const url = new UrlLink(urlLinkPayload)
     // return this.messageSend(conversationId, url)
@@ -1008,7 +1008,7 @@ class PuppetXp extends PUPPET.Puppet {
     conversationId: string,
     miniProgramPayload: PUPPET.payloads.MiniProgram,
   ): Promise<void> {
-    log.verbose('PuppetXp', 'messageSendMiniProgram(%s, %s)', conversationId, JSON.stringify(miniProgramPayload))
+    log.verbose('PuppetBridge', 'messageSendMiniProgram(%s, %s)', conversationId, JSON.stringify(miniProgramPayload))
 
     //   const xmlstr = `<?xml version="1.0" encoding="UTF-8" ?>
     //    <msg>
@@ -1049,7 +1049,7 @@ class PuppetXp extends PUPPET.Puppet {
     conversationId: string,
     locationPayload: PUPPET.payloads.Location,
   ): Promise<void | string> {
-    log.verbose('PuppetXp', 'messageSendLocation(%s, %s)', conversationId, JSON.stringify(locationPayload))
+    log.verbose('PuppetBridge', 'messageSendLocation(%s, %s)', conversationId, JSON.stringify(locationPayload))
     this.notSupported('SendLocation')
   }
 
@@ -1057,7 +1057,7 @@ class PuppetXp extends PUPPET.Puppet {
     conversationId: string,
     messageId: string,
   ): Promise<void> {
-    log.verbose('PuppetXp', 'messageForward(%s, %s)',
+    log.verbose('PuppetBridge', 'messageForward(%s, %s)',
       conversationId,
       messageId,
     )
@@ -1077,13 +1077,13 @@ class PuppetXp extends PUPPET.Puppet {
  */
   override async roomRawPayloadParser (payload: PUPPET.payloads.Room) { return payload }
   override async roomRawPayload (id: string): Promise<PUPPET.payloads.Room | undefined> {
-    // log.info('PuppetXp', 'roomRawPayload(%s)', id)
-    //  log.verbose('PuppetXp----------------------', 'roomRawPayload(%s%s)', id, this.roomStore[id]?.topic)
+    // log.info('PuppetBridge', 'roomRawPayload(%s)', id)
+    //  log.verbose('PuppetBridge----------------------', 'roomRawPayload(%s%s)', id, this.roomStore[id]?.topic)
     return this.roomStore[id]
   }
 
   override async roomList (): Promise<string[]> {
-    log.verbose('PuppetXp', 'call roomList()')
+    log.verbose('PuppetBridge', 'call roomList()')
     const idList = Object.keys(this.roomStore)
     return idList
   }
@@ -1092,18 +1092,18 @@ class PuppetXp extends PUPPET.Puppet {
     roomId: string,
     contactId: string,
   ): Promise<void> {
-    log.verbose('PuppetXp', 'roomDel(%s, %s)', roomId, contactId)
+    log.verbose('PuppetBridge', 'roomDel(%s, %s)', roomId, contactId)
   }
 
   override async roomAvatar (roomId: string): Promise<FileBoxInterface> {
-    log.verbose('PuppetXp', 'roomAvatar(%s)', roomId)
+    log.verbose('PuppetBridge', 'roomAvatar(%s)', roomId)
 
     const payload = await this.roomPayload(roomId)
 
     if (payload.avatar) {
       return FileBox.fromUrl(payload.avatar)
     }
-    log.warn('PuppetXp', 'roomAvatar() avatar not found, use the chatie default.')
+    log.warn('PuppetBridge', 'roomAvatar() avatar not found, use the chatie default.')
     return qrCodeForChatie()
   }
 
@@ -1111,7 +1111,7 @@ class PuppetXp extends PUPPET.Puppet {
     roomId: string,
     contactId: string,
   ): Promise<void> {
-    log.verbose('PuppetXp', 'roomAdd(%s, %s)', roomId, contactId)
+    log.verbose('PuppetBridge', 'roomAdd(%s, %s)', roomId, contactId)
   }
 
   override async roomTopic(roomId: string): Promise<string>
@@ -1121,7 +1121,7 @@ class PuppetXp extends PUPPET.Puppet {
     roomId: string,
     topic?: string,
   ): Promise<void | string> {
-    log.verbose('PuppetXp', 'roomTopic(%s, %s)', roomId, topic)
+    log.verbose('PuppetBridge', 'roomTopic(%s, %s)', roomId, topic)
     const payload = await this.roomPayload(roomId)
     if (!topic) {
       return payload.topic
@@ -1134,22 +1134,22 @@ class PuppetXp extends PUPPET.Puppet {
     contactIdList: string[],
     topic: string,
   ): Promise<string> {
-    log.verbose('PuppetXp', 'roomCreate(%s, %s)', contactIdList, topic)
+    log.verbose('PuppetBridge', 'roomCreate(%s, %s)', contactIdList, topic)
 
     return 'mock_room_id'
   }
 
   override async roomQuit (roomId: string): Promise<void> {
-    log.verbose('PuppetXp', 'roomQuit(%s)', roomId)
+    log.verbose('PuppetBridge', 'roomQuit(%s)', roomId)
   }
 
   override async roomQRCode (roomId: string): Promise<string> {
-    log.verbose('PuppetXp', 'roomQRCode(%s)', roomId)
+    log.verbose('PuppetBridge', 'roomQRCode(%s)', roomId)
     return roomId + ' mock qrcode'
   }
 
   override async roomMemberList (roomId: string): Promise<string[]> {
-    log.verbose('PuppetXp', 'roomMemberList(%s)', roomId)
+    log.verbose('PuppetBridge', 'roomMemberList(%s)', roomId)
     try {
       const roomRawPayload = await this.roomRawPayload(roomId)
       const memberIdList = roomRawPayload?.memberIdList
@@ -1162,7 +1162,7 @@ class PuppetXp extends PUPPET.Puppet {
   }
 
   override async roomMemberRawPayload (roomId: string, contactId: string): Promise<PUPPET.payloads.RoomMember> {
-    log.verbose('PuppetXp', 'roomMemberRawPayload(%s, %s)', roomId, contactId)
+    log.verbose('PuppetBridge', 'roomMemberRawPayload(%s, %s)', roomId, contactId)
     try {
       const contact = this.contactStore[contactId]
       const MemberRawPayload = {
@@ -1187,7 +1187,7 @@ class PuppetXp extends PUPPET.Puppet {
   }
 
   override async roomMemberRawPayloadParser (rawPayload: PUPPET.payloads.RoomMember): Promise<PUPPET.payloads.RoomMember> {
-    //  log.verbose('PuppetXp---------------------', 'roomMemberRawPayloadParser(%s)', rawPayload)
+    //  log.verbose('PuppetBridge---------------------', 'roomMemberRawPayloadParser(%s)', rawPayload)
     return rawPayload
   }
 
@@ -1207,15 +1207,15 @@ class PuppetXp extends PUPPET.Puppet {
  *
  */
   override async roomInvitationAccept (roomInvitationId: string): Promise<void> {
-    log.verbose('PuppetXp', 'roomInvitationAccept(%s)', roomInvitationId)
+    log.verbose('PuppetBridge', 'roomInvitationAccept(%s)', roomInvitationId)
   }
 
   override async roomInvitationRawPayload (roomInvitationId: string): Promise<any> {
-    log.verbose('PuppetXp', 'roomInvitationRawPayload(%s)', roomInvitationId)
+    log.verbose('PuppetBridge', 'roomInvitationRawPayload(%s)', roomInvitationId)
   }
 
   override async roomInvitationRawPayloadParser (rawPayload: any): Promise<PUPPET.payloads.RoomInvitation> {
-    log.verbose('PuppetXp', 'roomInvitationRawPayloadParser(%s)', JSON.stringify(rawPayload))
+    log.verbose('PuppetBridge', 'roomInvitationRawPayloadParser(%s)', JSON.stringify(rawPayload))
     return rawPayload
   }
 
@@ -1235,14 +1235,14 @@ class PuppetXp extends PUPPET.Puppet {
   override async friendshipSearchPhone (
     phone: string,
   ): Promise<null | string> {
-    log.verbose('PuppetXp', 'friendshipSearchPhone(%s)', phone)
+    log.verbose('PuppetBridge', 'friendshipSearchPhone(%s)', phone)
     return null
   }
 
   override async friendshipSearchWeixin (
     weixin: string,
   ): Promise<null | string> {
-    log.verbose('PuppetXp', 'friendshipSearchWeixin(%s)', weixin)
+    log.verbose('PuppetBridge', 'friendshipSearchWeixin(%s)', weixin)
     return null
   }
 
@@ -1250,13 +1250,13 @@ class PuppetXp extends PUPPET.Puppet {
     contactId: string,
     hello: string,
   ): Promise<void> {
-    log.verbose('PuppetXp', 'friendshipAdd(%s, %s)', contactId, hello)
+    log.verbose('PuppetBridge', 'friendshipAdd(%s, %s)', contactId, hello)
   }
 
   override async friendshipAccept (
     friendshipId: string,
   ): Promise<void> {
-    log.verbose('PuppetXp', 'friendshipAccept(%s)', friendshipId)
+    log.verbose('PuppetBridge', 'friendshipAccept(%s)', friendshipId)
   }
 
   /**
@@ -1268,30 +1268,30 @@ class PuppetXp extends PUPPET.Puppet {
     tagId: string,
     contactId: string,
   ): Promise<void> {
-    log.verbose('PuppetXp', 'tagContactAdd(%s)', tagId, contactId)
+    log.verbose('PuppetBridge', 'tagContactAdd(%s)', tagId, contactId)
   }
 
   override async tagContactRemove (
     tagId: string,
     contactId: string,
   ): Promise<void> {
-    log.verbose('PuppetXp', 'tagContactRemove(%s)', tagId, contactId)
+    log.verbose('PuppetBridge', 'tagContactRemove(%s)', tagId, contactId)
   }
 
   override async tagContactDelete (
     tagId: string,
   ): Promise<void> {
-    log.verbose('PuppetXp', 'tagContactDelete(%s)', tagId)
+    log.verbose('PuppetBridge', 'tagContactDelete(%s)', tagId)
   }
 
   override async tagContactList (
     contactId?: string,
   ): Promise<string[]> {
-    log.verbose('PuppetXp', 'tagContactList(%s)', contactId)
+    log.verbose('PuppetBridge', 'tagContactList(%s)', contactId)
     return []
   }
 
 }
 
-export { PuppetXp }
-export default PuppetXp
+export { PuppetBridge }
+export default PuppetBridge

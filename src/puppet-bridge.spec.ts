@@ -2,13 +2,13 @@
 
 import { test } from 'tstest'
 
-import { PuppetXp } from './puppet-bridge.js'
+import { PuppetBridge } from './puppet-bridge.js'
 
-class PuppetXpTest extends PuppetXp {
+class PuppetBridgeTest extends PuppetBridge {
 }
 
-test.skip('PuppetXp perfect restart testing', async (t) => {
-  const puppet = new PuppetXpTest()
+test.skip('PuppetBridge perfect restart testing', async (t) => {
+  const puppet = new PuppetBridgeTest()
   try {
 
     for (let i = 0; i < 3; i++) {
@@ -21,7 +21,7 @@ test.skip('PuppetXp perfect restart testing', async (t) => {
       t.pass('start/stop-ed at #' + i)
     }
 
-    t.pass('PuppetXp() perfect restart pass.')
+    t.pass('PuppetBridge() perfect restart pass.')
   } catch (e) {
     t.fail(e as any)
   }

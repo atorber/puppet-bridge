@@ -1,7 +1,7 @@
 #!/usr/bin/env node --no-warnings --loader ts-node/esm
 
 import {
-  PuppetXp,
+  PuppetBridge,
   VERSION,
 }                 from 'wechaty-puppet-xp'
 
@@ -10,7 +10,7 @@ async function main () {
     throw new Error('version should not be 0.0.0 when prepare for publishing')
   }
 
-  const puppet = new PuppetXp()
+  const puppet = new PuppetBridge()
   console.info(`Puppet Xp v${puppet.version()} smoke testing passed.`)
   return 0
 }

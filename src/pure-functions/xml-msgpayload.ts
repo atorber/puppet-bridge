@@ -12,7 +12,7 @@ import { log } from 'wechaty-puppet'
 
 async function XmlDecrypt (xml: string, msgType: PUPPET.types.Message): Promise<any> {
   let res
-  log.verbose('PuppetXp', 'text xml:(%s)', xml)
+  log.verbose('PuppetBridge', 'text xml:(%s)', xml)
 
   const parser = new xml2js.Parser(/* options */)
   const messageJson = await parser.parseStringPromise(xml || '')

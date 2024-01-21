@@ -16,7 +16,7 @@ import {
 
 import qrcodeTerminal from 'qrcode-terminal'
 import { FileBox } from 'file-box'
-import { PuppetXp } from '../src/puppet-bridge.js'
+import { PuppetBridge } from '../src/puppet-bridge.js'
 
 const onScan = (qrcode: string, status: ScanStatus) => {
     if (status === ScanStatus.Waiting || status === ScanStatus.Timeout) {
@@ -157,7 +157,7 @@ const onMessage = async (msg: Message) => {
 //     }
 // })
 
-const puppet = new PuppetXp({wechatVersion:'0.0.0.0'})
+const puppet = new PuppetBridge({wechatVersion:'0.0.0.0'})
 const bot = WechatyBuilder.build({
   name: 'ding-dong-bot',
   puppet,

@@ -1,8 +1,8 @@
 import { VERSION }    from './config.js'
-import { PuppetXp }   from './puppet-bridge.js'
+import { PuppetBridge }   from './puppet-bridge.js'
 
 export {
   VERSION,
-  PuppetXp,
+  PuppetBridge,
 }
-export default PuppetXp
+export default PuppetBridge

@@ -1,5 +1,11 @@
 # Wechaty Puppet Bridge
 
+[![NPM](https://github.com/atorber/puppet-bridge/workflows/NPM/badge.svg)](https://github.com/atorber/puppet-bridge/actions?query=workflow%3ANPM)
+[![NPM Version](https://img.shields.io/npm/v/wechaty-puppet-bridge?color=brightgreen)](https://www.npmjs.com/package/wechaty-puppet-bridge)
+[![npm (tag)](https://img.shields.io/npm/v/wechaty-puppet-bridge/next.svg)](https://www.npmjs.com/package/wechaty-puppet-bridge?activeTab=versions)
+<img alt="GitHub stars badge" src="https://img.shields.io/github/stars/atorber/puppet-bridge"> <img alt="GitHub forks badge" src="https://img.shields.io/github/forks/atorber/puppet-bridge"> [![NPM Version](https://img.shields.io/npm/v/puppet-bridge?color=brightgreen)](https://www.npmjs.com/package/wechaty-puppet-bridge)
+![npm downloads](https://img.shields.io/npm/dm/wechaty-puppet-bridge.svg) 
+
 ## 简介
 
 wechaty-puppet-bridge 是一个虚拟的Wechaty Puppet，实际上它只是一个桥接服务，它将GitHub中开源的微信机器人桥接到Wechaty

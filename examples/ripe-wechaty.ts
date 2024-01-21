@@ -12,7 +12,7 @@ import {
 } from 'wechaty'
 import { FileBox } from 'file-box'
 
-import { PuppetXp } from '../src/puppet-bridge.js'
+import { PuppetBridge } from '../src/puppet-bridge.js'
 import qrcodeTerminal from 'qrcode-terminal'
 import * as fs from 'fs'
 
@@ -160,7 +160,7 @@ async function onMessage (msg: Message) {
 
 }
 
-const puppet = new PuppetXp({
+const puppet = new PuppetBridge({
   nickName: '大师',
 })
 const bot = WechatyBuilder.build({
