@@ -5,13 +5,13 @@
 [![npm (tag)](https://img.shields.io/npm/v/wechaty-puppet-bridge/next.svg)](https://www.npmjs.com/package/wechaty-puppet-bridge?activeTab=versions)
 <img alt="GitHub stars badge" src="https://img.shields.io/github/stars/atorber/puppet-bridge"> <img alt="GitHub forks badge" src="https://img.shields.io/github/forks/atorber/puppet-bridge"> [![NPM Version](https://img.shields.io/npm/v/puppet-bridge?color=brightgreen)](https://www.npmjs.com/package/wechaty-puppet-bridge) ![npm downloads](https://img.shields.io/npm/dm/wechaty-puppet-bridge.svg)
 
-<img src="https://github.com/atorber/puppet-bridge/assets/19552906/086cff53-2c4a-4889-938b-23ee26acb6fc" alt="chatie puppet bridge" height="300" align="bottom" />
-
 ## 简介
 
 wechaty-puppet-bridge 是一个虚拟的Wechaty Puppet，实际上它只是一个桥接服务，它将GitHub中开源的微信机器人桥接到Wechaty
 
 如果你想方便且高效的使用免费的微信机器人，那么它是一个很好的选择，它不需要token同时又能使用Wechaty进行聊天机器人开发
+
+<img src="https://github.com/atorber/puppet-bridge/assets/19552906/086cff53-2c4a-4889-938b-23ee26acb6fc" alt="chatie puppet bridge" height="350" align="bottom" />
 
 ## 快速开始
 
