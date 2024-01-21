@@ -66,6 +66,7 @@
     "@chatie/tsconfig": "^4.5.3",
     "@types/axios": "^0.14.0",
     "@types/cuid": "^2.0.1",
+    "@types/faker": "^5.5.9",
     "@types/node": "^20.11.5",
     "@types/qrcode-terminal": "^0.12.2",
     "@types/ws": "^8.5.10",
@@ -74,10 +75,9 @@
     "qrcode-terminal": "^0.12.0",
     "tstest": "^1.0.1",
     "typed-emitter": "^1.4.0",
-    "wechaty": "^1.20.2",
     "typescript": "^4.9.5",
-    "@types/faker": "^5.5.9",
-    "wechaty-puppet-bridge": "^0.2.0"
+    "wechaty": "^1.20.2",
+    "wechaty-puppet-bridge": "^0.2.1"
   },
   "peerDependencies": {
     "wechaty-puppet": "^1.10.2"
@@ -100,10 +100,5 @@
   "publishConfig": {
     "access": "public",
     "tag": "latest"
-  },
-  "git": {
-    "scripts": {
-      "pre-push": "npx git-scripts-pre-push"
-    }
   }
 }
