@@ -86,7 +86,7 @@ async function onMessage (msg: Message) {
    * 发送图片
    */
   if (msg.text() === 'jpg') {
-    const newpath = 'https://github.com/wechaty/wechaty/blob/main/docs/images/bot-qr-code.png'
+    const newpath = 'https://bce.bdstatic.com/doc/IOTSTACK/IoTPlatform/0-0-1_abfce11.png'
     const fileBox = FileBox.fromUrl(newpath)
     sendRes = await msg.say(fileBox)
     log.info('发送消息结果：', sendRes)
@@ -122,18 +122,28 @@ async function onMessage (msg: Message) {
     log.info('发送消息结果：', sendRes)
   }
 
+  let filePath = 'file/'
+  // 检查文件夹是否存在，不存在则创建
+  if (!fs.existsSync(filePath)) {
+    log.info('文件夹不存在，创建文件夹：', filePath)
+    fs.mkdirSync(filePath)
+  }else{
+    log.info('文件夹已存在：', filePath)
+  }
+
   try {
     if (msg.type() === types.Message.Image || msg.type() === types.Message.Attachment || msg.type() === types.Message.Video || msg.type() === types.Message.Audio || msg.type() === types.Message.Emoticon) {
-      const file = await msg.toImage().thumbnail()  // Save the media message as a FileBox
 
-      let filePath = 'file/'
-      // 检查文件夹是否存在，不存在则创建
-      if (!fs.existsSync(filePath)) {
-        fs.mkdirSync(filePath)
+      let file
+
+      if(msg.type() === types.Message.Image){
+        await msg.toImage().thumbnail()  // Save the media message as a FileBox
+      }else{
+        file = await msg.toFileBox()  // Save the media message as a FileBox
       }
-      filePath = filePath + file.name
+      filePath = filePath + file?.name
       try {
-        await file.toFile(filePath, true)
+        await file?.toFile(filePath, true)
         log.info(`Saved file: ${filePath}`)
       } catch (e) {
         log.error('保存文件错误：', e)
@@ -149,7 +159,7 @@ async function onMessage (msg: Message) {
         type: msg.type(),
       }
 
-      const logPath = 'examples/file/message.log'
+      const logPath = filePath + 'message.log'
       fs.appendFileSync(logPath, JSON.stringify(logData, null, 2) + '\n')
 
       log.info(`日志查看路径： ${logPath}`)

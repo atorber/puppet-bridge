@@ -105,7 +105,7 @@ const onMessage = async (msg: Message) => {
             case types.Message.Image: // 接收到的消息是图片
                 log.info('接收到的消息是图片')
                 const image = await msg.toImage().thumbnail()  // Save the media message as a FileBox
-                const filePath = 'examples/file/' + image.name
+                const filePath = 'file/' + image.name
                 try {
                     image.toFile(filePath, true)
                     log.info(`Saved file: ${filePath}`)

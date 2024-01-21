@@ -252,9 +252,9 @@ class PuppetBridge extends PUPPET.Puppet {
     let talkerId = messageRaw.id2 || messageRaw.id1 || ''
     let wxid = messageRaw.wxid || messageRaw.id1
     let text = messageRaw.content as string
-    const xml = messageRaw.other
     const code = messageRaw.type
     const content: ContentRaw = messageRaw.content as ContentRaw
+    const xml = content.content
     switch (code) {
       case 1:
         try {
@@ -317,12 +317,14 @@ class PuppetBridge extends PUPPET.Puppet {
         type = PUPPET.types.Message.Location
         break
       case 49:
+        wxid = content.id1
+        talkerId = content.id2 || this.currentUserId
         try {
           xml2js.parseString(xml, { explicitArray: false, ignoreAttrs: true }, function (err: any, json: { msg: { appmsg: { type: String } } }) {
-            // log.info(err)
+            // log.error('xml2js.parseString fail:', err)
             // log.info(JSON.stringify(json))
-            log.verbose('PuppetBridge', 'xml2json err:%s', err)
-            log.verbose('PuppetBridge', 'json content:%s', JSON.stringify(json))
+            log.error('PuppetBridge', 'xml2json err:%s', err)
+            log.info('PuppetBridge', 'json content:%s', JSON.stringify(json))
             switch (json.msg.appmsg.type) {
               case '5':
                 type = PUPPET.types.Message.Url
@@ -333,8 +335,9 @@ class PuppetBridge extends PUPPET.Puppet {
               case '1':
                 type = PUPPET.types.Message.Url
                 break
-              case '6':
+              case '6': // 文件
                 type = PUPPET.types.Message.Attachment
+                text = xml
                 break
               case '19':
                 type = PUPPET.types.Message.ChatHistory
@@ -833,7 +836,7 @@ class PuppetBridge extends PUPPET.Puppet {
   override async messageFile (id: string): Promise<FileBoxInterface> {
     const message = this.messageStore[id]
     //  log.verbose('messageFile', String(message))
-    //  log.info('messageFile:', message)
+     log.info('messageFile:', message)
     let dataPath = ''
     let fileName = ''
 

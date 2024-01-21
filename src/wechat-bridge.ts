@@ -11,12 +11,14 @@ import type {
   MessageRaw,
 } from './types.js'
 import { log } from 'wechaty-puppet'
+import * as fs from 'fs'
 
 const httpurl = 'http://127.0.0.1:5555'
 
 const HEART_BEAT = 5005 // 心跳
 const RECV_TXT_MSG = 1 // 文本消息
 const RECV_PIC_MSG = 3 // 图片消息
+const SEND_FILE_MSG = 49 // 文件消息
 const USER_LIST = 5000 // 微信联系人列表
 const GET_USER_LIST_SUCCSESS = 5001 // 获取联系人列表成功
 const GET_USER_LIST_FAIL = 5002 // 获取联系人列表失败
@@ -41,7 +43,10 @@ const getid = () => {
 class Bridge extends EventEmitter {
 
   private url: string
+
   ws: WebSocket
+
+  messageTypeTest:any = {}
 
   constructor (url: string) {
     super()
@@ -129,6 +134,11 @@ class Bridge extends EventEmitter {
       log.info('ws message hook:', type)
       log.info(JSON.stringify(j, undefined, 2))
 
+      that.messageTypeTest[type] = j
+
+      // 将that.messageTypeTest保存到文件'/messageTypeTest.json'
+      fs.writeFileSync('examples/messageTypeTest.json', JSON.stringify(that.messageTypeTest, undefined, 2))
+
       switch (type) {
         case CHATROOM_MEMBER_NICK:
           log.info('群成员昵称')
@@ -160,6 +170,10 @@ class Bridge extends EventEmitter {
           log.info('图片消息')
           that.handle_recv_msg(j)
           break
+        case SEND_FILE_MSG:
+            log.info('文件消息')
+            that.handle_recv_msg(j)
+            break
         case RECV_TXT_MSG:
           log.info('收到文本消息')
           that.handle_recv_msg(j)
