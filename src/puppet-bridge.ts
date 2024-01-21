@@ -836,7 +836,7 @@ class PuppetBridge extends PUPPET.Puppet {
   override async messageFile (id: string): Promise<FileBoxInterface> {
     const message = this.messageStore[id]
     //  log.verbose('messageFile', String(message))
-     log.info('messageFile:', message)
+    log.info('messageFile:', message)
     let dataPath = ''
     let fileName = ''
 

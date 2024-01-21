@@ -171,9 +171,9 @@ class Bridge extends EventEmitter {
           that.handle_recv_msg(j)
           break
         case SEND_FILE_MSG:
-            log.info('文件消息')
-            that.handle_recv_msg(j)
-            break
+          log.info('文件消息')
+          that.handle_recv_msg(j)
+          break
         case RECV_TXT_MSG:
           log.info('收到文本消息')
           that.handle_recv_msg(j)
