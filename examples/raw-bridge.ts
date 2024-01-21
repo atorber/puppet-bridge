@@ -4,9 +4,9 @@ import {
   Bridge,
 } from '../src/wechat-bridge.js'
 
-async function main() {
+async function main () {
   console.info('WeChat Bridge starting...')
-  const bridge = new Bridge('ws://127.0.0.1:5555');
+  const bridge = new Bridge('ws://127.0.0.1:5555')
 
   // bridge.on('heartbeat', (message) => {
   //   console.log('heartbeat:', message)
@@ -22,7 +22,7 @@ async function main() {
   console.log('isLoggedIn:', isLoggedIn)
   const roomList: any = {}
 
-  bridge.on('ready', async () => {
+  bridge.on('ready', () => {
     console.log('ready...')
     // ws.send(destroy_all());
 
@@ -134,7 +134,7 @@ async function main() {
   //         if(loginRes){
   //           onLogin()
   //         }
-  //       } 
+  //       }
   //       break
   //     }
   //     case 'agentReady':

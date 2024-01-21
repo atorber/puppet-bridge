@@ -61,7 +61,7 @@ async function onMessage (msg: Message) {
   log.info('当前联系人信息：', JSON.stringify(contact))
   const room = msg.room()
   let sendRes:any = ''
-  if(room){
+  if (room) {
     log.info('当前群信息：', await room.topic())
     log.info('当前群群主：', JSON.stringify(room.owner()) || 'undefined')
   }
@@ -92,15 +92,15 @@ async function onMessage (msg: Message) {
     log.info('发送消息结果：', sendRes)
   }
 
-    /**
+  /**
    * 发送本地图片
    */
-    if (msg.text() === 'jpg_local') {
-      const newpath = basepath + 'logo.jpg'
-      const fileBox = FileBox.fromFile(newpath)
-      sendRes = await msg.say(fileBox)
-      log.info('发送消息结果：', sendRes)
-    }
+  if (msg.text() === 'jpg_local') {
+    const newpath = basepath + 'logo.jpg'
+    const fileBox = FileBox.fromFile(newpath)
+    sendRes = await msg.say(fileBox)
+    log.info('发送消息结果：', sendRes)
+  }
 
   /**
    * 发送表情
@@ -132,19 +132,19 @@ async function onMessage (msg: Message) {
         fs.mkdirSync(filePath)
       }
       filePath = filePath + file.name
-      try{
-        file.toFile(filePath,true)
+      try {
+        await file.toFile(filePath, true)
         log.info(`Saved file: ${filePath}`)
-      }catch(e){
+      } catch (e) {
         log.error('保存文件错误：', e)
       }
     } else {
       // Log other non-text messages
       const logData = {
         date: new Date(),
-        talker: msg.talker(),
         listener: msg.listener(),
         room:await msg.room(),
+        talker: msg.talker(),
         text: msg.text(),
         type: msg.type(),
       }
@@ -161,7 +161,7 @@ async function onMessage (msg: Message) {
 }
 
 const puppet = new PuppetXp({
-  nickName: '大师'
+  nickName: '大师',
 })
 const bot = WechatyBuilder.build({
   name: 'ding-dong-bot',

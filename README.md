@@ -16,7 +16,7 @@ wechaty-puppet-bridge 是一个虚拟的Wechaty Puppet，实际上它只是一�
 
    ![image](https://github.com/atorber/puppet-bridge/assets/19552906/c2c86ff8-8a48-439f-a48a-6830883693d2)
 
-5. 运行以下指令启动程序
+4. 运行以下指令启动程序
 
 ```sh
 git clone https://github.com/atorber/wechaty-puppet-bridge.git

@@ -29,7 +29,9 @@ import qrcodeTerminal from 'qrcode-terminal'
  * 1. Declare your Bot!
  *
  */
-const puppet = new PuppetXp()
+const puppet = new PuppetXp({
+  nickName: '大师',
+})
 
 /**
  *
