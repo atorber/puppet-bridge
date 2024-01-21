@@ -16,7 +16,7 @@ import {
 
 import qrcodeTerminal from 'qrcode-terminal'
 import { FileBox } from 'file-box'
-import { PuppetXp } from '../src/puppet-xp.js'
+import { PuppetXp } from '../src/puppet-bridge.js'
 
 const onScan = (qrcode: string, status: ScanStatus) => {
     if (status === ScanStatus.Waiting || status === ScanStatus.Timeout) {

@@ -2,7 +2,7 @@
 
 import { test } from 'tstest'
 
-import { PuppetXp } from './puppet-xp.js'
+import { PuppetXp } from './puppet-bridge.js'
 
 class PuppetXpTest extends PuppetXp {
 }

@@ -1,5 +1,5 @@
 {
-  "name": "wechaty-puppet-exe",
+  "name": "wechaty-puppet-bridge",
   "version": "0.1.0",
   "description": "Puppet EXE for Wechaty",
   "type": "module",
@@ -25,12 +25,12 @@
     "copy:cjs": "shx cp -R commonjs/ dist/cjs/ && shx cp src/init-agent-script.js dist/cjs/src",
     "start": "cross-env NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/ding-dong-bot.ts",
     "quick-start": "cross-env NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/quick-start.ts",
-    "start:raw": "cross-env BROLOG_LEVEL=silly NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/raw-sidecar.ts",
-    "start:raw:nobuild": "cross-env BROLOG_LEVEL=info NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/raw-sidecar.ts",
-    "start:raw:info": "npm run build:agent && cross-env BROLOG_LEVEL=info NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/raw-sidecar.ts",
+    "start:raw": "cross-env BROLOG_LEVEL=silly NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/raw-bridge.ts",
+    "start:raw:nobuild": "cross-env BROLOG_LEVEL=info NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/raw-bridge.ts",
+    "start:raw:info": "cross-env BROLOG_LEVEL=info NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/raw-bridge.ts",
     "start:ripe": "cross-env WECHATY_LOG=verbose NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/ripe-wechaty.ts",
-    "start:ripe:info": "npm run build:agent && cross-env WECHATY_LOG=info NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/ripe-wechaty.ts",
-    "start:ripe:demo": "npm run build:agent && cross-env WECHATY_LOG=info NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/demo.ts",
+    "start:ripe:info": "cross-env WECHATY_LOG=info NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/ripe-wechaty.ts",
+    "start:ripe:demo": "n&& cross-env WECHATY_LOG=info NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/demo.ts",
     "lint": "npm run lint:es && npm run lint:ts && npm run lint:md",
     "lint:md": "markdownlint README.md",
     "lint:ts": "tsc --isolatedModules --noEmit",
@@ -42,7 +42,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wechaty/puppet-exe.git"
+    "url": "git+https://github.com/wechaty/puppet-bridge.git"
   },
   "keywords": [
     "chatie",
@@ -57,16 +57,16 @@
   "author": "Chao Lu <atorber@163.com>",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/wechaty/puppet-exe/issues"
+    "url": "https://github.com/wechaty/puppet-bridge/issues"
   },
-  "homepage": "https://github.com/wechaty/puppet-exe#readme",
+  "homepage": "https://github.com/wechaty/puppet-bridge#readme",
   "devDependencies": {
     "@chatie/eslint-config": "^1.0.4",
     "@chatie/git-scripts": "^0.7.7",
     "@chatie/semver": "^0.4.7",
     "@chatie/tsconfig": "^4.5.3",
     "@types/cuid": "^2.0.1",
-    "@types/node": "^20.10.5",
+    "@types/node": "^20.11.5",
     "@types/qrcode-terminal": "^0.12.2",
     "@types/ws": "^8.5.10",
     "@types/xml2js": "^0.4.9",
@@ -82,6 +82,7 @@
     "@types/axios": "^0.14.0",
     "axios": "^1.6.5",
     "cuid": "^2.1.8",
+    "typescript": "^4.9.5",
     "wechaty": "^1.20.2",
     "ws": "^8.16.0",
     "xml2js": "^0.4.23",

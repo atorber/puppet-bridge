@@ -12,23 +12,15 @@
  * get_member_nick()
  * ***************************************/
 
-import axios, { AxiosResponse } from 'axios'
+import axios from 'axios'
 
 const url = 'http://127.0.0.1:5555'
-const HEART_BEAT = 5005
-const RECV_TXT_MSG = 1
-const RECV_PIC_MSG = 3
 const USER_LIST = 5000
-const GET_USER_LIST_SUCCSESS = 5001
-const GET_USER_LIST_FAIL = 5002
 const TXT_MSG = 555
 const PIC_MSG = 500
 const AT_MSG = 550
 const CHATROOM_MEMBER = 5010
 const CHATROOM_MEMBER_NICK = 5020
-const PERSONAL_INFO = 6500
-const DEBUG_SWITCH = 6000
-const PERSONAL_DETAIL = 6550
 const ATTATCH_FILE = 5003
 
 function getid () {
@@ -102,13 +94,13 @@ async function send_pic () {
  * 获取群成员昵称
  */
 
-async function get_member_nick (wx_id, roomid) {
+async function get_member_nick (wx_id: any, roomid: any) {
 
   const jpara = {
     id: getid(),
     type: CHATROOM_MEMBER_NICK,
-    wxid: 'zhanghua_cd',
-    roomid: '23023281066@chatroom',
+    wxid: wx_id,
+    roomid,
     content: 'null',
     nickname: 'null',
     ext: 'null',
@@ -279,21 +271,32 @@ async function send_attatch () {
   return data
 }
 
-async function main () {
-  const j = await get_contact_list()
-  // const j = await get_chatroom_member_list();
-  // const j = await send_txt_msg();
-  // const j = await get_member_nick("zhanghua_cd", "23023281066@chatroom");
-  // const j = await send_at_msg();
-  // const j = await send_attatch();
-  // const j = await get_member_nick();
-  // console.log(j);
-  // await send_destroy();
-  // await refresh_memberlist();
-  // console.log("test begin");
-  // const j = await send_destroy();
-  // const j = await send_attatch();
-  console.log(JSON.stringify(j))
-}
+// async function main () {
+//   const j = await get_contact_list()
+//   // const j = await get_chatroom_member_list();
+//   // const j = await send_txt_msg();
+//   // const j = await get_member_nick("zhanghua_cd", "23023281066@chatroom");
+//   // const j = await send_at_msg();
+//   // const j = await send_attatch();
+//   // const j = await get_member_nick();
+//   // console.log(j);
+//   // await send_destroy();
+//   // await refresh_memberlist();
+//   // console.log("test begin");
+//   // const j = await send_destroy();
+//   // const j = await send_attatch();
+//   console.log(JSON.stringify(j))
+// }
 
 // console.log('test');
+
+export {
+  send_attatch,
+  send_txt_msg,
+  get_chatroom_member_list,
+  get_contact_list,
+  send_pic,
+  get_member_nick,
+  send_at_msg,
+  get_memberid,
+}

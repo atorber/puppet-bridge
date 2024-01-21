@@ -2,39 +2,46 @@
 /* eslint-disable sort-keys */
 /* eslint-disable no-console */
 import WebSocket from 'ws'
-import axios, { AxiosResponse } from 'axios'
+import axios from 'axios'
 import { EventEmitter } from 'events'
+import type {
+  ContactRaw,
+  RoomRaw,
+  ResponseData,
+  MessageRaw,
+} from './types.js'
+import { log } from 'wechaty-puppet'
 
-const url = 'http://127.0.0.1:5555'
+const httpurl = 'http://127.0.0.1:5555'
 
-const HEART_BEAT = 5005
-const RECV_TXT_MSG = 1
-const RECV_PIC_MSG = 3
-const USER_LIST = 5000
-const GET_USER_LIST_SUCCSESS = 5001
-const GET_USER_LIST_FAIL = 5002
-const TXT_MSG = 555
-const PIC_MSG = 500
-const AT_MSG = 550
-const CHATROOM_MEMBER = 5010
-const CHATROOM_MEMBER_NICK = 5020
-const PERSONAL_INFO = 6500
-const DEBUG_SWITCH = 6000
-const PERSONAL_DETAIL = 6550
-const DESTROY_ALL = 9999
+const HEART_BEAT = 5005 // 心跳
+const RECV_TXT_MSG = 1 // 文本消息
+const RECV_PIC_MSG = 3 // 图片消息
+const USER_LIST = 5000 // 微信联系人列表
+const GET_USER_LIST_SUCCSESS = 5001 // 获取联系人列表成功
+const GET_USER_LIST_FAIL = 5002 // 获取联系人列表失败
+const TXT_MSG = 555 // 发送文本消息
+const PIC_MSG = 500 // 发送图片消息
+const AT_MSG = 550 // 发送AT消息
+const CHATROOM_MEMBER = 5010 // 群成员列表
+const CHATROOM_MEMBER_NICK = 5020 // 群成员昵称
+const PERSONAL_INFO = 6500 // 个人信息
+const DEBUG_SWITCH = 6000 // 调试开关
+const PERSONAL_DETAIL = 6550 // 个人详细信息
+const DESTROY_ALL = 9999 // 销毁进程
 const NEW_FRIEND_REQUEST = 37// 微信好友请求消息
 const AGREE_TO_FRIEND_REQUEST = 10000// 同意微信好友请求消息
-const ATTATCH_FILE = 5003
+const ATTATCH_FILE = 5003 // 发送文件
 
 const getid = () => {
   const id = Date.now()
   return id.toString()
 }
 
-class WebSocketClient extends EventEmitter {
+class Bridge extends EventEmitter {
 
   private url: string
-  private ws: WebSocket
+  ws: WebSocket
 
   constructor (url: string) {
     super()
@@ -43,10 +50,11 @@ class WebSocketClient extends EventEmitter {
     this.ws = new WebSocket(this.url)
 
     this.ws.on('error', (error: Error) => {
-      console.error('WebSocket error:', error)
+      log.error('WebSocket error:', error)
     })
     this.ws.on('open', function open () {
-      console.log('WebSocket connection established')
+      log.info('WebSocket connection established')
+      that.emit('login', 'login')
 
       // ws.send(send_attatch());
       // ws.send("hello world");
@@ -54,11 +62,11 @@ class WebSocketClient extends EventEmitter {
       // ws.send(get_chat_nick_p("zhanghua_cd","23023281066@chatroom"));
       // for(const item of roomid_list)
       // {
-      // console.log(item);
+      // log.info(item);
       // ws.send(get_chat_nick_p(item));
       // }
       // ws.send(get_chat_nick());
-      // ws.send(get_personal_info());
+      that.ws.send(that.get_personal_info())
       // ws.send(send_pic_msg());
       // ws.send(send_txt_msg());
       // ws.send(get_chatroom_memberlist());
@@ -111,69 +119,137 @@ class WebSocketClient extends EventEmitter {
     })
 
     this.ws.on('message', function incoming (data: string) {
-      that.emit('hook', data.toString())
-      // break;
-      // return;
+      // log.info('WebSocket received:', data.toString())
       data = data.toString()
-      console.log(data)
       // ws.send("hello world");
       // return;
       const j = JSON.parse(data)
-      // console.log(j);
+      // log.info(j);
       const type = j.type
+      log.info('ws message hook:', type)
+      log.info(JSON.stringify(j, undefined, 2))
+
       switch (type) {
         case CHATROOM_MEMBER_NICK:
-          console.log(j)
+          log.info('群成员昵称')
           // handle_nick(j);
           break
         case PERSONAL_DETAIL:
-          console.log(j)
+          log.info('个人详细信息')
           break
         case AT_MSG:
-          console.log(j)
+          log.info('AT消息')
           break
         case DEBUG_SWITCH:
-          console.log(j)
+          log.info('调试开关')
           break
         case PERSONAL_INFO:
-          console.log(j)
+          log.info('个人信息')
           break
         case TXT_MSG:
-          console.log(j)
+          log.info('文本消息')
           break
         case PIC_MSG:
-          console.log(j)
+          log.info('图片消息')
           break
         case CHATROOM_MEMBER:
-          // console.log(j);
+          log.info('群成员列表')
           that.handle_memberlist(j)
           break
         case RECV_PIC_MSG:
+          log.info('图片消息')
           that.handle_recv_msg(j)
           break
         case RECV_TXT_MSG:
+          log.info('收到文本消息')
           that.handle_recv_msg(j)
           break
         case HEART_BEAT:
+          log.info('心跳')
           that.heartbeat(j)
           break
         case USER_LIST:
-          console.log(j)
+          log.info('微信联系人列表')
           // handle_wxuser_list(j);
           break
         case GET_USER_LIST_SUCCSESS:
+          log.info('获取联系人列表成功')
           that.handle_wxuser_list(j)
           break
         case GET_USER_LIST_FAIL:
+          log.info('获取联系人列表失败')
           that.handle_wxuser_list(j)
           break
         case NEW_FRIEND_REQUEST:
-          // console.log("---------------37----------");
-          console.log(j)
+          log.info('微信好友请求消息')
+
+          // {
+          //   content: { content: '"77"邀请"田国发"加入了群聊', id1: '22232811504@chatroom' },
+          //   id: '20240121160114',
+          //   receiver: 'CLIENT',
+          //   sender: 'SERVER',
+          //   srvid: 1,
+          //   status: 'SUCCSESSED',
+          //   time: '2024-01-21 16:01:14',
+          //   type: 10000
+          // }
+          log.info(j)
           break
         case AGREE_TO_FRIEND_REQUEST:
-          console.log('---------------25----------')
-          console.log(j)
+          log.info('系统通知消息')
+
+          // {
+          //   "content": {
+          //     "content": "群收款消息，请在手机上查看",
+          //     "id1": "22232811504@chatroom"
+          //   },
+          //   "id": "20240121202300",
+          //   "receiver": "CLIENT",
+          //   "sender": "SERVER",
+          //   "srvid": 1,
+          //   "status": "SUCCSESSED",
+          //   "time": "2024-01-21 20:23:00",
+          //   "type": 10000
+          // }
+
+          // {
+          //   "content": {
+          //     "content": "\"大牛\"修改群名为“大牛羽毛球活动群”",
+          //     "id1": "20409849030@chatroom"
+          //   },
+          //   "id": "20240121201745",
+          //   "receiver": "CLIENT",
+          //   "sender": "SERVER",
+          //   "srvid": 1,
+          //   "status": "SUCCSESSED",
+          //   "time": "2024-01-21 20:17:45",
+          //   "type": 10000
+          // }
+
+          // {
+          //   content: { content: '收到红包，请在手机上查看', id1: '925360650@chatroom' },
+          //   id: '20240121161956',
+          //   receiver: 'CLIENT',
+          //   sender: 'SERVER',
+          //   srvid: 1,
+          //   status: 'SUCCSESSED',
+          //   time: '2024-01-21 16:19:56',
+          //   type: 10000
+          // }
+
+          // {
+          //   content: {
+          //     content: '"田国发"与群里其他人都不是朋友关系，请注意隐私安全',
+          //     id1: '22232811504@chatroom'
+          //   },
+          //   id: '20240121160114',
+          //   receiver: 'CLIENT',
+          //   sender: 'SERVER',
+          //   srvid: 1,
+          //   status: 'SUCCSESSED',
+          //   time: '2024-01-21 16:01:14',
+          //   type: 10000
+          // }
           break
         // case SEND_TXT_MSG_SUCCSESS:
         // handle_recv_msg(j);
@@ -184,19 +260,23 @@ class WebSocketClient extends EventEmitter {
         default:
           break
       }
-      // console.log(`Roundtrip time: ${Date.now() - data} ms`);
+      // log.info(`Roundtrip time: ${Date.now() - data} ms`);
 
       /* setTimeout(function timeout() {
         ws.send(Date.now());
       }, 500); */
     })
     this.ws.on('close', () => {
-      console.log('WebSocket connection closed')
-
+      log.info('WebSocket connection closed')
+      that.emit('logout', 'logout')
       // reconnect after 1s
       setTimeout(() => {
         this.ws = new WebSocket(this.url)
       }, 1000)
+    })
+    this.ws.on('error', (err) => {
+      log.info('WebSocket error:', err)
+      that.emit('error', err)
     })
   }
 
@@ -204,16 +284,15 @@ class WebSocketClient extends EventEmitter {
  *
  * @param {*} j json对象
  */
-  handle_recv_msg (j:any) {
-
-    const content = j.content
-    const wxid = j.wxid
-    const sender = j.sender
-    console.log(j)
-    console.log('接收人:' + wxid)
-    console.log('内容：' + content)
-    console.log('发送人：' + sender) // 如果为空，那就是你自己发的
-    console.log(j)
+  handle_recv_msg (j:MessageRaw) {
+    this.emit('message', j)
+    // const content = j.content
+    // const wxid = j.wxid
+    // const sender = j.id1
+    // log.info(j)
+    // log.info('接收人:' + wxid)
+    // log.info('内容：' + content)
+    // log.info('发送人：' + sender) // 如果为空，那就是你自己发的
   }
 
   /**
@@ -230,17 +309,17 @@ class WebSocketClient extends EventEmitter {
       const id = item.wxid
       const m = id.match(/@/)
       if (m != null) {
-      // console.log(id);
-        console.log(item.wxid, item.name)
+      // log.info(id);
+        log.info(item.wxid, item.name)
       }
-    // console.log(m);
+    // log.info(m);
     //
     }
   }
 
   heartbeat (j:any) {
-    console.log(j)
-    // console.log(utf16ToUtf8(wxid),utf16ToUtf8(name));
+    this.emit('heartbeat', j)
+    // log.info(utf16ToUtf8(wxid),utf16ToUtf8(name));
   }
 
   get_chat_nick_p (s_wxid: any, s_roomid: any) {
@@ -260,13 +339,11 @@ class WebSocketClient extends EventEmitter {
 
   }
 
-  get_chat_nick () {
+  get_chat_nick (roomid: string) {
     const j = {
       id:getid(),
       type:CHATROOM_MEMBER_NICK,
-      content:'23023281066@chatroom', // chatroom id 23023281066@chatroom  17339716569@chatroom
-      // 5325308046@chatroom
-      // 5629903523@chatroom
+      content:roomid,
       wxid:'ROOT',
     }
     const s = JSON.stringify(j)
@@ -275,32 +352,30 @@ class WebSocketClient extends EventEmitter {
 
   handle_nick (j: { content: any }) {
     const data = j.content
-    let i = 0
     for (const item of data) {
-      console.log(i++, item.nickname)
+      log.info('---------------', item.room_id, '--------------------')
     }
   }
 
   handle_memberlist (j: { content: any }) {
     const data = j.content
-    const i = 0
     // get_chat_nick_p(j.roomid);
     for (const item of data) {
-      console.log('---------------', item.room_id, '--------------------')
-      // console.log("------"+item.roomid+"--------");
+      log.info('---------------', item.room_id, '--------------------')
+      // log.info("------"+item.roomid+"--------");
       // ws.send(get_chat_nick_p(item.roomid));
       const memberlist = item.member
 
-      // console.log("hh",item.address,memberlist);
+      // log.info("hh",item.address,memberlist);
 
       // const len = memberlist.length();
-      // console.log(memberlist);
+      // log.info(memberlist);
       for (const m of memberlist) {
-        console.log(m)// 获得每个成员的wxid
+        log.info(m)// 获得每个成员的wxid
       }
       /* for(const n of nicklist)//目前不建议使用
       {
-        console.log(n);//获得每个成员的昵称，注意，没有和wxi对应的关系
+        log.info(n);//获得每个成员的昵称，注意，没有和wxi对应的关系
       } */
     }
   }
@@ -330,17 +405,17 @@ class WebSocketClient extends EventEmitter {
     }
 
     const s = JSON.stringify(j)
-    // console.log(s);
+    // log.info(s);
     return s
   }
 
-  send_pic_msg () {
+  send_pic_msg (wxid: string, content: string) {
     const j = {
       id: getid(),
       type: PIC_MSG,
-      wxid: '23023281066@chatroom',
+      wxid, // roomid或wxid,必填
       roomid: 'null',
-      content: 'C:\\tmp\\2.jpg',
+      content, // 'C:\\tmp\\2.jpg'
       nickname: 'null',
       ext: 'null',
       // wxid:'22428457414@chatroom'
@@ -348,25 +423,21 @@ class WebSocketClient extends EventEmitter {
     }
 
     const s = JSON.stringify(j)
-    // console.log(s);
+    // log.info(s);
     return s
   }
 
-  get_personal_detail () {
+  get_personal_detail (wxid: string) {
     const j = {
       id:getid(),
       type:PERSONAL_DETAIL,
       content:'op:personal detail',
-      wxid:'zhanghua_cd',
+      wxid,
     }
     const s = JSON.stringify(j)
     return s
   }
 
-  /**
-   * send_txt_msg : 发送消息给好友
-   *
-   */
   get_personal_info () {
     const j = {
       id:getid(),
@@ -378,33 +449,34 @@ class WebSocketClient extends EventEmitter {
     return s
   }
 
-  async send_at_msg () {
+  /**
+   * send_txt_msg : 发送消息给好友
+   *
+   */
+  async send_at_msg (roomid: string, wxid: string, content: string, nickname:string) {
     const jpara = {
       id: getid(),
       type: AT_MSG,
-      roomid: '23023281066@chatroom', // not null  23023281066@chatroom
-      wxid: 'zhanghua_cd', // not null
-      content: 'at msg test,hello world，真的有一套', // not null
-      nickname: '老张',
+      roomid, // not null  23023281066@chatroom
+      wxid, // not null
+      content, // not null
+      nickname,
       ext: 'null',
     }
     const options
     = {
       // method: 'GET',
       // url: 'https://apis.map.qq.com/ws/district/v1/list',
-      url: url + '/api/sendatmsg',
+      url: httpurl + '/api/sendatmsg',
       body: {
         para: jpara,
       },
       json: true,
     }
-    const data = await axios.post(options.url, options.body)
-    // const j = JSON.parse(data);
+    const res = await axios.post(options.url, options.body)
+    const data:ResponseData = res.data
 
-    // console.log(j.id);
-    // console.log(j.status);
     return data
-
   }
 
   /** send_pic
@@ -427,7 +499,7 @@ class WebSocketClient extends EventEmitter {
     = {
       // method: 'GET',
       // url: 'https://apis.map.qq.com/ws/district/v1/list',
-      url: url + '/api/sendpic',
+      url: httpurl + '/api/sendpic',
       body: {
         para: jpara,
       },
@@ -436,8 +508,8 @@ class WebSocketClient extends EventEmitter {
     const data = await axios.post(options.url, options.body)
     // const j = JSON.parse(data);
 
-    // console.log(j.id);
-    // console.log(j.status);
+    // log.info(j.id);
+    // log.info(j.status);
     return data
 
   }
@@ -446,13 +518,13 @@ class WebSocketClient extends EventEmitter {
    * 获取群成员昵称
    */
 
-  async get_member_nick (wx_id: any, roomid: any) {
+  async get_member_nick (wxid: string, roomid: string) {
 
     const jpara = {
       id: getid(),
       type: CHATROOM_MEMBER_NICK,
-      wxid: 'zhanghua_cd',
-      roomid: '23023281066@chatroom',
+      wxid,
+      roomid,
       content: 'null',
       nickname: 'null',
       ext: 'null',
@@ -462,17 +534,17 @@ class WebSocketClient extends EventEmitter {
     const options
     = {
 
-      url: url + '/api/getmembernick',
+      url: httpurl + '/api/getmembernick',
       body: {
         para: jpara,
       },
       json: true,
     }
-    const data = await axios.post(options.url, options.body)
-    // const j = JSON.parse(data);
+    const res = await axios.post(options.url, options.body)
+    const data:ResponseData = res.data
 
-    // console.log(j.id);
-    // console.log(j.status);
+    // log.info(j.id);
+    // log.info(j.status);
     return data
   }
 
@@ -489,7 +561,7 @@ class WebSocketClient extends EventEmitter {
     }
 
     const options = {
-      url: url + '/api/getmemberid',
+      url: httpurl + '/api/getmemberid',
       body: {
         para: jpara,
       },
@@ -498,8 +570,8 @@ class WebSocketClient extends EventEmitter {
     const data = await axios.post(options.url, options.body)
     // const j = JSON.parse(data);
 
-    // console.log(j.id);
-    // console.log(j.status);
+    // log.info(j.id);
+    // log.info(j.status);
     return data
   }
 
@@ -517,19 +589,16 @@ class WebSocketClient extends EventEmitter {
       ext: 'null',
     }
     const options = {
-      url: url + '/api/getcontactlist',
+      url: httpurl + '/api/getcontactlist',
       body: {
         para: jpara,
       },
       json: true,
     }
-    const data = await axios.post(options.url, options.body)
-    // const j = JSON.parse(data);
-
-    // console.log(j.id);
-    // console.log(j.status);
-    return data
-
+    const res = await axios.post(options.url, options.body)
+    const contacts: ContactRaw[] = res.data.content
+    // log.info('get_contact_list len:', contacts.length)
+    return contacts
   }
 
   async get_chatroom_member_list () {
@@ -543,51 +612,44 @@ class WebSocketClient extends EventEmitter {
       ext: 'null',
     }
     const options = {
-      url: url + '/api/get_charroom_member_list', //
+      url: httpurl + '/api/get_charroom_member_list', //
       body: {
         para: jpara,
       },
       json: true,
     }
-    const data = await axios.post(options.url, options.body)
-    // const j = JSON.parse(data);
-
-    // console.log(j.id);
-    // console.log(j.status);
-    return data
+    const res = await axios.post(options.url, options.body)
+    const rooms: RoomRaw[] = res.data.content
+    return rooms
 
   }
 
   /**
    * send txt message
    */
-  async send_txt_msg () {
+  async send_txt_msg (wxid: string, content: string) {
     const jpara = {
       id: getid(),
       type: TXT_MSG,
-      wxid: '23023281066@chatroom', // roomid或wxid,必填
+      wxid, // roomid或wxid,必填
       roomid: 'null', // 此处为空
-      content: 'hello word',
+      content,
       nickname: 'null', // 此处为空
       ext: 'null', // 此处为空
       // wxid:'22428457414@chatroom'
-
     }
     const options
     = {
       // method: 'GET',
       // url: 'https://apis.map.qq.com/ws/district/v1/list',
-      url: url + '/api/sendtxtmsg',
+      url: httpurl + '/api/sendtxtmsg',
       body: {
         para: jpara,
       },
       json: true,
     }
-    const data = await axios.post(options.url, options.body)
-    // const j = JSON.parse(data);
-
-    // console.log(j.id);
-    // console.log(j.status);
+    const res = await axios.post(options.url, options.body)
+    const data:ResponseData = res.data
     return data
 
   }
@@ -595,14 +657,14 @@ class WebSocketClient extends EventEmitter {
   /** send_attatch
    * send the attatchment
    */
-  async send_attatch () {
+  async send_attatch (wxid: string, content: string) {
 
     const jpara = {
       id: getid(),
       type: ATTATCH_FILE,
-      wxid: '23023281066@chatroom', // roomid或wxid,必填
+      wxid, // roomid或wxid,必填
       roomid: 'null', // 此处为空
-      content: 'C:\\tmp\\log.7z',
+      content, // : 'C:\\tmp\\log.7z'
       nickname: 'null', // 此处为空
       ext: 'null', // 此处为空
       // wxid:'22428457414@chatroom'
@@ -612,21 +674,18 @@ class WebSocketClient extends EventEmitter {
     = {
       // method: 'GET',
       // url: 'https://apis.map.qq.com/ws/district/v1/list',
-      url: url + '/api/sendattatch',
+      url: httpurl + '/api/sendattatch',
       body: {
         para: jpara,
       },
       json: true,
 
     }
-    const data = await axios.post(options.url, options.body)
-    // const j = JSON.parse(data);
-
-    // console.log(j.id);
-    // console.log(j.status);
+    const res = await axios.post(options.url, options.body)
+    const data:ResponseData = res.data
     return data
   }
 
 }
 
-export { WebSocketClient }
+export { Bridge }

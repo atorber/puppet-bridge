@@ -11,7 +11,7 @@ import {
   types,
 } from 'wechaty'
 import { FileBox } from 'file-box'
-import { PuppetXp } from '../src/puppet-xp.js'
+import { PuppetXp } from '../src/puppet-bridge.js'
 import qrcodeTerminal from 'qrcode-terminal'
 import timersPromise from 'timers/promises'
 

@@ -76,7 +76,6 @@ function handle_nick (j: { content: any }) {
 }
 function handle_memberlist (j: { content: any }) {
   const data = j.content
-  const i = 0
   // get_chat_nick_p(j.roomid);
   for (const item of data) {
     console.log('---------------', item.room_id, '--------------------')
@@ -434,3 +433,23 @@ ws.on('message', function incoming (data: string) {
     ws.send(Date.now());
   }, 500); */
 })
+
+export {
+  get_chat_nick_p,
+  get_chat_nick,
+  get_chatroom_memberlist,
+  get_contact_list,
+  get_personal_detail,
+  get_personal_info,
+  send_at_msg,
+  send_attatch,
+  send_pic_msg,
+  send_txt_msg,
+  destroy_all,
+  handle_memberlist,
+  handle_nick,
+  handle_recv_msg,
+  handle_wxuser_list,
+  heartbeat,
+  ws,
+}

@@ -12,7 +12,7 @@ import {
 } from 'wechaty'
 import { FileBox } from 'file-box'
 
-import { PuppetXp } from '../src/puppet-xp.js'
+import { PuppetXp } from '../src/puppet-bridge.js'
 import qrcodeTerminal from 'qrcode-terminal'
 import * as fs from 'fs'
 
@@ -56,17 +56,19 @@ function onLogout (user: Contact) {
 
 async function onMessage (msg: Message) {
   // log.info('onMessage', msg.toString())
-  log.info('接收到消息：', JSON.stringify(msg))
+  log.info('onMessage接收到消息：', JSON.stringify(msg))
   const contact = msg.talker()
   log.info('当前联系人信息：', JSON.stringify(contact))
   const room = msg.room()
+  let sendRes:any = ''
   if(room){
     log.info('当前群信息：', await room.topic())
-    log.info('当前群群主：', JSON.stringify(room.owner()))
+    log.info('当前群群主：', JSON.stringify(room.owner()) || 'undefined')
   }
 
   if (msg.text() === 'ding') {
-    await msg.say('dong')
+    sendRes = await msg.say(new Date().toLocaleString() + ' dong')
+    log.info('发送消息结果：', sendRes || 'undefined')
   }
 
   const basepath = 'examples/media/'
@@ -76,7 +78,8 @@ async function onMessage (msg: Message) {
   if (msg.text() === 'txt') {
     const newpath = basepath + 'test.txt'
     const fileBox = FileBox.fromFile(newpath)
-    await msg.say(fileBox)
+    sendRes = await msg.say(fileBox)
+    log.info('发送消息结果：', sendRes)
   }
 
   /**
@@ -85,8 +88,19 @@ async function onMessage (msg: Message) {
   if (msg.text() === 'jpg') {
     const newpath = 'https://github.com/wechaty/wechaty/blob/main/docs/images/bot-qr-code.png'
     const fileBox = FileBox.fromUrl(newpath)
-    await msg.say(fileBox)
+    sendRes = await msg.say(fileBox)
+    log.info('发送消息结果：', sendRes)
   }
+
+    /**
+   * 发送本地图片
+   */
+    if (msg.text() === 'jpg_local') {
+      const newpath = basepath + 'logo.jpg'
+      const fileBox = FileBox.fromFile(newpath)
+      sendRes = await msg.say(fileBox)
+      log.info('发送消息结果：', sendRes)
+    }
 
   /**
    * 发送表情
@@ -94,7 +108,8 @@ async function onMessage (msg: Message) {
   if (msg.text() === 'gif') {
     const newpath = basepath + 'test.gif'
     const fileBox = FileBox.fromFile(newpath)
-    await msg.say(fileBox)
+    sendRes = await msg.say(fileBox)
+    log.info('发送消息结果：', sendRes)
   }
 
   /**
@@ -103,14 +118,20 @@ async function onMessage (msg: Message) {
   if (msg.text() === 'mp4') {
     const newpath = basepath + 'test.mp4'
     const fileBox = FileBox.fromFile(newpath)
-    await msg.say(fileBox)
+    sendRes = await msg.say(fileBox)
+    log.info('发送消息结果：', sendRes)
   }
 
   try {
     if (msg.type() === types.Message.Image || msg.type() === types.Message.Attachment || msg.type() === types.Message.Video || msg.type() === types.Message.Audio || msg.type() === types.Message.Emoticon) {
       const file = await msg.toImage().thumbnail()  // Save the media message as a FileBox
 
-      const filePath = 'examples/file/' + file.name
+      let filePath = 'file/'
+      // 检查文件夹是否存在，不存在则创建
+      if (!fs.existsSync(filePath)) {
+        fs.mkdirSync(filePath)
+      }
+      filePath = filePath + file.name
       try{
         file.toFile(filePath,true)
         log.info(`Saved file: ${filePath}`)
@@ -139,7 +160,9 @@ async function onMessage (msg: Message) {
 
 }
 
-const puppet = new PuppetXp({wechatVersion:'0.0.0.0'})
+const puppet = new PuppetXp({
+  nickName: '大师'
+})
 const bot = WechatyBuilder.build({
   name: 'ding-dong-bot',
   puppet,
