@@ -14,7 +14,7 @@ wechaty-puppet-bridge 是一个虚拟的Wechaty Puppet，实际上它只是一�
 
 3. 到[cixingguangming55555/wechat-bot](https://github.com/cixingguangming55555/wechat-bot)项目下载[Run funtool_wx.exe](https://github.com/cixingguangming55555/wechat-bot/blob/master/funtool/funtool_wx%3D3.9.2.23.exe)运行程序并点击【Start】开启功能。
 
-   ![image](https://github.com/atorber/puppet-bridge/assets/19552906/9e2b0e88-2531-4dd2-b8eb-10241ea2e0de)
+   ![image](https://github.com/atorber/puppet-bridge/assets/19552906/c2c86ff8-8a48-439f-a48a-6830883693d2)
 
 5. 运行以下指令启动程序
 
