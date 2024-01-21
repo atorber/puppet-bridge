@@ -19,7 +19,7 @@ wechaty-puppet-bridge 是一个虚拟的Wechaty Puppet，实际上它只是一�
 
 2. 在电脑上登录微信客户端
 
-3. 到[cixingguangming55555/wechat-bot](https://github.com/cixingguangming55555/wechat-bot)项目下载[Run funtool_wx.exe](https://github.com/cixingguangming55555/wechat-bot/blob/master/funtool/funtool_wx%3D3.9.2.23.exe)运行程序并点击【Start】开启功能。
+3. 到[cixingguangming55555/wechat-bot](https://github.com/cixingguangming55555/wechat-bot)项目下载[funtool_wx=3.9.2.23.exe](https://github.com/cixingguangming55555/wechat-bot/blob/master/funtool/funtool_wx%3D3.9.2.23.exe)运行程序并点击【Start】开启功能。
 
    ![image](https://github.com/atorber/puppet-bridge/assets/19552906/c2c86ff8-8a48-439f-a48a-6830883693d2)
 
@@ -104,4 +104,4 @@ wechaty-puppet-bridge 是一个全新的wechaty-puppet，它可以连接所有�
 
 ## 作者
 
-Yuchao LU [@atorber](https://github.com/atorber)
+ChaoLu [@atorber](https://github.com/atorber)
