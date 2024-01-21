@@ -35,7 +35,7 @@ import {
   
   }
   
-  const puppet = new PuppetBridge()
+  const puppet = new PuppetBridge({nickName: '大师'})
   const bot = WechatyBuilder.build({
     name: 'ding-dong-bot',
     puppet,
