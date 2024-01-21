@@ -5,13 +5,23 @@
 [![npm (tag)](https://img.shields.io/npm/v/wechaty-puppet-bridge/next.svg)](https://www.npmjs.com/package/wechaty-puppet-bridge?activeTab=versions)
 <img alt="GitHub stars badge" src="https://img.shields.io/github/stars/atorber/puppet-bridge"> <img alt="GitHub forks badge" src="https://img.shields.io/github/forks/atorber/puppet-bridge"> [![NPM Version](https://img.shields.io/npm/v/puppet-bridge?color=brightgreen)](https://www.npmjs.com/package/wechaty-puppet-bridge) ![npm downloads](https://img.shields.io/npm/dm/wechaty-puppet-bridge.svg)
 
+<img src="https://github.com/atorber/puppet-bridge/assets/19552906/086cff53-2c4a-4889-938b-23ee26acb6fc" alt="chatie puppet bridge" height="350" align="bottom" />
+
 ## 简介
 
 wechaty-puppet-bridge 是一个虚拟的Wechaty Puppet，实际上它只是一个桥接服务，它将GitHub中开源的微信机器人桥接到Wechaty
 
 如果你想方便且高效的使用免费的微信机器人，那么它是一个很好的选择，它不需要token同时又能使用Wechaty进行聊天机器人开发
 
-<img src="https://github.com/atorber/puppet-bridge/assets/19552906/086cff53-2c4a-4889-938b-23ee26acb6fc" alt="chatie puppet bridge" height="350" align="bottom" />
+与wechaty-puppet-xp比较：
+
+| 项目 | [wechaty-puppet-xp](https://github.com/atorber/puppet-xp) | [wechaty-puppet-bridge](https://github.com/atorber/puppet-bridge) |
+| :------------- |:-------------| :-----|
+| 注入 | ⭐⭐⭐<br>不需要 | ⭐⭐⭐<br>不需要 |
+| 功能| ⭐⭐⭐<br>基于[cixingguangming55555/wechat-bot](https://github.com/cixingguangming55555/wechat-bot)项目 | ⭐⭐⭐<br>基于[cixingguangming55555/wechat-bot](https://github.com/cixingguangming55555/wechat-bot)项目 |
+| 梯子 | ⭐<br>依赖frida，国内网络无法安装，需使用梯子 | ⭐⭐⭐<br>不需要，下载[funtool_wx=3.9.2.23.exe](https://github.com/cixingguangming55555/wechat-bot/blob/master/funtool/funtool_wx%3D3.9.2.23.exe)即可 |
+| 启动| ⭐⭐⭐<br>直接运行nodejs程序 | ⭐⭐<br>需先手动启动funtool_wx=3.9.2.23.exe|
+| 环境| ⭐⭐⭐<br>nodejs | ⭐⭐<br>nodejs + funtool_wx=3.9.2.23.exe|
 
 ## 快速开始
 
@@ -39,14 +49,6 @@ npm start
 #
 ```
 
-## 快速命令
-
-| 命令 | 源码文件 | 描述 |
-| :------------- |:-------------| :-----|
-| `npm start` | [examples/ding-dong-bot.ts](examples/ding-dong-bot.ts) | 启动ding/dong机器人 |
-| `npm run start:ripe` | [examples/ripe-wechaty.ts](examples/ripe-wechaty.ts) | Wechaty ding/dong |
-| `npm run start:raw` | [examples/raw-bridge.ts](examples/raw-bridge.ts) | bridge ding/dong |
-
 ## 使用NPM包
 
 puppet-bridge 已经在NPM上发布了安装包，Wechaty用户可以直接安装使用
@@ -55,7 +57,7 @@ puppet-bridge 已经在NPM上发布了安装包，Wechaty用户可以直接安�
 npm i wecahty-puppet-bridge
 ```
 
-## 功能对比
+## 功能清单
 
 wechaty-puppet-bridge 是一个全新的wechaty-puppet，它可以连接所有的通过ws、http、mqtt开放IM访问的聊天机器人.
 
