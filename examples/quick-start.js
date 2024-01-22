@@ -30,7 +30,9 @@ import {
   
   }
   
-  const puppet = new PuppetBridge({nickName: '大师'})
+  const puppet = new PuppetBridge({
+    nickName: '大师'  // 登录微信的昵称
+})
   const bot = WechatyBuilder.build({
     name: 'ding-dong-bot',
     puppet,

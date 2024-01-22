@@ -6,7 +6,7 @@ import {
 
 async function main () {
   console.info('WeChat Bridge starting...')
-  const bridge = new Bridge('ws://127.0.0.1:5555')
+  const bridge = new Bridge()
 
   // bridge.on('heartbeat', (message) => {
   //   console.log('heartbeat:', message)

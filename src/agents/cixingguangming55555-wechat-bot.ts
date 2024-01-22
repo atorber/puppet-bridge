@@ -9,7 +9,7 @@ import type {
   RoomRaw,
   ResponseData,
   MessageRaw,
-} from './types.js'
+} from '../types.js'
 import { log } from 'wechaty-puppet'
 import * as fs from 'fs'
 
@@ -48,14 +48,14 @@ class Bridge extends EventEmitter {
 
   messageTypeTest: any = {}
 
-  constructor (options?: {
+  constructor (options: {
     wsUrl?: string
     httpUrl?:string
   }) {
     super()
     const that = this
-    this.wsUrl = options?.wsUrl || 'ws://127.0.0.1:5555'
-    this.httpUrl = options?.httpUrl || 'http://127.0.0.1:5555'
+    this.wsUrl = options.wsUrl || 'ws://127.0.0.1:5555'
+    this.httpUrl = options.httpUrl || 'http://127.0.0.1:5555'
     this.ws = new WebSocket(this.wsUrl)
 
     // 收集消息类型，临时保存到文件'/messageTypeTest.json'

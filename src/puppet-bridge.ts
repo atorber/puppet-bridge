@@ -44,7 +44,12 @@ async function wait (ms: number) {
 const userInfo = os.userInfo()
 const rootPath = `${userInfo.homedir}\\Documents\\WeChat Files\\`
 
-export type PuppetBridgeOptions = PUPPET.PuppetOptions
+export type PuppetBridgeOptions = PUPPET.PuppetOptions & {
+  name?: string
+  nickName: string
+  wsUrl?: string
+  httpUrl?: string
+}
 
 class PuppetBridge extends PUPPET.Puppet {
 
@@ -65,17 +70,23 @@ class PuppetBridge extends PUPPET.Puppet {
   private currentUserNameBySet = ''
 
   constructor (
-    public override options: PuppetBridgeOptions = { nickName:'' },
+    public override options: PuppetBridgeOptions,
   ) {
+
+    options.name = options.name || 'cixingguangming55555'
+
     log.info('options...', JSON.stringify(options))
-    if (!options['nickName']) {
+    if (!options.nickName) {
       throw new Error('nickName is not set')
     }
     super(options)
     log.verbose('PuppetBridge', 'constructor(%s)', JSON.stringify(options))
 
-    this.currentUserNameBySet = options['nickName'] as string
-    this.bridge = new Bridge('ws://127.0.0.1:5555')
+    this.currentUserNameBySet = options.nickName
+    this.bridge = new Bridge({
+      httpUrl:options.httpUrl,
+      wsUrl:options.wsUrl,
+    })
 
     // FIXME: use LRU cache for message store so that we can reduce memory usage
     this.messageStore = {}

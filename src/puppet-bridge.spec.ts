@@ -8,7 +8,7 @@ class PuppetBridgeTest extends PuppetBridge {
 }
 
 test.skip('PuppetBridge perfect restart testing', async (t) => {
-  const puppet = new PuppetBridgeTest()
+  const puppet = new PuppetBridgeTest({ nickName: 'test' })
   try {
 
     for (let i = 0; i < 3; i++) {
