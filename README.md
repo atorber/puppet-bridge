@@ -14,7 +14,7 @@ wechaty-puppet-bridge 是一个虚拟的Wechaty Puppet，实际上它只是一�
 
 与wechaty-puppet-xp比较：
 
-| 项目 | [wechaty-puppet-xp](https://github.com/atorber/puppet-xp) | [wechaty-puppet-bridge](https://github.com/atorber/puppet-bridge) |
+| 项目 | [puppet-xp](https://github.com/atorber/puppet-xp) | [puppet-bridge](https://github.com/atorber/puppet-bridge) |
 | :------------- |:-------------| :-----|
 | 注入 | ⭐⭐⭐<br>不需要 | ⭐⭐⭐<br>不需要 |
 | 功能| ⭐⭐⭐<br>基于[cixingguangming55555/wechat-bot](https://github.com/cixingguangming55555/wechat-bot)项目 | ⭐⭐⭐<br>基于[cixingguangming55555/wechat-bot](https://github.com/cixingguangming55555/wechat-bot)项目 |
@@ -35,8 +35,8 @@ wechaty-puppet-bridge 是一个虚拟的Wechaty Puppet，实际上它只是一�
 4. 运行以下指令启动程序
 
 ```sh
-git clone https://github.com/atorber/wechaty-puppet-bridge.git
-cd wechaty-puppet-bridge
+git clone https://github.com/atorber/puppet-bridg
+cd puppet-bridge
 
 # 安装依赖
 npm install

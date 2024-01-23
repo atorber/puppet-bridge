@@ -3,13 +3,13 @@
 /* eslint-disable sort-keys */
 /****************************************
  * 重要：3.2.1.121，http的客户端已经改变调用方式
- * get_chatroom_member_list()
- * get_contact_list()
- * send_txt_msg()
- * send_at_msg()
+ * getRoomList()
+ * getContactList()
+ * messageSendText()
+ * messageSendTextAt()
  * send_pic()
- * send_attatch()
- * get_member_nick()
+ * messageSendFile()
+ * getMemberNickName()
  * ***************************************/
 
 import axios from 'axios'
@@ -27,7 +27,7 @@ function getid () {
   const id = Date.now()
   return id.toString()
 }
-async function send_at_msg () {
+async function messageSendTextAt () {
   const jpara = {
     id: getid(),
     type: AT_MSG,
@@ -90,11 +90,11 @@ async function send_pic () {
 
 }
 
-/** get_member_nick
+/** getMemberNickName
  * 获取群成员昵称
  */
 
-async function get_member_nick (wx_id: any, roomid: any) {
+async function getMemberNickName (wx_id: any, roomid: any) {
 
   const jpara = {
     id: getid(),
@@ -150,10 +150,10 @@ async function get_memberid () {
   return data
 }
 
-/** get_contact_list  获取好友和群列表
+/** getContactList  获取好友和群列表
  *
  */
-async function get_contact_list () {
+async function getContactList () {
   const jpara = {
     id: getid(),
     type: USER_LIST,
@@ -178,7 +178,7 @@ async function get_contact_list () {
   return data
 
 }
-async function get_chatroom_member_list () {
+async function getRoomList () {
   const jpara = {
     id: getid(),
     type: CHATROOM_MEMBER,
@@ -206,7 +206,7 @@ async function get_chatroom_member_list () {
 /**
  * send txt message
  */
-async function send_txt_msg () {
+async function messageSendText () {
   const jpara = {
     id: getid(),
     type: TXT_MSG,
@@ -236,10 +236,10 @@ async function send_txt_msg () {
   return data
 
 }
-/** send_attatch
+/** messageSendFile
  * send the attatchment
  */
-async function send_attatch () {
+async function messageSendFile () {
 
   const jpara = {
     id: getid(),
@@ -272,31 +272,31 @@ async function send_attatch () {
 }
 
 // async function main () {
-//   const j = await get_contact_list()
-//   // const j = await get_chatroom_member_list();
-//   // const j = await send_txt_msg();
-//   // const j = await get_member_nick("zhanghua_cd", "23023281066@chatroom");
-//   // const j = await send_at_msg();
-//   // const j = await send_attatch();
-//   // const j = await get_member_nick();
+//   const j = await getContactList()
+//   // const j = await getRoomList();
+//   // const j = await messageSendText();
+//   // const j = await getMemberNickName("zhanghua_cd", "23023281066@chatroom");
+//   // const j = await messageSendTextAt();
+//   // const j = await messageSendFile();
+//   // const j = await getMemberNickName();
 //   // console.log(j);
 //   // await send_destroy();
 //   // await refresh_memberlist();
 //   // console.log("test begin");
 //   // const j = await send_destroy();
-//   // const j = await send_attatch();
+//   // const j = await messageSendFile();
 //   console.log(JSON.stringify(j))
 // }
 
 // console.log('test');
 
 export {
-  send_attatch,
-  send_txt_msg,
-  get_chatroom_member_list,
-  get_contact_list,
+  messageSendFile,
+  messageSendText,
+  getRoomList,
+  getContactList,
   send_pic,
-  get_member_nick,
-  send_at_msg,
+  getMemberNickName,
+  messageSendTextAt,
   get_memberid,
 }

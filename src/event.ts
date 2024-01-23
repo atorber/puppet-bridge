@@ -4,11 +4,11 @@
 /****************************************
  * 重要：3.2.1.121，ws客户端已经改变调用方式，具体如下：
  * get_chat_nick_p()
- * get_contact_list()
+ * getContactList()
  * get_chatroom_memberlist()
- * send_at_msg()
- * send_attatch()
- * send_txt_msg()
+ * messageSendTextAt()
+ * messageSendFile()
+ * messageSendText()
  * send_pic_msg()
  * ***************************************/
 import WebSocket from 'ws'
@@ -110,7 +110,7 @@ function get_chatroom_memberlist () {
   const s = JSON.stringify(j)
   return s
 }
-function send_attatch () {
+function messageSendFile () {
   /* const j={
     id:getid(),
     type:ATTATCH_FILE,
@@ -131,7 +131,7 @@ function send_attatch () {
   const s = JSON.stringify(j)
   return s
 }
-function send_at_msg () {
+function messageSendTextAt () {
   const j = {
     id: getid(),
     type: AT_MSG,
@@ -186,7 +186,7 @@ function get_personal_detail () {
   return s
 }
 /**
- * send_txt_msg : 发送消息给好友
+ * messageSendText : 发送消息给好友
  *
  */
 function get_personal_info () {
@@ -199,7 +199,7 @@ function get_personal_info () {
   const s = JSON.stringify(j)
   return s
 }
-function send_txt_msg () {
+function messageSendText () {
 
   // 必须按照该json格式，否则服务端会出异常
   const j = {
@@ -225,7 +225,7 @@ function send_txt_msg () {
 /**
  * send_wxuser_list  : 获取微信通讯录用户名字和wxid
 */
-function get_contact_list () {
+function getContactList () {
   // const j={
   //   id:getid(),
   //   type:USER_LIST,
@@ -288,7 +288,7 @@ function heartbeat (j: any) {
 }
 
 ws.on('open', function open () {
-  // ws.send(send_attatch());
+  // ws.send(messageSendFile());
   // ws.send("hello world");
   // ws.send(destroy_all());
   // ws.send(get_chat_nick_p("zhanghua_cd","23023281066@chatroom"));
@@ -300,14 +300,14 @@ ws.on('open', function open () {
   // ws.send(get_chat_nick());
   // ws.send(get_personal_info());
   // ws.send(send_pic_msg());
-  // ws.send(send_txt_msg());
+  // ws.send(messageSendText());
   // ws.send(get_chatroom_memberlist());
-  // ws.send(send_at_msg());
+  // ws.send(messageSendTextAt());
 
   // ws.send(get_personal_detail());
   // ws.send(debug_switch()
   // ws.send(send_wxuser_list());
-  // ws.send(send_txt_msg());
+  // ws.send(messageSendText());
 
   /** 获取chatroom 成员昵称
    * ws.send(get_chat_nick());
@@ -330,14 +330,14 @@ ws.on('open', function open () {
    */
 
   /** 发送群AT消息
-   * ws.send(send_at_msg());
+   * ws.send(messageSendTextAt());
    */
 
   /** 获取微信通讯录好友列表
    * ws.send(send_wxuser_list());
    */
   /** 向你的好友发送微信文本消息
-   * ws.send(send_txt_msg());
+   * ws.send(messageSendText());
    */
 
   /** 向你的好友发送图片
@@ -346,7 +346,7 @@ ws.on('open', function open () {
   /* 发送信息调用上面两个函数即可，可自行改造 */
 
   // ws.send(send_pic_msg());
-  // ws.send(send_txt_msg());
+  // ws.send(messageSendText());
 
 })
 
@@ -418,10 +418,10 @@ ws.on('message', function incoming (data: string) {
       console.log('---------------25----------')
       console.log(j)
       break
-    // case SEND_TXT_MSG_SUCCSESS:
+    // case messageSendText_SUCCSESS:
     // handle_recv_msg(j);
     // break;
-    // case SEND_TXT_MSG_FAIL:
+    // case messageSendText_FAIL:
     // handle_recv_msg(j);
     // break;
     default:
@@ -438,13 +438,13 @@ export {
   get_chat_nick_p,
   get_chat_nick,
   get_chatroom_memberlist,
-  get_contact_list,
+  getContactList,
   get_personal_detail,
   get_personal_info,
-  send_at_msg,
-  send_attatch,
+  messageSendTextAt,
+  messageSendFile,
   send_pic_msg,
-  send_txt_msg,
+  messageSendText,
   destroy_all,
   handle_memberlist,
   handle_nick,

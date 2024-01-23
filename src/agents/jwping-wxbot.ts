@@ -108,7 +108,7 @@ class Bridge extends EventEmitter {
       that.isLoggedIn = true
       that.emit('login', 'login')
 
-      // ws.send(send_attatch());
+      // ws.send(messageSendFile());
       // ws.send("hello world");
       // ws.send(destroy_all());
       // ws.send(get_chat_nick_p("zhanghua_cd","23023281066@chatroom"));
@@ -120,14 +120,14 @@ class Bridge extends EventEmitter {
       // ws.send(get_chat_nick());
       that.ws.send(that.get_personal_info())
       // ws.send(send_pic_msg());
-      // ws.send(send_txt_msg());
+      // ws.send(messageSendText());
       // ws.send(get_chatroom_memberlist());
-      // ws.send(send_at_msg());
+      // ws.send(messageSendTextAt());
 
       // ws.send(get_personal_detail());
       // ws.send(debug_switch()
       // ws.send(send_wxuser_list());
-      // ws.send(send_txt_msg());
+      // ws.send(messageSendText());
 
       /** 获取chatroom 成员昵称
        * ws.send(get_chat_nick());
@@ -150,14 +150,14 @@ class Bridge extends EventEmitter {
        */
 
       /** 发送群AT消息
-       * ws.send(send_at_msg());
+       * ws.send(messageSendTextAt());
        */
 
       /** 获取微信通讯录好友列表
        * ws.send(send_wxuser_list());
        */
       /** 向你的好友发送微信文本消息
-       * ws.send(send_txt_msg());
+       * ws.send(messageSendText());
        */
 
       /** 向你的好友发送图片
@@ -166,7 +166,7 @@ class Bridge extends EventEmitter {
       /* 发送信息调用上面两个函数即可，可自行改造 */
 
       // ws.send(send_pic_msg());
-      // ws.send(send_txt_msg());
+      // ws.send(messageSendText());
 
     })
 
@@ -328,10 +328,10 @@ class Bridge extends EventEmitter {
             //   type: 10000
             // }
             break
-          // case SEND_TXT_MSG_SUCCSESS:
+          // case messageSendText_SUCCSESS:
           // handle_recv_msg(j);
           // break;
-          // case SEND_TXT_MSG_FAIL:
+          // case messageSendText_FAIL:
           // handle_recv_msg(j);
           // break;
           default:
@@ -760,10 +760,10 @@ class Bridge extends EventEmitter {
   }
 
   /**
-   * send_txt_msg : 发送消息给好友
+   * messageSendText : 发送消息给好友
    *
    */
-  async send_at_msg (roomid: string, wxid: string, content: string, nickname: string) {
+  async messageSendTextAt (roomid: string, wxid: string, content: string, nickname: string) {
     const jpara = {
       id: getid(),
       type: AT_MSG,
@@ -824,11 +824,11 @@ class Bridge extends EventEmitter {
 
   }
 
-  /** get_member_nick
+  /** getMemberNickName
    * 获取群成员昵称
    */
 
-  async get_member_nick (wxid: string, roomid: string) {
+  async getMemberNickName (wxid: string, roomid: string) {
 
     const jpara = {
       id: getid(),
@@ -885,10 +885,10 @@ class Bridge extends EventEmitter {
     return data
   }
 
-  /** get_contact_list  获取好友和群列表
+  /** getContactList  获取好友和群列表
    *
    */
-  async get_contact_list () {
+  async getContactList () {
     const jpara = {
       id: getid(),
       type: USER_LIST,
@@ -907,11 +907,11 @@ class Bridge extends EventEmitter {
     }
     const res = await axios.post(options.url, options.body)
     const contacts: ContactRaw[] = res.data.content
-    // log.info('get_contact_list len:', contacts.length)
+    // log.info('getContactList len:', contacts.length)
     return contacts
   }
 
-  async get_chatroom_member_list () {
+  async getRoomList () {
     const jpara = {
       id: getid(),
       type: CHATROOM_MEMBER,
@@ -937,7 +937,7 @@ class Bridge extends EventEmitter {
   /**
    * send txt message
    */
-  async send_txt_msg (wxid: string, content: string) {
+  async messageSendText (wxid: string, content: string) {
     const jpara = {
       id: getid(),
       type: TXT_MSG,
@@ -964,10 +964,10 @@ class Bridge extends EventEmitter {
 
   }
 
-  /** send_attatch
+  /** messageSendFile
    * send the attatchment
    */
-  async send_attatch (wxid: string, content: string) {
+  async messageSendFile (wxid: string, content: string) {
 
     const jpara = {
       id: getid(),

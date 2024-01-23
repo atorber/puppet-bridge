@@ -555,7 +555,7 @@ class PuppetBridge extends PUPPET.Puppet {
   }
 
   private async loadContactList () {
-    const contactList = await this.bridge.get_contact_list()
+    const contactList = await this.bridge.getContactList()
     log.info('contactList get success, wait for contactList init ...')
     for (const contactInfo of contactList) {
       log.verbose('PuppetBridge', 'contactInfo:%s', JSON.stringify(contactInfo))
@@ -602,7 +602,7 @@ class PuppetBridge extends PUPPET.Puppet {
   }
 
   private async loadRoomList () {
-    const rooms = await this.bridge.get_chatroom_member_list()
+    const rooms = await this.bridge.getRoomList()
     log.info('wait for roomList init...')
 
     for (const roomInfo of rooms) {
@@ -632,7 +632,7 @@ class PuppetBridge extends PUPPET.Puppet {
         const memberId = roomMember[memberKey]
         if (memberId && !this.contactStore[memberId]) {
           try {
-            const memberNickNameRes = await this.bridge.get_member_nick(memberId, roomId)
+            const memberNickNameRes = await this.bridge.getMemberNickName(memberId, roomId)
             // log.info('memberNickName:', memberNickName.content)
             const nickName = JSON.parse(memberNickNameRes.content).nick || 'Unknown'
             const contact = {
@@ -654,8 +654,8 @@ class PuppetBridge extends PUPPET.Puppet {
 
       // for (const roomMember of roomMembers) {
       //   console.log('roomMember:', roomMember)
-      //   const get_member_nick = await bridge.get_member_nick(roomMember, roomid);
-      //   console.log('get_member_nick_res:', get_member_nick.content)
+      //   const getMemberNickName = await bridge.getMemberNickName(roomMember, roomid);
+      //   console.log('getMemberNickName_res:', getMemberNickName.content)
       // }
     }
   }
@@ -951,9 +951,9 @@ class PuppetBridge extends PUPPET.Puppet {
     if (conversationId.split('@').length === 2 && mentionIdList && mentionIdList[0]) {
       const wxid = mentionIdList[0]
       const contact = await this.contactRawPayload(wxid)
-      await this.bridge.send_at_msg(conversationId, text, mentionIdList[0], contact.name)
+      await this.bridge.messageSendTextAt(conversationId, text, mentionIdList[0], contact.name)
     } else {
-      await this.bridge.send_txt_msg(conversationId, text)
+      await this.bridge.messageSendText(conversationId, text)
     }
   }
 
@@ -978,7 +978,7 @@ class PuppetBridge extends PUPPET.Puppet {
     }
     if (file.type === FileBoxType.Url) {
       try {
-        await this.bridge.send_attatch(conversationId, filePath)
+        await this.bridge.messageSendFile(conversationId, filePath)
         // fs.unlinkSync(filePath)
       } catch {
         fs.unlinkSync(filePath)
@@ -987,7 +987,7 @@ class PuppetBridge extends PUPPET.Puppet {
     } else {
       // filePath = 'C:\\Users\\wechaty\\Documents\\GitHub\\wechat-openai-qa-bot\\data1652169999200.xls'
       try {
-        await this.bridge.send_attatch(conversationId, filePath)
+        await this.bridge.messageSendFile(conversationId, filePath)
         // fs.unlinkSync(filePath)
       } catch (err) {
         PUPPET.throwUnsupportedError(conversationId, file)

@@ -52,8 +52,8 @@ async function main () {
     // bridge.ws.send(bridge.get_chatroom_memberlist());
   })
 
-  const contacts = await bridge.get_contact_list()
-  console.log('get_contact_list:', contacts.length)
+  const contacts = await bridge.getContactList()
+  console.log('getContactList:', contacts.length)
 
   for (const contact of contacts) {
     if (contact.wxid.indexOf('@chatroom') > -1) {
@@ -65,8 +65,8 @@ async function main () {
   }
 
   // 获取群列表
-  // const rooms = await bridge.get_chatroom_member_list();
-  // console.log('get_chatroom_member_list_res:', rooms.length)
+  // const rooms = await bridge.getRoomList();
+  // console.log('getRoomList_res:', rooms.length)
 
   // for (const room of rooms) {
   //   // console.log('room:', JSON.stringify(room))
@@ -77,30 +77,30 @@ async function main () {
 
   //   // for (const roomMember of roomMembers) {
   //   //   console.log('roomMember:', roomMember)
-  //   //   const get_member_nick = await bridge.get_member_nick(roomMember, roomid);
-  //   //   console.log('get_member_nick_res:', get_member_nick.content)
+  //   //   const getMemberNickName = await bridge.getMemberNickName(roomMember, roomid);
+  //   //   console.log('getMemberNickName_res:', getMemberNickName.content)
   //   // }
   // }
 
   // // 发送文本消息
-  // const send_txt_msg = await bridge.send_txt_msg('tyutluyc', 'Bridge is ready!')
-  // console.log('send_txt_msg_res:', send_txt_msg.id, send_txt_msg.status, send_txt_msg.content, send_txt_msg.time, send_txt_msg.type, send_txt_msg.sender, send_txt_msg.receiver)
+  // const messageSendText = await bridge.messageSendText('tyutluyc', 'Bridge is ready!')
+  // console.log('messageSendText_res:', messageSendText.id, messageSendText.status, messageSendText.content, messageSendText.time, messageSendText.type, messageSendText.sender, messageSendText.receiver)
 
   // // 发送图片
-  // const send_attatch1 = await bridge.send_attatch('tyutluyc', 'C:\\Users\\Administrator\\Documents\\GitHub\\puppet-bridge\\examples\\media\\test.gif');
-  // console.log('send_attatch1:', send_attatch1)
+  // const messageSendFile1 = await bridge.messageSendFile('tyutluyc', 'C:\\Users\\Administrator\\Documents\\GitHub\\puppet-bridge\\examples\\media\\test.gif');
+  // console.log('messageSendFile1:', messageSendFile1)
 
   // // 发送视频
-  // const send_attatch2 = await bridge.send_attatch('tyutluyc', 'C:\\Users\\Administrator\\Documents\\GitHub\\puppet-bridge\\examples\\media\\test.mp4');
-  // console.log('send_attatch2:', send_attatch2)
+  // const messageSendFile2 = await bridge.messageSendFile('tyutluyc', 'C:\\Users\\Administrator\\Documents\\GitHub\\puppet-bridge\\examples\\media\\test.mp4');
+  // console.log('messageSendFile2:', messageSendFile2)
 
   // // 发送文件
-  // const send_attatch3 = await bridge.send_attatch('tyutluyc', 'C:\\Users\\Administrator\\Documents\\GitHub\\puppet-bridge\\examples\\media\\test.txt');
-  // console.log('send_attatch3:', send_attatch3)
+  // const messageSendFile3 = await bridge.messageSendFile('tyutluyc', 'C:\\Users\\Administrator\\Documents\\GitHub\\puppet-bridge\\examples\\media\\test.txt');
+  // console.log('messageSendFile3:', messageSendFile3)
 
   // // 发送@消息
-  // const send_at_msg = await bridge.send_at_msg('21341182572@chatroom', 'Bridge is ready!', 'tyutluyc', '超哥');
-  // console.log('send_at_msg:', send_at_msg)
+  // const messageSendTextAt = await bridge.messageSendTextAt('21341182572@chatroom', 'Bridge is ready!', 'tyutluyc', '超哥');
+  // console.log('messageSendTextAt:', messageSendTextAt)
 
   // await refresh_memberlist();
   // const j = await bridge.send_destroy();
