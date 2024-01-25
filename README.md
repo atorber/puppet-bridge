@@ -53,7 +53,7 @@ npm start
 puppet-bridge 已经在NPM上发布了安装包，Wechaty用户可以直接安装使用
 
 ```shell
-npm i wecahty-puppet-bridge
+npm i wechaty-puppet-bridge
 ```
 
 示例代码：
