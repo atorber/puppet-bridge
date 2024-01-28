@@ -59,7 +59,7 @@ class Bridge extends EventEmitter {
     this.ws = new WebSocket(this.wsUrl)
 
     // 收集消息类型，临时保存到文件'/messageTypeTest.json'
-    this.messageTypeTest = JSON.parse(fs.readFileSync('examples/messageTypeTest.json', 'utf-8'))
+    this.messageTypeTest = JSON.parse(fs.readFileSync('src/messageTypeTest.json', 'utf-8'))
     this.ws.on('error', (error: Error) => {
       log.error('WebSocket error:', error)
     })
@@ -160,7 +160,7 @@ class Bridge extends EventEmitter {
       }
 
       // 将that.messageTypeTest保存到文件'/messageTypeTest.json'
-      fs.writeFileSync('examples/messageTypeTest.json', JSON.stringify(that.messageTypeTest, undefined, 2))
+      fs.writeFileSync('src/messageTypeTest.json', JSON.stringify(that.messageTypeTest, undefined, 2))
 
       switch (type) {
         case CHATROOM_MEMBER_NICK:
