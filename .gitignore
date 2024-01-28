@@ -69,3 +69,4 @@ cache/*
 examples/media/*
 file/*
 examples/messageTypeTest.json
+src/messageTypeTest.json

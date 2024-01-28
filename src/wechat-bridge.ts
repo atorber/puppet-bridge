@@ -130,25 +130,27 @@ class Bridge extends EventEmitter {
     })
 
     this.ws.on('message', function incoming (data: string) {
-      // log.info('WebSocket received:', data.toString())
+      log.info('WebSocket received:', data.toString())
       data = data.toString()
       // ws.send("hello world");
       // return;
       const j = JSON.parse(data)
       // log.info(j);
       let type = j.type
-      log.info('ws message hook:', type)
+      log.info('ws message hook type:', type)
       log.info(JSON.stringify(j, undefined, 2))
 
-      try {
-        const content = j.content.content
-        // 从content中判断是否存在类似<type>6</type>的格式，并从其中取出type的值
-        const m = content.match(/<type>(\d+)<\/type>/)
-        if (m != null) {
-          type = type + '_' + m[1]
+      if (j.content && j.content.content) {
+        try {
+          const content = j.content.content
+          // 从content中判断是否存在类似<type>6</type>的格式，并从其中取出type的值
+          const m = content.match(/<type>(\d+)<\/type>/)
+          if (m != null) {
+            type = type + '_' + m[1]
+          }
+        } catch (e) {
+          log.error('ws message hook error:', e)
         }
-      } catch (e) {
-        log.error('ws message hook error:', e)
       }
 
       if (type === 10000) {
@@ -159,8 +161,11 @@ class Bridge extends EventEmitter {
         that.messageTypeTest[type] = j
       }
 
-      // 将that.messageTypeTest保存到文件'/messageTypeTest.json'
-      fs.writeFileSync('src/messageTypeTest.json', JSON.stringify(that.messageTypeTest, undefined, 2))
+      try {
+        fs.writeFileSync('src/messageTypeTest.json', JSON.stringify(that.messageTypeTest, undefined, 2))
+      } catch (e) {
+        log.error('write messageTypeTest.json error:', e)
+      }
 
       switch (type) {
         case CHATROOM_MEMBER_NICK:

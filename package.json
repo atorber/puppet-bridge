@@ -1,6 +1,6 @@
 {
   "name": "wechaty-puppet-bridge",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Puppet Bridge for Wechaty",
   "type": "module",
   "exports": {
@@ -23,7 +23,8 @@
     "copy:esm": "shx cp -R commonjs/ dist/esm/",
     "copy:cjs": "shx cp -R commonjs/ dist/cjs/",
     "start": "cross-env NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/ding-dong-bot.ts",
-    "start:quick": "cross-env NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/quick-start.ts",
+    "start:quick:ts": "cross-env NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/quick-start.ts",
+    "start:quick:js": "cross-env NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/quick-start.js",
     "start:raw": "cross-env BROLOG_LEVEL=silly NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/raw-bridge.ts",
     "start:raw:nobuild": "cross-env BROLOG_LEVEL=info NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/raw-bridge.ts",
     "start:raw:info": "cross-env BROLOG_LEVEL=info NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/raw-bridge.ts",

@@ -84,8 +84,8 @@ class PuppetBridge extends PUPPET.Puppet {
 
     this.currentUserNameBySet = options.nickName
     this.bridge = new Bridge({
-      httpUrl:options.httpUrl,
-      wsUrl:options.wsUrl,
+      httpUrl: options.httpUrl,
+      wsUrl: options.wsUrl,
     })
 
     // FIXME: use LRU cache for message store so that we can reduce memory usage
@@ -113,6 +113,7 @@ class PuppetBridge extends PUPPET.Puppet {
     })
 
     this.bridge.on('message', (message: MessageRaw) => {
+      log.info('onMessage...', message)
       this.onHookRecvMsg(message)
     })
 
@@ -257,9 +258,10 @@ class PuppetBridge extends PUPPET.Puppet {
 
   private onHookRecvMsg (messageRaw: MessageRaw) {
     log.info('onHookRecvMsg', JSON.stringify(messageRaw, undefined, 2))
+    const that = this
     let type = PUPPET.types.Message.Unknown
     let roomId = ''
-    let toId = ''
+    let listenerId = ''
     let talkerId = messageRaw.id2 || messageRaw.id1 || ''
     let wxid = messageRaw.wxid || messageRaw.id1
     let text = messageRaw.content as string
@@ -399,22 +401,33 @@ class PuppetBridge extends PUPPET.Puppet {
     }
 
     if (wxid.split('@').length !== 2) {
-      toId = this.currentUserId
+      listenerId = this.currentUserId
       talkerId = wxid
     } else {
       roomId = wxid
     }
 
-    // revert talkerId and toId according to isMyMsg
-    if (code === 1) {
-      toId = talkerId
-      talkerId = this.selfInfo.id
+    if (messageRaw.other) {
+      try {
+        xml2js.parseString(messageRaw.other, { explicitArray: false, ignoreAttrs: true }, function (err: any, xml2json: any) {
+          log.error('PuppetBridge', 'messageRaw.other xml2json err:%s', err)
+          // log.info('PuppetBridge', 'messageRaw.other json content:%s', JSON.stringify(xml2json, undefined, 2))
+          if (!xml2json.msgsource || !xml2json.msgsource.alnode || !Object.keys(xml2json.msgsource.alnode).includes('fr')) {
+            // console.log('is not fr')
+            listenerId = talkerId
+            talkerId = that.selfInfo.id
+          }
+        })
+
+      } catch (e) {
+        log.error('messageRaw.other xml2js.parseString fail:', e)
+      }
     }
 
     const payload: PUPPET.payloads.Message = {
       id: cuid(),
-      listenerId: toId,
-      roomId,
+      listenerId: roomId ? '' : listenerId,
+      roomId: roomId || '',
       talkerId,
       text,
       timestamp: Date.now(),
