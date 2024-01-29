@@ -33,6 +33,11 @@ const NEW_FRIEND_REQUEST = 37// 微信好友请求消息
 const AGREE_TO_FRIEND_REQUEST = 10000// 同意微信好友请求消息
 const ATTATCH_FILE = 5003 // 发送文件
 
+// 检测根目录下是否有messageTypeTest.json文件，如果没有，则创建一个，内容为{}
+if (!fs.existsSync('messageTypeTest.json')) {
+  fs.writeFileSync('messageTypeTest.json', '{}')
+}
+
 const getid = () => {
   const id = Date.now()
   return id.toString()

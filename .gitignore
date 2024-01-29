@@ -68,5 +68,4 @@ cache/*
 # src/init-agent-script.ts
 examples/media/*
 file/*
-examples/messageTypeTest.json
-src/messageTypeTest.json
+messageTypeTest.json
