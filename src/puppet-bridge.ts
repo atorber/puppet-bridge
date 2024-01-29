@@ -403,25 +403,24 @@ class PuppetBridge extends PUPPET.Puppet {
     if (wxid.split('@').length !== 2) {
       listenerId = this.currentUserId
       talkerId = wxid
+      if (messageRaw.other) {
+        try {
+          xml2js.parseString(messageRaw.other, { explicitArray: false, ignoreAttrs: true }, function (err: any, xml2json: any) {
+            log.error('PuppetBridge', 'messageRaw.other xml2json err:%s', err)
+            // log.info('PuppetBridge', 'messageRaw.other json content:%s', JSON.stringify(xml2json, undefined, 2))
+            if (!xml2json.msgsource || !xml2json.msgsource.alnode || !Object.keys(xml2json.msgsource.alnode).includes('fr')) {
+              // console.log('is not fr')
+              listenerId = talkerId
+              talkerId = that.selfInfo.id
+            }
+          })
+  
+        } catch (e) {
+          log.error('messageRaw.other xml2js.parseString fail:', e)
+        }
+      }
     } else {
       roomId = wxid
-    }
-
-    if (messageRaw.other) {
-      try {
-        xml2js.parseString(messageRaw.other, { explicitArray: false, ignoreAttrs: true }, function (err: any, xml2json: any) {
-          log.error('PuppetBridge', 'messageRaw.other xml2json err:%s', err)
-          // log.info('PuppetBridge', 'messageRaw.other json content:%s', JSON.stringify(xml2json, undefined, 2))
-          if (!xml2json.msgsource || !xml2json.msgsource.alnode || !Object.keys(xml2json.msgsource.alnode).includes('fr')) {
-            // console.log('is not fr')
-            listenerId = talkerId
-            talkerId = that.selfInfo.id
-          }
-        })
-
-      } catch (e) {
-        log.error('messageRaw.other xml2js.parseString fail:', e)
-      }
     }
 
     const payload: PUPPET.payloads.Message = {
