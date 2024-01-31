@@ -26,8 +26,9 @@ import {
 import {
   Bridge,
   MessageRaw,
-  ContentRaw,
-} from './wechat-bridge.js'
+  AccountInfo,
+  ContactRaw,
+} from './agents/jwping-wxbot.js'
 import { ImageDecrypt } from './pure-functions/image-decrypt.js'
 import { XmlDecrypt } from './pure-functions/xml-msgpayload.js'
 // import type { Contact } from 'wechaty'
@@ -63,13 +64,13 @@ class PuppetBridge extends PUPPET.Puppet {
 
   private bridge: Bridge
 
-  private currentUserNameBySet = ''
+  // private currentUserNameBySet = ''
 
   constructor (
     public override options: PuppetBridgeOptions,
   ) {
 
-    options.name = options.name || 'cixingguangming55555'
+    options.name = options.name || 'jwping'
 
     log.info('options...', JSON.stringify(options))
     if (!options.nickName) {
@@ -78,7 +79,7 @@ class PuppetBridge extends PUPPET.Puppet {
     super(options)
     log.verbose('PuppetBridge', 'constructor(%s)', JSON.stringify(options))
 
-    this.currentUserNameBySet = options.nickName
+    // this.currentUserNameBySet = options.nickName
     this.bridge = new Bridge({
       httpUrl: options.httpUrl,
       wsUrl: options.wsUrl,
@@ -173,19 +174,19 @@ class PuppetBridge extends PUPPET.Puppet {
 
       // const selfInfoRaw = JSON.parse(await this.bridge.getMyselfInfo())
       // log.debug('selfInfoRaw:\n\n\n', selfInfoRaw)
-      const selfInfoRaw = Object.values(this.contactStore).find(contact => contact.name === this.currentUserNameBySet)
-
-      if (!selfInfoRaw) {
+      const selfInfoRawRes = await this.bridge.getPersonalInfo()
+      const selfInfoRaw:AccountInfo = selfInfoRawRes.data
+      if (!selfInfoRaw.wxid) {
         log.error('selfInfoRaw is not find')
         return
       }
       const selfInfo: PUPPET.payloads.Contact = {
         alias: '',
-        avatar: selfInfoRaw.avatar,
+        avatar: selfInfoRaw.profilePicture,
         friend: false,
         gender: PUPPET.types.ContactGender.Unknown,
-        id: selfInfoRaw.id,
-        name: selfInfoRaw.name,
+        id: selfInfoRaw.wxid,
+        name: selfInfoRaw.nickname,
         phone: [],
         type: PUPPET.types.Contact.Individual,
       }
@@ -254,37 +255,40 @@ class PuppetBridge extends PUPPET.Puppet {
 
   private onHookRecvMsg (messageRaw: MessageRaw) {
     log.info('onHookRecvMsg', JSON.stringify(messageRaw, undefined, 2))
-    const that = this
     let type = PUPPET.types.Message.Unknown
+    let talkerId =  ''
     let roomId = ''
     let listenerId = ''
-    let talkerId = messageRaw.id2 || messageRaw.id1 || ''
-    let wxid = messageRaw.wxid || messageRaw.id1
-    let text = messageRaw.content as string
-    const code = messageRaw.type
-    const content: ContentRaw = messageRaw.content as ContentRaw
-    const xml = content.content
+
+    if (messageRaw.Sender) {
+      talkerId = messageRaw.Sender
+      roomId = messageRaw.StrTalker
+    } else {
+      if (messageRaw.IsSender === '1') {
+        talkerId = this.currentUserId
+        listenerId = messageRaw.StrTalker
+      } else {
+        talkerId = messageRaw.StrTalker
+        listenerId = this.currentUserId
+      }
+    }
+
+    let text = messageRaw.StrContent
+    const code = Number(messageRaw.Type)
+    const content = messageRaw.StrContent
+    let xml = content
     switch (code) {
       case 1:
-        try {
-          xml2js.parseString(String(xml), { explicitArray: false, ignoreAttrs: true }, function (err: any, json: any) {
-            log.verbose('PuppetBridge', 'xml2json err:%s', err)
-            //  log.verbose('PuppetBridge', 'json content:%s', JSON.stringify(json))
-            if (json.msgsource && json.msgsource.atuserlist === 'atuserlist') {
-              type = PUPPET.types.Message.GroupNote
-            } else {
-              type = PUPPET.types.Message.Text
-            }
-          })
-        } catch (err) {
-          log.error('xml2js.parseString fail:', err)
+        // 如果text以 @所有人 开头，那么就是群公告
+        if (text.indexOf('@所有人') === 0) {
+          type = PUPPET.types.Message.GroupNote
+        } else {
+          type = PUPPET.types.Message.Text
         }
         break
       case 3:
         type = PUPPET.types.Message.Image
-        wxid = content.id1
-        talkerId = content.id2 || this.currentUserId
-        text = JSON.stringify([ content.thumb, content.thumb, content.detail, content.thumb ])
+        // text = JSON.stringify([ content.thumb, content.thumb, content.detail, content.thumb ])
         break
       case 4:
         type = PUPPET.types.Message.Video
@@ -326,8 +330,7 @@ class PuppetBridge extends PUPPET.Puppet {
         type = PUPPET.types.Message.Location
         break
       case 49:
-        wxid = content.id1
-        talkerId = content.id2 || this.currentUserId
+        xml = messageRaw.Content as string
         try {
           xml2js.parseString(xml, { explicitArray: false, ignoreAttrs: true }, function (err: any, json: { msg: { appmsg: { type: String } } }) {
             // log.error('xml2js.parseString fail:', err)
@@ -394,29 +397,6 @@ class PuppetBridge extends PUPPET.Puppet {
         type = PUPPET.types.Message.Post
         break
       default:
-    }
-
-    if (wxid.split('@').length !== 2) {
-      listenerId = this.currentUserId
-      talkerId = wxid
-      if (messageRaw.other) {
-        try {
-          xml2js.parseString(messageRaw.other, { explicitArray: false, ignoreAttrs: true }, function (err: any, xml2json: any) {
-            log.error('PuppetBridge', 'messageRaw.other xml2json err:%s', err)
-            // log.info('PuppetBridge', 'messageRaw.other json content:%s', JSON.stringify(xml2json, undefined, 2))
-            if (!xml2json.msgsource || !xml2json.msgsource.alnode || !Object.keys(xml2json.msgsource.alnode).includes('fr')) {
-              // console.log('is not fr')
-              listenerId = talkerId
-              talkerId = that.selfInfo.id
-            }
-          })
-
-        } catch (e) {
-          log.error('messageRaw.other xml2js.parseString fail:', e)
-        }
-      }
-    } else {
-      roomId = wxid
     }
 
     const payload: PUPPET.payloads.Message = {
@@ -563,45 +543,56 @@ class PuppetBridge extends PUPPET.Puppet {
   }
 
   private async loadContactList () {
-    const contactList = await this.bridge.getContactList()
+    const contactListRes = await this.bridge.getContactList()
+    log.info('contactListRes:', contactListRes)
     log.info('contactList get success, wait for contactList init ...')
-    for (const contactInfo of contactList) {
-      log.verbose('PuppetBridge', 'contactInfo:%s', JSON.stringify(contactInfo))
 
-      if (contactInfo.wxid.indexOf('@chatroom') !== -1) {
-        const room = {
-          adminIdList: [],
-          avatar: '',
-          external: false,
-          id: contactInfo.wxid,
-          memberIdList: [],
-          ownerId: '',
-          topic: contactInfo.name,
-        }
-        this.roomStore[contactInfo.wxid] = room
-      } else {
-        let contactType = PUPPET.types.Contact.Individual
-        // log.info('contactInfo.id', contactInfo.id)
-        if (contactInfo.wxid.indexOf('gh_') !== -1) {
-          contactType = PUPPET.types.Contact.Official
-        }
+    const contactListData: {
+      contacts: ContactRaw[],
+      total: number
+    } = contactListRes.data
+    const contactList = contactListData.contacts
 
-        if (contactInfo.wxid.indexOf('@openim') !== -1) {
-          contactType = PUPPET.types.Contact.Corporation
-        }
+    for (const key in contactList) {
+      const contactInfo = contactList[key]
+      log.info('PuppetBridge', 'contactInfo:%s', JSON.stringify(contactInfo))
+      const wxid = contactInfo?.UserName
+      if (wxid) {
+        if (wxid.indexOf('@chatroom') !== -1) {
+          const room = {
+            adminIdList: [],
+            avatar: '',
+            external: false,
+            id: contactInfo.UserName,
+            memberIdList: [],
+            ownerId: '',
+            topic: contactInfo.NickName,
+          }
+          this.roomStore[wxid] = room
+        } else {
+          let contactType = PUPPET.types.Contact.Individual
+          // log.info('contactInfo.id', contactInfo.id)
+          if (wxid.indexOf('gh_') !== -1) {
+            contactType = PUPPET.types.Contact.Official
+          }
 
-        const contact = {
-          alias: contactInfo.remarks,
-          avatar: contactInfo.headimg,
-          friend: true,
-          gender: 1,
-          id: contactInfo.wxid,
-          name: contactInfo.name,
-          phone: [],
-          type: contactType,
+          if (wxid.indexOf('@openim') !== -1) {
+            contactType = PUPPET.types.Contact.Corporation
+          }
+
+          const contact = {
+            alias: contactInfo.Remark || '',
+            avatar: contactInfo.BigHeadImgUrl,
+            friend: true,
+            gender: 1,
+            id: contactInfo.UserName,
+            name: contactInfo.NickName,
+            phone: [],
+            type: contactType,
+          }
+          // log.info('loadContactList contact:', JSON.stringify(contact))
+          this.contactStore[wxid] = contact
         }
-        // log.info('loadContactList contact:', JSON.stringify(contact))
-        this.contactStore[contactInfo.wxid] = contact
       }
 
     }
@@ -610,61 +601,62 @@ class PuppetBridge extends PUPPET.Puppet {
   }
 
   private async loadRoomList () {
-    const rooms = await this.bridge.getRoomList()
-    log.info('wait for roomList init...')
 
-    for (const roomInfo of rooms) {
-      // console.log('room:', JSON.stringify(room))
-      const roomMembers = roomInfo.member
-      const roomId = roomInfo.room_id
-      const roomMember = roomMembers
-      const roomStore = this.roomStore[roomId]
-
+    const roomList = this.roomStore
+    for (const key in roomList) {
+      const roomInfo = roomList[key]
+      const roomId = roomInfo?.id as string
+      const roomName = roomInfo?.topic
+      const roomMember:string[] = []
+      const roomStore = this.roomStore[roomId as string]
       if (!roomStore) {
         log.info('roomInfo is not store:', roomInfo)
       }
+      const roomRes = await this.bridge.getRoomList(roomId as string)
 
-      const topic = this.roomStore[roomId]?.topic || ''
-      const room = {
-        adminIdList: [],
-        avatar: '',
-        external: false,
-        id: roomId,
-        memberIdList: roomMember,
-        ownerId: '',
-        topic,
-      }
-      this.roomStore[roomId] = room
+      if (roomRes?.data && roomRes.data.member) {
+        const roomMembers = roomRes.data.member || {}
+        const count = Object.keys(roomMembers).length
 
-      for (const memberKey in roomMember) {
-        const memberId = roomMember[memberKey]
-        if (memberId && !this.contactStore[memberId]) {
-          try {
-            const memberNickNameRes = await this.bridge.getMemberNickName(memberId, roomId)
-            // log.info('memberNickName:', memberNickName.content)
-            const nickName = JSON.parse(memberNickNameRes.content).nick || 'Unknown'
-            const contact = {
-              alias: '',
-              avatar: '',
-              friend: false,
-              gender: PUPPET.types.ContactGender.Unknown,
-              id: memberId,
-              name: nickName || memberId,
-              phone: [],
-              type: PUPPET.types.Contact.Individual,
+        if (count) {
+          console.log('roomid:', roomId, 'roomName', roomName, 'roomMembers:', count)
+          for (const memberKey in roomMembers) {
+            const roomMember = roomMembers[memberKey]
+            console.log('roomMember:', roomMember?.NickName, roomMember?.UserName)
+            roomMember.push(roomMember?.UserName)
+            if (roomMember && !this.contactStore[roomMember.UserName]) {
+              try {
+                const contact = {
+                  alias: '',
+                  avatar: '',
+                  friend: false,
+                  gender: PUPPET.types.ContactGender.Unknown,
+                  id: roomMember.UserName,
+                  name: roomMember.NickName,
+                  phone: [],
+                  type: PUPPET.types.Contact.Individual,
+                }
+                this.contactStore[roomMember.UserName] = contact
+              } catch (err) {
+                log.error('loadRoomList fail:', err)
+              }
             }
-            this.contactStore[memberId] = contact
-          } catch (err) {
-            log.error('loadRoomList fail:', err)
           }
-        }
-      }
 
-      // for (const roomMember of roomMembers) {
-      //   console.log('roomMember:', roomMember)
-      //   const getMemberNickName = await bridge.getMemberNickName(roomMember, roomid);
-      //   console.log('getMemberNickName_res:', getMemberNickName.content)
-      // }
+        }
+
+        const topic = this.roomStore[roomId]?.topic || ''
+        const room = {
+          adminIdList: [],
+          avatar: '',
+          external: false,
+          id: roomId,
+          memberIdList: roomMember,
+          ownerId: '',
+          topic,
+        }
+        this.roomStore[roomId] = room
+      }
     }
   }
 

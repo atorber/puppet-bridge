@@ -7,7 +7,7 @@
  * getContactList()
  * messageSendText()
  * messageSendTextAt()
- * send_pic()
+ * messageSendPicture()
  * messageSendFile()
  * getMemberNickName()
  * ***************************************/
@@ -55,10 +55,10 @@ async function messageSendTextAt () {
   return data
 
 }
-/** send_pic
+/** messageSendPicture
  *  发送图片
  */
-async function send_pic () {
+async function messageSendPicture () {
   const jpara = {
     id: getid(),
     type: PIC_MSG,
@@ -126,7 +126,7 @@ async function getMemberNickName (wx_id: any, roomid: any) {
 /** get_getmemberid
  *   获取群成员id
  */
-async function get_memberid () {
+async function getMemberid () {
 
   const jpara = {
     id: getid(),
@@ -295,8 +295,8 @@ export {
   messageSendText,
   getRoomList,
   getContactList,
-  send_pic,
+  messageSendPicture,
   getMemberNickName,
   messageSendTextAt,
-  get_memberid,
+  getMemberid,
 }

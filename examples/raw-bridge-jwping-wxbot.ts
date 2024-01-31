@@ -1,8 +1,12 @@
 /* eslint-disable no-console */
-
 import {
   Bridge,
-} from '../src/wechat-bridge.js'
+} from '../src/agents/jwping-wxbot.js'
+import os from 'os'
+
+const userInfo = os.userInfo()
+const rootPath = userInfo.homedir
+console.log('rootPath:', rootPath)
 
 async function main () {
   console.info('WeChat Bridge starting...')
@@ -20,12 +24,14 @@ async function main () {
 
   const isLoggedIn = false
   console.log('isLoggedIn:', isLoggedIn)
-  // const roomList: any = {}
+  // const roomList: {
+  //   [key:string]:ContactRaw
+  // } = {}
 
   bridge.on('ready', () => {
     console.log('ready...')
-    // ws.send(destroy_all());
 
+    // ws.send(destroy_all());
     // 获取群成员昵称 success
     // bridge.ws.send(bridge.get_chat_nick_p("atorber", "21341182572@chatroom"));
 
@@ -52,62 +58,60 @@ async function main () {
     // bridge.ws.send(bridge.get_chatroom_memberlist());
   })
 
-  const contactsRes = await bridge.getContactList()
-  console.log('getContactList:', JSON.stringify(contactsRes))
+  const userinfo = await bridge.getPersonalInfo()
+  console.log('userinfo:', JSON.stringify(userinfo, undefined, 2))
 
-  // 获取群列表
-  // const rooms = await bridge.getRoomList();
-  // console.log('getRoomList_res:', rooms.length)
+  // const contactsRes = await bridge.getContactList()
+  // console.log('getContactList:', JSON.stringify(contactsRes, undefined, 2))
 
-  // for (const room of rooms) {
-  //   // console.log('room:', JSON.stringify(room))
-  //   const roomMembers = room.member
-  //   const roomid = room.room_id
-  //   const roomName = roomList[roomid].name
-  //   console.log('roomid:', roomid, 'roomName', roomName, 'roomMembers:', roomMembers.length)
+  // for (const contact of contacts) {
+  //   // console.log('contact:', JSON.stringify(contact))
+  //   if (contact.wxid.indexOf('@chatroom') > -1) {
+  //     console.log('room:', contact.name)
+  //     roomList[contact.wxid] = contact
+  //   } else {
+  //     console.log('contact:', contact.name, contact.wxid, contact.node)
+  //   }
+  // }
 
-  //   // for (const roomMember of roomMembers) {
-  //   //   console.log('roomMember:', roomMember)
-  //   //   const getMemberNickName = await bridge.getMemberNickName(roomMember, roomid);
-  //   //   console.log('getMemberNickName_res:', getMemberNickName.content)
-  //   // }
+  // for (const key in roomList) {
+  //   const room = roomList[key]
+  //   const roomid = room?.wxid
+  //   const roomName = room?.name
+
+  //   const roomNew = await bridge.getRoomList(roomid as string)
+  //   console.log('getRoomList_res:', roomNew)
+
+  //   const roomMembers = roomNew?.member || {}
+  //   const count = Object.keys(roomMembers).length
+  //   if (count) {
+  //     console.log('roomid:', roomid, 'roomName', roomName, 'roomMembers:', count)
+  //     for (const key in roomMembers) {
+  //       const roomMember = roomMembers[key]
+  //       console.log('roomMember:', roomMember?.NickName, roomMember?.UserName)
+  //     }
+  //   }
   // }
 
   // // 发送文本消息
   // const messageSendText = await bridge.messageSendText('tyutluyc', 'Bridge is ready!')
   // console.log('messageSendText_res:', messageSendText.id, messageSendText.status, messageSendText.content, messageSendText.time, messageSendText.type, messageSendText.sender, messageSendText.receiver)
 
+  // // 发送@消息
+  // const messageSendTextAt = await bridge.messageSendTextAt('21341182572@chatroom', ['tyutluyc'], 'Bridge is ready!', ['超哥'])
+  // console.log('messageSendTextAt:', messageSendTextAt)
+
   // // 发送图片
-  // const messageSendFile1 = await bridge.messageSendFile('tyutluyc', 'C:\\Users\\Administrator\\Documents\\GitHub\\puppet-bridge\\examples\\media\\test.gif');
+  // const messageSendFile1 = await bridge.messageSendPicture('tyutluyc', rootPath + '\\Documents\\GitHub\\puppet-bridge\\examples\\media\\test.gif')
   // console.log('messageSendFile1:', messageSendFile1)
 
   // // 发送视频
-  // const messageSendFile2 = await bridge.messageSendFile('tyutluyc', 'C:\\Users\\Administrator\\Documents\\GitHub\\puppet-bridge\\examples\\media\\test.mp4');
+  // const messageSendFile2 = await bridge.messageSendFile('tyutluyc', rootPath + '\\Documents\\GitHub\\puppet-bridge\\examples\\media\\test.mp4')
   // console.log('messageSendFile2:', messageSendFile2)
 
   // // 发送文件
-  // const messageSendFile3 = await bridge.messageSendFile('tyutluyc', 'C:\\Users\\Administrator\\Documents\\GitHub\\puppet-bridge\\examples\\media\\test.txt');
+  // const messageSendFile3 = await bridge.messageSendFile('tyutluyc', rootPath + '\\Documents\\GitHub\\puppet-bridge\\examples\\media\\test.txt')
   // console.log('messageSendFile3:', messageSendFile3)
-
-  // // 发送@消息
-  // const messageSendTextAt = await bridge.messageSendTextAt('21341182572@chatroom', 'Bridge is ready!', 'tyutluyc', '超哥');
-  // console.log('messageSendTextAt:', messageSendTextAt)
-
-  // await refresh_memberlist();
-  // const j = await bridge.send_destroy();
-
-  // const contact = await Bridge.getChatroomMemberInfo()
-  // //console.log(contact)
-  // for (const item of JSON.parse(contact)) {
-  //   for(const wxid of item.roomMember){
-  //     //console.log(wxid)
-  //     if(wxid === 'tyutluyc'){
-  //       const nick = await Bridge.getChatroomMemberNickInfo(wxid,item.roomid)
-  //       console.log('wxid:====',wxid,"==nick:===",nick)
-  //     }
-  //   }
-
-  // }
 
   // bridge.on('hook', async ({ method, args }) => {
   //   // console.log(`onhook事件消息：${new Date().toLocaleString()}\n`, method, JSON.stringify(args))

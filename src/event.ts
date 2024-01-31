@@ -67,14 +67,14 @@ function get_chat_nick () {
   return s
 }
 
-function handle_nick (j: { content: any }) {
+function handleNickName (j: { content: any }) {
   const data = j.content
   let i = 0
   for (const item of data) {
     console.log(i++, item.nickname)
   }
 }
-function handle_memberlist (j: { content: any }) {
+function handleMemberlist (j: { content: any }) {
   const data = j.content
   // get_chat_nick_p(j.roomid);
   for (const item of data) {
@@ -189,7 +189,7 @@ function get_personal_detail () {
  * messageSendText : 发送消息给好友
  *
  */
-function get_personal_info () {
+function getPersonalInfo () {
   const j = {
     id:getid(),
     type:PERSONAL_INFO,
@@ -271,7 +271,7 @@ function handle_wxuser_list (j: { content: any }) {
  *
  * @param {*} j json对象
  */
-function handle_recv_msg (j: any) {
+function handleReceiveMessage (j: any) {
 
   /* const content = j.content;
   const wxid =j.wxid;
@@ -282,7 +282,7 @@ function handle_recv_msg (j: any) {
   console.log(j)
 }
 
-function heartbeat (j: any) {
+function handleHeartbeat (j: any) {
   console.log(j)
   // console.log(utf16ToUtf8(wxid),utf16ToUtf8(name));
 }
@@ -298,7 +298,7 @@ ws.on('open', function open () {
   // ws.send(get_chat_nick_p(item));
   // }
   // ws.send(get_chat_nick());
-  // ws.send(get_personal_info());
+  // ws.send(getPersonalInfo());
   // ws.send(send_pic_msg());
   // ws.send(messageSendText());
   // ws.send(get_chatroom_memberlist());
@@ -322,7 +322,7 @@ ws.on('open', function open () {
    */
 
   /** 获取微信个人信息
-   * ws.send(get_personal_info());
+   * ws.send(getPersonalInfo());
    */
 
   /** 获取群好友列表
@@ -367,7 +367,7 @@ ws.on('message', function incoming (data: string) {
   switch (type) {
     case CHATROOM_MEMBER_NICK:
       console.log(j)
-      // handle_nick(j);
+      // handleNickName(j);
       break
     case PERSONAL_DETAIL:
       console.log(j)
@@ -389,16 +389,16 @@ ws.on('message', function incoming (data: string) {
       break
     case CHATROOM_MEMBER:
       // console.log(j);
-      handle_memberlist(j)
+      handleMemberlist(j)
       break
     case RECV_PIC_MSG:
-      handle_recv_msg(j)
+      handleReceiveMessage(j)
       break
     case RECV_TXT_MSG:
-      handle_recv_msg(j)
+      handleReceiveMessage(j)
       break
     case HEART_BEAT:
-      heartbeat(j)
+      handleHeartbeat(j)
       break
     case USER_LIST:
       console.log(j)
@@ -419,10 +419,10 @@ ws.on('message', function incoming (data: string) {
       console.log(j)
       break
     // case messageSendText_SUCCSESS:
-    // handle_recv_msg(j);
+    // handleReceiveMessage(j);
     // break;
     // case messageSendText_FAIL:
-    // handle_recv_msg(j);
+    // handleReceiveMessage(j);
     // break;
     default:
       break
@@ -440,16 +440,16 @@ export {
   get_chatroom_memberlist,
   getContactList,
   get_personal_detail,
-  get_personal_info,
+  getPersonalInfo,
   messageSendTextAt,
   messageSendFile,
   send_pic_msg,
   messageSendText,
   destroy_all,
-  handle_memberlist,
-  handle_nick,
-  handle_recv_msg,
+  handleMemberlist,
+  handleNickName,
+  handleReceiveMessage,
   handle_wxuser_list,
-  heartbeat,
+  handleHeartbeat,
   ws,
 }

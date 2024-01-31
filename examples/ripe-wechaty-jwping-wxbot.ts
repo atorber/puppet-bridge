@@ -12,7 +12,7 @@ import {
 } from 'wechaty'
 import { FileBox } from 'file-box'
 
-import { PuppetBridge } from '../src/puppet-bridge.js'
+import { PuppetBridge } from '../src/puppet-bridge-jwping-wxbot.js'
 import qrcodeTerminal from 'qrcode-terminal'
 import * as fs from 'fs'
 

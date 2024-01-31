@@ -1,6 +1,6 @@
 {
   "name": "wechaty-puppet-bridge",
-  "version": "0.2.7",
+  "version": "0.3.0",
   "description": "Puppet Bridge for Wechaty",
   "type": "module",
   "exports": {
@@ -31,6 +31,8 @@
     "start:ripe": "cross-env WECHATY_LOG=verbose NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/ripe-wechaty.ts",
     "start:ripe:info": "cross-env WECHATY_LOG=info NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/ripe-wechaty.ts",
     "start:ripe:demo": "n&& cross-env WECHATY_LOG=info NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/demo.ts",
+    "start:raw-bridge-jwping-wxbot:info": "cross-env BROLOG_LEVEL=info NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/raw-bridge-jwping-wxbot.ts",
+    "start:ripe-bridge-jwping-wxbot:info": "cross-env WECHATY_LOG=info NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/ripe-wechaty-jwping-wxbot.ts",
     "lint": "npm run lint:es && npm run lint:ts && npm run lint:md",
     "lint:md": "markdownlint README.md",
     "lint:ts": "tsc --isolatedModules --noEmit",
@@ -101,5 +103,10 @@
   "publishConfig": {
     "access": "public",
     "tag": "latest"
+  },
+  "git": {
+    "scripts": {
+      "pre-push": "npx git-scripts-pre-push"
+    }
   }
 }
