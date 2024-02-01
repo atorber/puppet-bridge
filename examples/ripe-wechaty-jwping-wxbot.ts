@@ -39,7 +39,6 @@ async function onLogin (user: Contact) {
   log.info('联系人数量：', contactList.length)
   const friends = contactList.filter(c => c.friend())
   log.info('好友数量：', friends.length)
-
   // 发送@好友消息
   // const room = await bot.Room.find({topic:'大师是群主'})
   // const contact = await bot.Contact.find({name:'luyuchao'})
@@ -137,13 +136,13 @@ async function onMessage (msg: Message) {
       let file
 
       if (msg.type() === types.Message.Image) {
-        await msg.toImage().thumbnail()  // Save the media message as a FileBox
+        file = await msg.toImage().thumbnail()  // Save the media message as a FileBox
       } else {
         file = await msg.toFileBox()  // Save the media message as a FileBox
       }
-      filePath = filePath + file?.name
+      filePath = filePath + file.name
       try {
-        await file?.toFile(filePath, true)
+        await file.toFile(filePath, true)
         log.info(`Saved file: ${filePath}`)
       } catch (e) {
         log.error('保存文件错误：', e)
@@ -180,6 +179,9 @@ const bot = WechatyBuilder.build({
 
 bot.on('scan', onScan)
 bot.on('login', onLogin)
+bot.on('ready', async () => {
+  log.info('bot已经准备好了')
+})
 bot.on('logout', onLogout)
 bot.on('message', onMessage)
 bot.on('room-join', async (room, inviteeList, inviter) => {

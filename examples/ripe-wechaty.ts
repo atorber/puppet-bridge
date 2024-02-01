@@ -137,13 +137,13 @@ async function onMessage (msg: Message) {
       let file
 
       if (msg.type() === types.Message.Image) {
-        await msg.toImage().thumbnail()  // Save the media message as a FileBox
+        file = await msg.toImage().thumbnail()  // Save the media message as a FileBox
       } else {
         file = await msg.toFileBox()  // Save the media message as a FileBox
       }
-      filePath = filePath + file?.name
+      filePath = filePath + file.name
       try {
-        await file?.toFile(filePath, true)
+        await file.toFile(filePath, true)
         log.info(`Saved file: ${filePath}`)
       } catch (e) {
         log.error('保存文件错误：', e)

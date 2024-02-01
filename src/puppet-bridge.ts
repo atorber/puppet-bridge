@@ -41,7 +41,7 @@ const userInfo = os.userInfo()
 const rootPath = `${userInfo.homedir}\\Documents\\WeChat Files\\`
 
 export type PuppetBridgeOptions = PUPPET.PuppetOptions & {
-  name?: string
+  sidecarName?: string
   nickName: string
   wsUrl?: string
   httpUrl?: string
@@ -69,7 +69,7 @@ class PuppetBridge extends PUPPET.Puppet {
     public override options: PuppetBridgeOptions,
   ) {
 
-    options.name = options.name || 'cixingguangming55555'
+    options.sidecarName = options.sidecarName || 'cixingguangming55555'
 
     log.info('options...', JSON.stringify(options))
     if (!options.nickName) {
@@ -109,7 +109,7 @@ class PuppetBridge extends PUPPET.Puppet {
     })
 
     this.bridge.on('message', (message: MessageRaw) => {
-      log.info('onMessage...', message)
+      // log.info('onMessage...', message)
       this.onHookRecvMsg(message)
     })
 
