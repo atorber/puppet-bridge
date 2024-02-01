@@ -200,36 +200,36 @@ import {
 
 wechaty-puppet-bridge 是一个全新的wechaty-puppet，它可以连接所有的通过ws、http、mqtt开放IM访问的聊天机器人.
 
-版本|[cixingguangming55555/wechat-bot](https://github.com/cixingguangming55555/wechat-bot)|
-:---|:---|
+版本|[cixingguangming55555/wechat-bot](https://github.com/cixingguangming55555/wechat-bot)|[jwping/wxbot](https://github.com/jwping/wxbot)|
+:---|:---|:---|
 **<客户端>**|
-平台|Windows|
-版本|3.9.2.23|
+平台|Windows|Windows|
+版本|3.9.2.23|3.9.8.25|
 **<消息>**|
-接收文本|✅|
-接收图片|✅|
-接收文件|✅|
-接收动图|✅|
-接收表情|✅|
-接收小程序卡片|✅|
-接收联系人卡片|✅|
-接收位置卡片|✅|
-发送文本|✅|
-发送图片|✅|
-发送文件|✅|
-发送动图|✅|
+接收文本|✅|✅|
+接收图片|✅|✅|
+接收文件|✅|✅|
+接收动图|✅|✅|
+接收表情|✅|✅|
+接收小程序卡片|✅|✅|
+接收联系人卡片|✅|✅|
+接收位置卡片|✅|✅|
+发送文本|✅|✅|
+发送图片|✅|✅|
+发送文件|✅|✅|
+发送动图|✅|✅|
 **<群组>**|
-@群成员|✅|
-群列表|✅|
-群成员列表|✅|
-群详情|✅|
-进群提示|✅|
-**<联系人>**|
-好友列表|✅|
-好友详情|✅|
+@群成员|✅|✅|
+群列表|✅|✅|
+群成员列表|✅|✅|
+群详情|✅|✅|
+进群提示|✅|✅|
+**<联系人>**|✅|
+好友列表|✅|✅|
+好友详情|✅|✅|
 **<其他>**|
-登录事件|✅|
-扫码登录||
+登录事件|✅|✅|
+扫码登录|||
 
 ## 机器人支持
 
@@ -241,9 +241,9 @@ wechaty-puppet-bridge 是一个全新的wechaty-puppet，它可以连接所有�
 
 ### main v0.4.0 (2023-2-1)
 
-初始化版本，适配  [jwping/wxbot](https://github.com/jwping/wxbot) 项目
+适配  [jwping/wxbot](https://github.com/jwping/wxbot) 项目
 
-### main v0.1.0 (2023-1-21)
+### v0.1.0 (2023-1-21)
 
 初始化版本，适配 [cixingguangming55555/wechat-bot](https://github.com/cixingguangming55555/wechat-bot) 项目
 

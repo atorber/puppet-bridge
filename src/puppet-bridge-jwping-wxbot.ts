@@ -42,7 +42,7 @@ const rootPath = `${userInfo.homedir}\\Documents\\WeChat Files\\`
 
 export type PuppetBridgeOptions = PUPPET.PuppetOptions & {
   sidecarName?: string
-  nickName: string
+  nickName?: string
   wsUrl?: string
   httpUrl?: string
 }
@@ -68,7 +68,6 @@ class PuppetBridge extends PUPPET.Puppet {
   constructor (
     public override options: PuppetBridgeOptions,
   ) {
-
     options.sidecarName = options.sidecarName || 'jwping'
 
     log.info('options...', JSON.stringify(options))
@@ -613,8 +612,8 @@ class PuppetBridge extends PUPPET.Puppet {
       }
 
     }
-    log.info('contactList 数量', Object.keys(this.contactStore).length)
-    log.info('roomList 数量', Object.keys(this.roomStore).length)
+    log.info('contactList count', Object.keys(this.contactStore).length)
+    log.info('roomList count', Object.keys(this.roomStore).length)
   }
 
   private async loadRoomList () {
