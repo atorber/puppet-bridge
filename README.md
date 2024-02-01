@@ -28,7 +28,7 @@ wechaty-puppet-bridge 是一个虚拟的Wechaty Puppet，实际上它只是一�
 
 ### 使用[cixingguangming55555/wechat-bot](https://github.com/cixingguangming55555/wechat-bot)
 
-1. 在您的Windows电脑上安装微信客户端（当前支持微信版本v3.9.2.23）
+1. 在您的Windows电脑上安装微信客户端（需要微信版本v3.9.2.23,下载微信[v3.9.2.23](https://github.com/tom-snow/wechat-windows-versions/releases/tag/v3.9.2.23)）
 
 2. 在电脑上登录微信客户端
 
@@ -54,7 +54,7 @@ npm start
 
 ### 使用[jwping/wxbot](https://github.com/jwping/wxbot)
 
-1. 在您的Windows电脑上安装微信客户端（当前支持微信版本v3.9.8.25）
+1. 在您的Windows电脑上安装微信客户端（需要微信版本v3.9.8.25,下载微信[v3.9.8.25](https://github.com/tom-snow/wechat-windows-versions/releases/tag/v3.9.8.25)）
 
 2. 在电脑上登录微信客户端
 
