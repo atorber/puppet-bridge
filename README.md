@@ -22,6 +22,8 @@ wechaty-puppet-bridge 是一个虚拟的Wechaty Puppet，实际上它只是一�
 | 启动| ⭐⭐⭐<br>直接运行nodejs程序 | ⭐⭐<br>需先手动启动funtool_wx=3.9.2.23.exe|
 | 环境| ⭐⭐⭐<br>nodejs | ⭐⭐<br>nodejs + funtool_wx=3.9.2.23.exe|
 
+获取更多信息[访问项目语雀文档](https://www.yuque.com/atorber/chatflow/mean34ibdoonvox4)
+
 ## 快速开始
 
 ### 使用[cixingguangming55555/wechat-bot](https://github.com/cixingguangming55555/wechat-bot)
