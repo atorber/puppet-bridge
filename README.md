@@ -58,9 +58,9 @@ npm start
 
 3. 到[jwping/wxbot](https://github.com/jwping/wxbot)项目下载[wxbot-sidecar.exe](https://github.com/jwping/wxbot/blob/main/bin/wxbot-sidecar.exe)运行程序并点击【Start】开启功能。
 
-   ![image](https://github.com/atorber/puppet-bridge/assets/19552906/c2c86ff8-8a48-439f-a48a-6830883693d2)
+   ![image](https://github.com/atorber/puppet-bridge/assets/19552906/59495943-dcfc-4ff1-9c66-e6c097e9b0a5)
 
-4. 运行以下指令启动程序
+5. 运行以下指令启动程序
 
 ```sh
 git clone https://github.com/atorber/puppet-bridg
