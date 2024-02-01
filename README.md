@@ -60,7 +60,7 @@ npm start
 
    ![image](https://github.com/atorber/puppet-bridge/assets/19552906/59495943-dcfc-4ff1-9c66-e6c097e9b0a5)
 
-5. 运行以下指令启动程序
+4. 运行以下指令启动程序
 
 ```sh
 git clone https://github.com/atorber/puppet-bridg
