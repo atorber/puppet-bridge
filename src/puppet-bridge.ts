@@ -250,7 +250,12 @@ class PuppetBridge extends PUPPET.Puppet {
     //   status: statusMap[args[0]] ?? PUPPET.types.ScanStatus.Unknown,
     // }
     // this.emit('scan', this.scanEventData)
-    this.emit('scan', {})
+
+    this.scanEventData = {
+      qrcode: '',
+      status: PUPPET.types.ScanStatus.Unknown,
+    }
+    this.emit('scan', this.scanEventData)
 
   }
 

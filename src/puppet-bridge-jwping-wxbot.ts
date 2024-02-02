@@ -242,12 +242,11 @@ class PuppetBridge extends PUPPET.Puppet {
     //   log.warn('PuppetBridge', 'onScan() pairWaitTip: "%s"', pairWaitTip)
     // }
 
-    // this.scanEventData = {
-    //   qrcode: qrcodeUrl,
-    //   status: statusMap[args[0]] ?? PUPPET.types.ScanStatus.Unknown,
-    // }
-    // this.emit('scan', this.scanEventData)
-    this.emit('scan', {})
+    this.scanEventData = {
+      qrcode: '',
+      status: PUPPET.types.ScanStatus.Unknown,
+    }
+    this.emit('scan', this.scanEventData)
 
   }
 
