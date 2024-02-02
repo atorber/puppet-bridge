@@ -1,6 +1,6 @@
 {
   "name": "wechaty-puppet-bridge",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Puppet Bridge for Wechaty",
   "type": "module",
   "exports": {
@@ -103,10 +103,5 @@
   "publishConfig": {
     "access": "public",
     "tag": "latest"
-  },
-  "git": {
-    "scripts": {
-      "pre-push": "npx git-scripts-pre-push"
-    }
   }
 }

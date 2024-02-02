@@ -164,7 +164,6 @@ class PuppetBridge extends PUPPET.Puppet {
   private async onLogin () {
     // log.info('onLogin：', this.isLoggedIn)
     if (!this.isLoggedIn) {
-
       // const selfInfoRaw = JSON.parse(await this.bridge.getMyselfInfo())
       // log.debug('selfInfoRaw:\n\n\n', selfInfoRaw)
       const selfInfoRawRes = await this.bridge.getPersonalInfo()
@@ -207,47 +206,49 @@ class PuppetBridge extends PUPPET.Puppet {
     if (!args) {
       return
     }
-    const statusMap = [
-      PUPPET.types.ScanStatus.Waiting,
-      PUPPET.types.ScanStatus.Scanned,
-      PUPPET.types.ScanStatus.Confirmed,
-      PUPPET.types.ScanStatus.Timeout,
-      PUPPET.types.ScanStatus.Cancel,
-    ]
+    // const statusMap = [
+    //   PUPPET.types.ScanStatus.Waiting,
+    //   PUPPET.types.ScanStatus.Scanned,
+    //   PUPPET.types.ScanStatus.Confirmed,
+    //   PUPPET.types.ScanStatus.Timeout,
+    //   PUPPET.types.ScanStatus.Cancel,
+    // ]
 
-    const status: number = args[0]
-    const qrcodeUrl: string = args[1]
-    const wxid: string = args[2]
-    const avatarUrl: string = args[3]
-    const nickname: string = args[4]
-    const phoneType: string = args[5]
-    const phoneClientVer: number = args[6]
-    const pairWaitTip: string = args[7]
+    // const status: number = args[0]
+    // const qrcodeUrl: string = args[1]
+    // const wxid: string = args[2]
+    // const avatarUrl: string = args[3]
+    // const nickname: string = args[4]
+    // const phoneType: string = args[5]
+    // const phoneClientVer: number = args[6]
+    // const pairWaitTip: string = args[7]
 
-    log.info(
-      'PuppetBridge',
-      'onScan() data: %s',
-      JSON.stringify(
-        {
-          avatarUrl,
-          nickname,
-          pairWaitTip,
-          phoneClientVer: phoneClientVer.toString(16),
-          phoneType,
-          qrcodeUrl,
-          status,
-          wxid,
-        }, null, 2))
+    // log.info(
+    //   'PuppetBridge',
+    //   'onScan() data: %s',
+    //   JSON.stringify(
+    //     {
+    //       avatarUrl,
+    //       nickname,
+    //       pairWaitTip,
+    //       phoneClientVer: phoneClientVer.toString(16),
+    //       phoneType,
+    //       qrcodeUrl,
+    //       status,
+    //       wxid,
+    //     }, null, 2))
 
-    if (pairWaitTip) {
-      log.warn('PuppetBridge', 'onScan() pairWaitTip: "%s"', pairWaitTip)
-    }
+    // if (pairWaitTip) {
+    //   log.warn('PuppetBridge', 'onScan() pairWaitTip: "%s"', pairWaitTip)
+    // }
 
-    this.scanEventData = {
-      qrcode: qrcodeUrl,
-      status: statusMap[args[0]] ?? PUPPET.types.ScanStatus.Unknown,
-    }
-    this.emit('scan', this.scanEventData)
+    // this.scanEventData = {
+    //   qrcode: qrcodeUrl,
+    //   status: statusMap[args[0]] ?? PUPPET.types.ScanStatus.Unknown,
+    // }
+    // this.emit('scan', this.scanEventData)
+    this.emit('scan', {})
+
   }
 
   private onHookRecvMsg (messageRaw: MessageRaw) {

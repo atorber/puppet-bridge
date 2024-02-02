@@ -245,8 +245,6 @@ class Bridge extends EventEmitter {
     if (!fs.existsSync('msgStore.json')) {
       console.log('msgStore.json not exist')
       fs.writeFileSync('msgStore.json', '{}')
-    } else {
-      console.log('msgStore.json is exist')
     }
 
     // 收集消息类型，临时保存到文件'/msgStore.json'
