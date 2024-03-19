@@ -23,11 +23,18 @@ import {
   VERSION,
 } from './config.js'
 
+// import {
+//   Bridge,
+//   MessageRaw,
+//   ContentRaw,
+// } from './wechat-bridge.js'
+
 import {
   Bridge,
   MessageRaw,
   ContentRaw,
-} from './wechat-bridge.js'
+} from './agents/cixingguangming55555-wechat-bot.js'
+
 import { ImageDecrypt } from './pure-functions/image-decrypt.js'
 import { XmlDecrypt } from './pure-functions/xml-msgpayload.js'
 // import type { Contact } from 'wechaty'
@@ -42,7 +49,6 @@ const rootPath = `${userInfo.homedir}\\Documents\\WeChat Files\\`
 
 export type PuppetBridgeOptions = PUPPET.PuppetOptions & {
   sidecarName?: string
-  nickName: string
   wsUrl?: string
   httpUrl?: string
 }
@@ -66,19 +72,16 @@ class PuppetBridge extends PUPPET.Puppet {
   private currentUserNameBySet = ''
 
   constructor (
-    public override options: PuppetBridgeOptions,
+    public override options: PuppetBridgeOptions = {
+      sidecarName: 'cixingguangming55555',
+    },
   ) {
 
-    options.sidecarName = options.sidecarName || 'cixingguangming55555'
-
     log.info('options...', JSON.stringify(options))
-    if (!options.nickName) {
-      throw new Error('nickName is not set')
-    }
     super(options)
     log.verbose('PuppetBridge', 'constructor(%s)', JSON.stringify(options))
 
-    this.currentUserNameBySet = options.nickName
+    this.currentUserNameBySet = options.token || ''
     this.bridge = new Bridge({
       httpUrl: options.httpUrl,
       wsUrl: options.wsUrl,
@@ -265,7 +268,7 @@ class PuppetBridge extends PUPPET.Puppet {
     let type = PUPPET.types.Message.Unknown
     let roomId = ''
     let listenerId = ''
-    let talkerId = messageRaw.id2 || messageRaw.id1 || ''
+    let talkerId = messageRaw.id2 || messageRaw.id1 || this.currentUserId || ''
     let wxid = messageRaw.wxid || messageRaw.id1
     let text = messageRaw.content as string
     const code = messageRaw.type
@@ -273,14 +276,13 @@ class PuppetBridge extends PUPPET.Puppet {
     const xml = content.content
     switch (code) {
       case 1:
+        type = PUPPET.types.Message.Text
         try {
           xml2js.parseString(String(xml), { explicitArray: false, ignoreAttrs: true }, function (err: any, json: any) {
             log.verbose('PuppetBridge', 'xml2json err:%s', err)
             //  log.verbose('PuppetBridge', 'json content:%s', JSON.stringify(json))
             if (json.msgsource && json.msgsource.atuserlist === 'atuserlist') {
               type = PUPPET.types.Message.GroupNote
-            } else {
-              type = PUPPET.types.Message.Text
             }
           })
         } catch (err) {

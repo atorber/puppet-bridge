@@ -99,23 +99,23 @@ class Bridge extends EventEmitter {
     httpUrl?:string
   }) {
     super()
-    const that = this
-    this.wsUrl = options?.wsUrl || 'ws://127.0.0.1:5555'
-    this.httpUrl = options?.httpUrl || 'http://127.0.0.1:5555'
-    this.ws = new WebSocket(this.wsUrl)
-
     // 收集消息类型，临时保存到文件'/msgStore.json'
     this.messageTypeTest = JSON.parse(fs.readFileSync('msgStore.json', 'utf-8'))
-    this.ws.on('error', (error: Error) => {
-      log.error('WebSocket error:', error)
-    })
-    this.ws.on('open', function open () {
+    this.wsUrl = options?.wsUrl || 'ws://127.0.0.1:5555'
+    this.httpUrl = options?.httpUrl || 'http://127.0.0.1:5555'
+    this.ws = this.connectWebSocket()
+  }
+
+  private connectWebSocket () {
+    // 创建WebSocket连接，如果连接失败，则每隔3s重新连接一次，直到连接成功
+    this.ws = new WebSocket(this.wsUrl)
+    this.ws.on('open',  () => {
       log.info('WebSocket connection established')
-      that.emit('login', 'login')
+      this.emit('login', 'login')
     })
 
-    this.ws.on('message', function incoming (data: string) {
-      log.info('WebSocket received:', data.toString())
+    this.ws.on('message', (data: string) => {
+      log.info('bridge WebSocket received:', data.toString())
       data = data.toString()
       // ws.send("hello world");
       // return;
@@ -139,15 +139,15 @@ class Bridge extends EventEmitter {
       }
 
       if (type === 10000) {
-        const list10000 = that.messageTypeTest['10000'] || []
+        const list10000 = this.messageTypeTest['10000'] || []
         list10000.push(j)
-        that.messageTypeTest[type] = list10000
+        this.messageTypeTest[type] = list10000
       } else {
-        that.messageTypeTest[type] = j
+        this.messageTypeTest[type] = j
       }
 
       try {
-        fs.writeFileSync('msgStore.json', JSON.stringify(that.messageTypeTest, undefined, 2))
+        fs.writeFileSync('msgStore.json', JSON.stringify(this.messageTypeTest, undefined, 2))
       } catch (e) {
         log.error('write msgStore.json error:', e)
       }
@@ -180,19 +180,19 @@ class Bridge extends EventEmitter {
           break
         case RECV_PIC_MSG:
           log.info('图片消息')
-          that.handleReceiveMessage(j)
+          this.handleReceiveMessage(j)
           break
         case SEND_FILE_MSG:
           log.info('文件消息')
-          that.handleReceiveMessage(j)
+          this.handleReceiveMessage(j)
           break
         case RECV_TXT_MSG:
           log.info('收到文本消息')
-          that.handleReceiveMessage(j)
+          this.handleReceiveMessage(j)
           break
         case HEART_BEAT:
           log.info('心跳')
-          that.handleHeartbeat(j)
+          this.handleHeartbeat(j)
           break
         case USER_LIST:
           log.info('微信联系人列表')
@@ -230,25 +230,18 @@ class Bridge extends EventEmitter {
         default:
           break
       }
-      // log.info(`Roundtrip time: ${Date.now() - data} ms`);
-
-      /* setTimeout(function timeout() {
-        ws.send(Date.now());
-      }, 500); */
     })
-
     this.ws.on('close', () => {
-      log.info('WebSocket connection closed')
-      that.emit('logout', 'logout')
-      // reconnect after 1s
-      setTimeout(() => {
-        this.ws = new WebSocket(this.wsUrl)
-      }, 1000)
+      log.info('WebSocket connection closed. Attempting to reconnect...')
+      this.emit('logout', 'logout')
+      setTimeout(() => this.connectWebSocket(), 3000) // 1秒后重连
     })
     this.ws.on('error', (err) => {
-      log.info('WebSocket error:', err)
-      that.emit('error', err)
+      log.error('WebSocket error:', err)
+      this.emit('error', err)
+      // setTimeout(() => this.connectWebSocket(), 3000) // 错误后也尝试1秒后重连
     })
+    return this.ws
   }
 
   // 处理消息hook

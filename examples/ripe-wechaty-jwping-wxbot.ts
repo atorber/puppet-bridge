@@ -16,6 +16,17 @@ import { PuppetBridge } from '../src/puppet-bridge-jwping-wxbot.js'
 import qrcodeTerminal from 'qrcode-terminal'
 import * as fs from 'fs'
 
+// 初始化检查当前文件加下是否存在日志文件info.log，如果不存在则创建
+const logPath = 'info.log'
+if (!fs.existsSync(logPath)) {
+  fs.writeFileSync(logPath, '')
+}
+
+// 定义写日志的方法
+function writeLog (info: string) {
+  fs.appendFileSync(logPath, info + '\n')
+}
+
 function onScan (qrcode: string, status: ScanStatus) {
   if (qrcode) {
     const qrcodeImageUrl = [
@@ -33,20 +44,25 @@ function onScan (qrcode: string, status: ScanStatus) {
 
 async function onLogin (user: Contact) {
   log.info('onLogin', '%s login', user)
-  const roomList = await bot.Room.findAll()
-  log.info('群数量：', roomList.length)
-  const contactList = await bot.Contact.findAll()
-  log.info('联系人数量：', contactList.length)
-  const friends = contactList.filter(c => c.friend())
-  log.info('好友数量：', friends.length)
+  // const roomList = await bot.Room.findAll()
+  // writeLog('群信息：' + JSON.stringify(roomList))
+  // log.info('群数量：', roomList.length)
+  // const contactList = await bot.Contact.findAll()
+  // writeLog('联系人信息：' + JSON.stringify(contactList))
+  // log.info('联系人数量：', contactList.length)
+  // const friends = contactList.filter(c => c.friend())
+  // log.info('好友数量：', friends.length)
   // 发送@好友消息
-  // const room = await bot.Room.find({topic:'大师是群主'})
-  // const contact = await bot.Contact.find({name:'luyuchao'})
-  // log.info('room：', room)
-  // if(room && contact){
-  //   const contacts:Contact[]= [contact]
-  //   await room.say(new Date().toLocaleString() + '：瓦力上线了！', ...contacts)
-  // }
+  const room = await bot.Room.find({ topic:'大师是群主' })
+  log.info('room：', room)
+
+  const contact = await bot.Contact.find({ name:'luyuchao' })
+  log.info('contact', contact)
+
+  if (room && contact) {
+    const contacts:Contact[] = [ contact ]
+    await room.say(new Date().toLocaleString() + '：瓦力上线了！', ...contacts)
+  }
 }
 
 function onLogout (user: Contact) {
@@ -169,9 +185,7 @@ async function onMessage (msg: Message) {
 
 }
 
-const puppet = new PuppetBridge({
-  nickName: '大师',  // 登录微信的昵称
-})
+const puppet = new PuppetBridge()
 const bot = WechatyBuilder.build({
   name: 'ding-dong-bot',
   puppet,
@@ -207,6 +221,6 @@ bot.on('room-invite', async roomInvitation => {
 
 bot.start()
   .then(() => {
-    return log.info('StarterBot', 'Starter Bot Started.')
+    return log.info('ripe', 'Bot Started.')
   })
   .catch(log.error)

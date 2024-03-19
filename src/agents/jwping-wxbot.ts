@@ -6,6 +6,15 @@ import axios from 'axios'
 import { EventEmitter } from 'events'
 import { log } from 'wechaty-puppet'
 import * as fs from 'fs'
+import { exec } from 'child_process'
+import { fileURLToPath } from 'url'
+import { dirname } from 'path'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
+console.log('当前文件的绝对路径:', __filename)
+console.log('当前文件的目录路径:', __dirname)
 // import * as PUPPET from 'wechaty-puppet'
 // import xml2js from 'xml2js'
 // import readXml from 'xmlreader'
@@ -46,6 +55,9 @@ enum ApiEndpoint {
   ExecSql = '/api/execsql', // 通过数据库句柄执行SQL语句
   Close = '/close', // 停止 wxbot-sidecar（停止http server，并中止程序运行）
 }
+
+// 设置axios请求超时时间
+axios.defaults.timeout = 5000
 
 /**
  * 定义用户账户信息接口
@@ -236,11 +248,6 @@ class Bridge extends EventEmitter {
     httpUrl?: string
   }) {
     super()
-    const that = this
-    this.wsUrl = options?.wsUrl ? `${options.wsUrl}/ws/generalMsg` : 'ws://127.0.0.1:8080/ws/generalMsg'
-    this.httpUrl = options?.httpUrl ? `${options.httpUrl}` : 'http://127.0.0.1:8080'
-    this.ws = new WebSocket(this.wsUrl)
-
     // 检测根目录下是否有msgStore.json文件，如果没有，则创建一个，内容为{}
     if (!fs.existsSync('msgStore.json')) {
       console.log('msgStore.json not exist')
@@ -249,31 +256,53 @@ class Bridge extends EventEmitter {
 
     // 收集消息类型，临时保存到文件'/msgStore.json'
     this.messageTypeTest = JSON.parse(fs.readFileSync('msgStore.json', 'utf-8'))
+    this.wsUrl = options?.wsUrl ? `${options.wsUrl}/ws/generalMsg` : 'ws://127.0.0.1:8080/ws/generalMsg'
+    this.httpUrl = options?.httpUrl ? `${options.httpUrl}` : 'http://127.0.0.1:8080'
 
-    this.ws.on('error', (error: Error) => {
-      log.error('WebSocket error:', error)
+    // 替换__dirname中的src\agents为assets\wxbot-sidecar.exe得到execString
+    const execString = __dirname.replace('src\\agents', 'assets\\wxbot-sidecar.exe')
+    console.log('execString:', execString)
+
+    // 使用命令行自动运行 \assets\wxbot-sidecar.exe，先检查execString是否已经在运行，如果没有运行，则自动运行
+
+    exec(execString, (error: any, stdout: any, stderr: any) => {
+      if (error) {
+        console.error(`执行出错: ${error}`)
+        return
+      }
+      console.log(`stdout: ${stdout}`)
+      console.error(`stderr: ${stderr}`)
     })
-    this.ws.on('open', function open () {
-      log.info('WebSocket connection established')
-      that.isLoggedIn = true
-      that.emit('login', 'login')
+
+    this.ws = this.connectWebSocket()
+
+  }
+
+  private connectWebSocket () {
+    this.ws = new WebSocket(this.wsUrl)
+
+    this.ws.on('open', () => {
+      log.info('agents', 'WebSocket connection established')
+      this.isLoggedIn = true
+      this.emit('login', 'login')
     })
 
-    this.ws.on('message', function incoming (data: string) {
+    this.ws.on('message', (data: string) => {
 
-      // log.info('WebSocket received:', data.toString())
+      log.info('bridge WebSocket received:', data.toString())
       data = data.toString()
 
       try {
         const dataJSON = JSON.parse(data)
-        that.currentUserId = dataJSON.wxid
+        this.currentUserId = dataJSON.wxid
         const jList: MessageRaw[] = dataJSON.data
 
         for (const j of jList) {
+          // log.info('ws message hook:', j)
           const type = Number(j.Type)
           let key = j.Type
           log.info('ws message hook:', type)
-          log.info(JSON.stringify(j, undefined, 2))
+          // log.info(JSON.stringify(j, undefined, 2))
 
           const subType = j.SubType
           try {
@@ -285,15 +314,15 @@ class Bridge extends EventEmitter {
           }
 
           if (type === 10000) {
-            const list10000 = that.messageTypeTest['10000'] || []
+            const list10000 = this.messageTypeTest['10000'] || []
             list10000.push(j)
-            that.messageTypeTest[key] = list10000
+            this.messageTypeTest[key] = list10000
           } else {
-            that.messageTypeTest[key] = j
+            this.messageTypeTest[key] = j
           }
 
           // 将that.messageTypeTest保存到文件'/msgStore.json'
-          fs.writeFileSync('msgStore.json', JSON.stringify(that.messageTypeTest, undefined, 2))
+          fs.writeFileSync('msgStore.json', JSON.stringify(this.messageTypeTest, undefined, 2))
 
           switch (type) {
             case CHATROOM_MEMBER_NICK:
@@ -322,23 +351,23 @@ class Bridge extends EventEmitter {
               break
             case RECV_PIC_MSG:
               log.info('图片消息')
-              that.handleReceiveMessage(j)
+              this.handleReceiveMessage(j)
               break
             case SEND_FILE_MSG:
               log.info('文件消息')
-              that.handleReceiveMessage(j)
+              this.handleReceiveMessage(j)
               break
             case ATTATCH_FILE:
               log.info('文件消息')
-              that.handleReceiveMessage(j)
+              this.handleReceiveMessage(j)
               break
             case RECV_TXT_MSG:
               log.info('收到文本消息')
-              that.handleReceiveMessage(j)
+              this.handleReceiveMessage(j)
               break
             case HEART_BEAT:
               log.info('心跳')
-              that.handleHeartbeat(j)
+              this.handleHeartbeat(j)
               break
             case USER_LIST:
               log.info('微信联系人列表')
@@ -372,18 +401,20 @@ class Bridge extends EventEmitter {
 
     this.ws.on('close', () => {
       log.info('WebSocket connection closed')
-      that.isLoggedIn = false
-      that.emit('logout', 'logout')
+      this.isLoggedIn = false
+      this.emit('logout', 'logout')
       // reconnect after 1s
       setTimeout(() => {
-        this.ws = new WebSocket(this.wsUrl)
-      }, 1000)
+        this.connectWebSocket()
+      }, 3000)
     })
 
     this.ws.on('error', (err) => {
-      log.info('WebSocket error:', err)
-      that.emit('error', err)
+      log.error('WebSocket error:', err)
+      this.emit('error', err)
     })
+
+    return this.ws
   }
 
   // 处理消息hook
@@ -437,14 +468,14 @@ class Bridge extends EventEmitter {
   }
 
   // 3.发送@文本
-  async messageSendTextAt (roomid: string, wxid: string[], content: string, nickname: string[]) {
-    const atName = nickname.map((name) => `@${name}`).join(' ')
+  async messageSendTextAt (roomid: string, wxid: string[], content: string) {
+    // const atName = nickname.map((name) => `@${name}`).join(' ')
     const jpara = {
       // id: getid(),
       // type: AT_MSG,
       // roomid, // not null  23023281066@chatroom
       wxid: roomid, // not null
-      content: `@${atName} ${content}`, // not null
+      content, // not null
       atlist: wxid,
       // ext: 'null',
     }
@@ -623,7 +654,37 @@ class Bridge extends EventEmitter {
       // return rooms
     } catch (e) {
       log.error('getRoomList error:', e)
-      return undefined
+      return e
+    }
+
+  }
+
+  // 47-1.获取群详情(通过接口)
+  async getRoomListFromAPI (wxid: string) {
+    try {
+      // const jpara = {
+      //   id: getid(),
+      //   type: CHATROOM_MEMBER,
+      //   roomid: 'null', // null
+      //   wxid: 'null', // not null
+      //   content: 'null', // not null
+      //   nickname: 'null',
+      //   ext: 'null',
+      // }
+      const options = {
+        url: this.httpUrl + `${ApiEndpoint.ChatRoom}?wxid=${wxid}`, //
+        body: {},
+        json: true,
+      }
+      const res = await axios.get(options.url)
+      // log.info('getRoomList res:', JSON.stringify(res.data))
+      const data:ResponseData = res.data
+      return data
+      // const rooms: RoomRaw[] = res.data.content
+      // return rooms
+    } catch (e) {
+      log.error('getRoomList error:', e)
+      return e
     }
 
   }

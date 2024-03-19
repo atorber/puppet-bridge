@@ -59,7 +59,7 @@ async function main () {
   })
 
   const userinfo = await bridge.getPersonalInfo()
-  console.log('userinfo:', JSON.stringify(userinfo, undefined, 2))
+  console.log('onready userinfo:', JSON.stringify(userinfo, undefined, 2))
 
   // const contactsRes = await bridge.getContactList()
   // console.log('getContactList:', JSON.stringify(contactsRes, undefined, 2))
