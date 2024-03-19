@@ -1,7 +1,6 @@
 {
   "extends": "@chatie/tsconfig",
   "compilerOptions": {
-    "module": "es2020",
     "outDir": "dist/esm"
   },
   "exclude": [

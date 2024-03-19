@@ -7,14 +7,12 @@ import { EventEmitter } from 'events'
 import { log } from 'wechaty-puppet'
 import * as fs from 'fs'
 import { exec } from 'child_process'
-import { fileURLToPath } from 'url'
-import { dirname } from 'path'
+import path, { join } from 'path'
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-
-console.log('当前文件的绝对路径:', __filename)
+const __dirname = path.resolve(path.dirname(''))
 console.log('当前文件的目录路径:', __dirname)
+
+// 获取当前文件夹的绝对路径，不使用fileURLToPath(import.meta.url)方法
 
 type ContactRaw = {
   headimg: string
@@ -114,7 +112,7 @@ class Bridge extends EventEmitter {
     this.messageTypeTest = JSON.parse(fs.readFileSync('msgStore.json', 'utf-8'))
 
     // 替换__dirname中的src\agents为assets\funtool_wx_3.9.2.23.exe得到execString
-    const execString = __dirname.replace('src\\agents', 'assets\\funtool_wx_3.9.2.23.exe')
+    const execString = join(__dirname, 'assets', 'funtool_wx_3.9.2.23.exe')
     console.log('execString:', execString)
 
     // 检查funtool_wx_3.9.2.23.exe是否已经在运行，如果已经在运行则结束进程

@@ -7,13 +7,9 @@ import { EventEmitter } from 'events'
 import { log } from 'wechaty-puppet'
 import * as fs from 'fs'
 import { exec } from 'child_process'
-import { fileURLToPath } from 'url'
-import { dirname } from 'path'
+import path, { join } from 'path'
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-
-console.log('当前文件的绝对路径:', __filename)
+const __dirname = path.resolve(path.dirname(''))
 console.log('当前文件的目录路径:', __dirname)
 
 const HEART_BEAT = 5005 // 心跳
@@ -256,7 +252,7 @@ class Bridge extends EventEmitter {
     this.httpUrl = options?.httpUrl ? `${options.httpUrl}` : 'http://127.0.0.1:8080'
 
     // 替换__dirname中的src\agents为assets\wxbot-sidecar.exe得到execString
-    const execString = __dirname.replace('src\\agents', 'assets\\wxbot-sidecar.exe')
+    const execString = join(__dirname, 'assets', 'wxbot-sidecar.exe')
     console.log('execString:', execString)
 
     // 使用命令行自动运行 \assets\wxbot-sidecar.exe，先检查execString是否已经在运行，如果没有运行，则自动运行
