@@ -184,7 +184,7 @@ const onMessage = async (msg: Message) => {
 //     }
 // })
 
-const puppet = new PuppetBridge({ nickName:'大师' })
+const puppet = new PuppetBridge({ token:'大师' })
 const bot = WechatyBuilder.build({
   name: 'ding-dong-bot',
   puppet,

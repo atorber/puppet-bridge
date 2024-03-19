@@ -12,7 +12,7 @@ import qrcodeTerminal from 'qrcode-terminal'
  *
  */
 const puppet = new PuppetBridge({
-  nickName: '大师',
+  token: '大师',
 })
 
 /**

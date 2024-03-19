@@ -10,7 +10,7 @@ import {
   log,
 } from 'wechaty'
 import { FileBox } from 'file-box'
-import { PuppetBridge } from 'wechaty-puppet-bridge'
+import { PuppetBridge } from '../src/puppet-bridge.js'
 
 async function onLogin (user: Contact) {
   log.info('onLogin', '%s login', user)
@@ -38,7 +38,7 @@ async function onMessage (message: Message) {
 }
 
 const puppet = new PuppetBridge({
-  nickName: '大师'  // 登录微信的昵称
+  token: '大师',  // 登录微信的昵称
 })
 const bot = WechatyBuilder.build({
   name: 'ding-dong-bot',

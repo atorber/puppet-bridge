@@ -15,10 +15,6 @@ const __dirname = dirname(__filename)
 
 console.log('当前文件的绝对路径:', __filename)
 console.log('当前文件的目录路径:', __dirname)
-// import * as PUPPET from 'wechaty-puppet'
-// import xml2js from 'xml2js'
-// import readXml from 'xmlreader'
-// import cuid from 'cuid'
 
 const HEART_BEAT = 5005 // 心跳
 const RECV_TXT_MSG = 1 // 文本消息

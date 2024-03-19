@@ -123,24 +123,24 @@ class Bridge extends EventEmitter {
         console.error(`查询程序列表执行出错: ${error}`)
         return
       }
-      console.log(`程序列表stdout: ${stdout}`)
+      // console.log(`程序列表stdout: ${stdout}`)
       if (stdout.indexOf('funtool_wx_3.9.2.23.exe') !== -1) {
 
         // 结束进程
-        exec('taskkill /F /IM funtool_wx_3.9.2.23.exe', (error: any, stdout: any, stderr: any) => {
+        exec('taskkill /F /IM funtool_wx_3.9.2.23.exe', (error: any, _stdout: any, _stderr: any) => {
           if (error) {
             console.error(`执行出错: ${error}`)
             return
           }
-          console.log(`stdout: ${stdout}`)
-          console.error(`stderr: ${stderr}`)
+          // console.log(`stdout: ${stdout}`)
+          // console.error(`stderr: ${stderr}`)
           // 使用命令行自动运行 \assets\funtool_wx=3.9.2.23.exe，先检查execString是否已经在运行，如果没有运行，则自动运行
-          exec(execString, (error: any, stdout: any, stderr: any) => {
+          exec(execString, (error: any, _stdout: any, stderr: any) => {
             if (error) {
               console.error(`执行出错: ${error}`)
               return
             }
-            console.log(`stdout: ${stdout}`)
+            // console.log(`stdout: ${stdout}`)
             console.error(`stderr: ${stderr}`)
           })
         })

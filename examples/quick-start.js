@@ -3,7 +3,7 @@ import {
     log,
   } from 'wechaty'
   import { FileBox } from 'file-box'
-  import { PuppetBridge } from 'wechaty-puppet-bridge'
+  import { PuppetBridge } from '../src/puppet-bridge.js'
   
   async function onLogin (user) {
     log.info('onLogin', '%s login', user)
