@@ -23,7 +23,7 @@ if (!fs.existsSync(logPath)) {
 }
 
 // 定义写日志的方法
-function writeLog (info: string) {
+export function writeLog (info: string) {
   fs.appendFileSync(logPath, info + '\n')
 }
 

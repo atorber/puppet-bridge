@@ -118,7 +118,7 @@ class Bridge extends EventEmitter {
     console.log('execString:', execString)
 
     // 检查funtool_wx_3.9.2.23.exe是否已经在运行，如果已经在运行则结束进程
-    exec('tasklist', (error: any, stdout: any, stderr: any) => {
+    exec('tasklist', (error: any, stdout: any, _stderr: any) => {
       if (error) {
         console.error(`查询程序列表执行出错: ${error}`)
         return
