@@ -219,9 +219,9 @@ const getid = () => {
 
 class Bridge extends EventEmitter {
 
-  private wsUrl: string
+  private wsUrl: string = 'ws://127.0.0.1:8080'
 
-  private httpUrl: string
+  private httpUrl: string = 'http://127.0.0.1:8080'
 
   ws: WebSocket
 
@@ -248,8 +248,8 @@ class Bridge extends EventEmitter {
 
     // 收集消息类型，临时保存到文件'/msgStore.json'
     this.messageTypeTest = JSON.parse(fs.readFileSync('msgStore.json', 'utf-8'))
-    this.wsUrl = options?.wsUrl ? `${options.wsUrl}/ws/generalMsg` : 'ws://127.0.0.1:8080/ws/generalMsg'
-    this.httpUrl = options?.httpUrl ? `${options.httpUrl}` : 'http://127.0.0.1:8080'
+    this.wsUrl = options?.wsUrl || this.wsUrl
+    this.httpUrl = options?.httpUrl || this.httpUrl
 
     // 替换__dirname中的src\agents为assets\wxbot-sidecar.exe得到execString
     const execString = join(__dirname, 'assets', 'wxbot-sidecar.exe')
@@ -271,7 +271,7 @@ class Bridge extends EventEmitter {
   }
 
   private connectWebSocket () {
-    this.ws = new WebSocket(this.wsUrl)
+    this.ws = new WebSocket(`${this.wsUrl}/ws/generalMsg`)
 
     this.ws.on('open', () => {
       log.info('agents', 'WebSocket connection established')

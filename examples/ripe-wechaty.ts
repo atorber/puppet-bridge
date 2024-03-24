@@ -56,7 +56,7 @@ function onLogout (user: Contact) {
 
 async function onMessage (msg: Message) {
   // log.info('onMessage', msg.toString())
-  log.info('onMessage接收到消息：', JSON.stringify(msg))
+  log.info('onMessage接收到消息：', JSON.stringify(msg, null, 2))
   const contact = msg.talker()
   log.info('当前联系人信息：', JSON.stringify(contact))
   const room = msg.room()

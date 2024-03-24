@@ -12,7 +12,7 @@ import {
 } from 'wechaty'
 import { FileBox } from 'file-box'
 
-import { PuppetBridge } from '../src/puppet-bridge-jwping-wxbot.js'
+import { PuppetBridge } from '../src/puppet-bridge-ttttupup-wxhelper.js'
 import qrcodeTerminal from 'qrcode-terminal'
 import * as fs from 'fs'
 
@@ -43,26 +43,7 @@ function onScan (qrcode: string, status: ScanStatus) {
 }
 
 async function onLogin (user: Contact) {
-  log.info('onLogin', '%s login', user)
-  // const roomList = await bot.Room.findAll()
-  // writeLog('群信息：' + JSON.stringify(roomList))
-  // log.info('群数量：', roomList.length)
-  // const contactList = await bot.Contact.findAll()
-  // writeLog('联系人信息：' + JSON.stringify(contactList))
-  // log.info('联系人数量：', contactList.length)
-  // const friends = contactList.filter(c => c.friend())
-  // log.info('好友数量：', friends.length)
-  // 发送@好友消息
-  const room = await bot.Room.find({ topic:'大师是群主' })
-  log.info('room：', room)
-
-  const contact = await bot.Contact.find({ name:'luyuchao' })
-  log.info('contact', contact)
-
-  if (room && contact) {
-    const contacts:Contact[] = [ contact ]
-    await room.say(new Date().toLocaleString() + '：瓦力上线了！', ...contacts)
-  }
+  log.info('onLogin', JSON.stringify(user, null, 2))
 }
 
 function onLogout (user: Contact) {
@@ -77,8 +58,10 @@ async function onMessage (msg: Message) {
   const room = msg.room()
   let sendRes:any = ''
   if (room) {
-    log.info('当前群信息：', await room.topic())
-    log.info('当前群群主：', JSON.stringify(room.owner()) || 'undefined')
+    log.info('当前群信息：', JSON.stringify(room))
+    const owner = await room.owner()
+    log.info('当前群群主：', JSON.stringify(owner) || 'undefined')
+    log.info('当前群昵称：', owner && owner.name())
   }
 
   if (msg.text() === 'ding') {
@@ -195,6 +178,25 @@ bot.on('scan', onScan)
 bot.on('login', onLogin)
 bot.on('ready', async () => {
   log.info('bot已经准备好了')
+  // const roomList = await bot.Room.findAll()
+  // writeLog('群信息：' + JSON.stringify(roomList))
+  // log.info('群数量：', roomList.length)
+  // const contactList = await bot.Contact.findAll()
+  // writeLog('联系人信息：' + JSON.stringify(contactList))
+  // log.info('联系人数量：', contactList.length)
+  // const friends = contactList.filter(c => c.friend())
+  // log.info('好友数量：', friends.length)
+  // 发送@好友消息
+  const room = await bot.Room.find({ topic:'大师是群主' })
+  log.info('room：', room)
+
+  const contact = await bot.Contact.find({ name:'luyuchao' })
+  log.info('contact', contact)
+
+  if (room && contact) {
+    const contacts:Contact[] = [ contact ]
+    await room.say(new Date().toLocaleString() + '：瓦力上线了！', ...contacts)
+  }
 })
 bot.on('logout', onLogout)
 bot.on('message', onMessage)

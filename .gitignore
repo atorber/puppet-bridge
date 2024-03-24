@@ -69,3 +69,4 @@ cache/*
 examples/media/*
 file/*
 msgStore.json
+msgStore-wxbot.json

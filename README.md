@@ -240,13 +240,18 @@ wechaty-puppet-bridge 是一个全新的wechaty-puppet，它可以连接所有�
 
 ## 更新日志
 
-### main v0.4.0 (2023-2-1)
+### v0.6.0
 
-适配  [jwping/wxbot](https://github.com/jwping/wxbot) 项目
+- 适配 [ttttupup/wxhelper](https://github.com/ttttupup/wxhelper),支持v3.9.5.81版本，功能最全的免费机器人
+- 自动注入
+
+### v0.4.0 (2023-2-1)
+
+适配 [jwping/wxbot](https://github.com/jwping/wxbot) 项目，支持v3.9.8.25版本
 
 ### v0.1.0 (2023-1-21)
 
-初始化版本，适配 [cixingguangming55555/wechat-bot](https://github.com/cixingguangming55555/wechat-bot) 项目
+初始化版本，适配 [cixingguangming55555/wechat-bot](https://github.com/cixingguangming55555/wechat-bot) 项目，支持v3.9.2.23版本
 
 ## 作者
 
