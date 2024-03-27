@@ -32,7 +32,8 @@ const AGREE_TO_FRIEND_REQUEST = 10000// 同意微信好友请求消息
 const ATTATCH_FILE = 5003 // 发送文件
 
 enum ApiEndpoint {
-  Checklogin = '/api/checklogin', // 检查登录状态
+  Checklogin = '/api/checkLogin', // 检查登录状态
+  SyncUrl = '/api/syncurl', // 获取二维码
   UserInfo = '/api/userinfo', // 获取登录用户信息
   Contacts = '/api/contacts', // 获取通讯录信息，不建议使用，请使用 DbContacts
   DbContacts = '/api/dbcontacts', // 从数据库中获取通讯录信息
@@ -211,6 +212,289 @@ interface MessageRaw {
  TalkerId: string; // 说话者ID，例如 "5"
  Type: string; // 类型，例如 "1"
  localId: string; // 本地ID，例如 "7850"
+}
+
+// ----------wxbot-sidecar----------
+
+// 从DB获取联系人信息
+export interface ContactRawWxbotDb {
+  /**
+   * 微信号
+   */
+  Alias: string;
+  /**
+   * 昵称
+   */
+  NickName: string;
+  /**
+   * v3
+   */
+  EncryptUserName: string;
+  /**
+   * 备注
+   */
+  Remark: string;
+  /**
+   * 备注拼音首字母大写
+   */
+  RemarkPYInitial: string;
+  /**
+   * 备注拼音全
+   */
+  RemarkQuanPin: string;
+  /**
+   * 昵称拼音首字母大写
+   */
+  PYInitial: string;
+  /**
+   * 昵称拼音全
+   */
+  QuanPin: string;
+  /**
+   * 头像
+   */
+  profilePicture: string;
+  /**
+   * 小头像
+   */
+  profilePictureSmall: string;
+  /**
+   * 类型
+   */
+  type: string;
+  /**
+   * wxid
+   */
+  UserName: string;
+}
+
+// 从接口获取联系人信息
+export interface ContactRawWxbotApi {
+  /**
+   * 微信号
+   */
+  customAccount: string;
+  /**
+   * 昵称
+   */
+  nickname: string;
+  /**
+   * v3
+   */
+  v3: string;
+  /**
+   * 备注
+   */
+  note: string;
+  /**
+   * 备注拼音首字母大写
+   */
+  notePinyin: string;
+  /**
+   * 备注拼音全
+   */
+  notePinyinAll: string;
+  /**
+   * 昵称拼音首字母大写
+   */
+  pinyin: string;
+  /**
+   * 昵称拼音全
+   */
+  pinyinAll: string;
+  /**
+   * 头像
+   */
+  profilePicture: string;
+  /**
+   * 小头像
+   */
+  profilePictureSmall: string;
+  /**
+   * 预留字段
+   */
+  reserved1: string;
+  /**
+   * 类型
+   */
+  type: string;
+  /**
+   * 验证标志
+   */
+  verifyFlag: string;
+  /**
+   * wxid
+   */
+  wxid: string;
+}
+
+// 从DB获取群成员信息
+export interface RoomMemberRawWxbotDb {
+  Alias: string; // 别名
+  BigHeadImgUrl: string; // 大头像URL
+  ChatRoomNotify: string; // 聊天室通知设置
+  ChatRoomType: string; // 聊天室类型
+  DelFlag: string; // 删除标记
+  DomainList: string; // 域名列表
+  EncryptUserName: string; // 加密用户名
+  /**
+   * 额外的缓冲信息
+   * 例如: 3fMmgwQCAAAAdHUsBgQAAAAAiOKPzgQAAAAAdhodLRgCAAAAAAACY6DLBAAAAAAEUf8SGAIAAAAAACKMZqgEAAAAAEbPEMQYAgAAAAAApNkCShgCAAAAAADi6qjRGAIAAAAAAB0CW78YAgAAAAAATWxFcAQAAAAA+Re8wBgCAAAAAABDNd/dGAIAAAAAAN5M2usYAgAAAAAApyvCCgT/////Bp/tUgQCAAAAmw9CmQQAAAAAPWQeIgQAAAAAEkmCLAQAAAAATrlthRgCAAAAAAC09zrLBAAAAAAJWeuSBAAAAAA89KMVGAIAAAAAAMlHesYCAeRM0OgEAAAAALes8PUEAAAAAFentagFAAAAAAAAAACBrhm0GAIAAAAAAGlfMXAYAgAAAAAA+wg92RgCAAAAAAACQON/GAIAAAAAADFdAqMYAgAAAAAAfewLwxgCAAAAAAAOcZ8TGAIAAAAAABZ5HJAXAgAAAAoA
+   */
+  ExtraBuf: string;
+  HeadImgMd5: string; // 头像MD5
+  LabelIDList: string; // 标签ID列表
+  /**
+   * 用户昵称
+   * 例如: 双语互译聊天&顺风车消息检测
+   */
+  NickName: string;
+  PYInitial: string; // 拼音缩写
+  QuanPin: string; // 全拼
+  Remark: string; // 备注
+  RemarkPYInitial: string; // 备注的拼音缩写
+  RemarkQuanPin: string; // 备注的全拼
+  Reserved1: string; // 预留字段1
+  Reserved10: string; // 预留字段10
+  Reserved11: string; // 预留字段11
+  Reserved2: string; // 预留字段2
+  Reserved3: string; // 预留字段3
+  Reserved4: string; // 预留字段4
+  Reserved5: string; // 预留字段5
+  Reserved6: string; // 预留字段6
+  Reserved7: string; // 预留字段7
+  Reserved8: string; // 预留字段8
+  Reserved9: string; // 预留字段9
+  SmallHeadImgUrl: string; // 小头像URL
+  Type: string; // 类型
+  UserName: string; // 用户名
+  VerifyFlag: string; // 验证标记
+  profilePicture: string; // 配置文件图片
+  profilePictureSmall: string; // 小配置文件图片
+}
+
+// 从接口获取群成员信息
+export interface RoomMemberRawWxbotApi {
+  /**
+   * 自定义账号，可能为空字符串
+   */
+  customAccount: string;
+  /**
+   * 昵称
+   */
+  nickname: string;
+  /**
+   * 备注信息
+   */
+  note: string;
+  /**
+   * 拼音大写
+   */
+  pinyin: string;
+  /**
+   * 拼音小写
+   */
+  pinyinAll: string;
+  /**
+   * 用户头像的 URL
+   */
+  profilePicture: string;
+  /**
+   * 用户小头像的 URL
+   */
+  profilePictureSmall: string;
+  /**
+   * 可能为空字符串的字段
+   */
+  v3: string;
+}
+
+// 从DB使用wxid反查用户信息
+export interface ContactRawByWxidDb {
+  /**
+   * 微信号
+   */
+  Alias: string;
+  /**
+   * 昵称
+   */
+  NickName: string;
+  /**
+   * v3 加密用户名
+   */
+  EncryptUserName: string;
+  /**
+   * 备注
+   */
+  Remark: string;
+  /**
+   * 备注拼音首字母大写
+   */
+  RemarkPYInitial: string;
+  /**
+   * 备注拼音全
+   */
+  RemarkQuanPin: string;
+  /**
+   * 昵称拼音首字母大写
+   */
+  PYInitial: string;
+  /**
+   * 昵称拼音全
+   */
+  QuanPin: string;
+  /**
+   * 头像
+   */
+  profilePicture: string;
+  /**
+   * 小头像
+   */
+  profilePictureSmall: string;
+  /**
+   * 类型
+   */
+  type: string;
+  /**
+   * wxid
+   */
+  UserName: string;
+}
+
+// 使用wxid反查用户信息
+export interface ContactRawByWxidApi {
+  /**
+   * 微信号
+   */
+  customAccount: string;
+  /**
+   * 昵称
+   */
+  nickname: string;
+  /**
+   * 备注
+   */
+  note: string;
+  /**
+   * 昵称拼音首字母大写
+   */
+  pinyin: string;
+  /**
+   * 昵称拼音全
+   */
+  pinyinAll: string;
+  /**
+   * 头像
+   */
+  profilePicture: string;
+  /**
+   * 小头像
+   */
+  profilePictureSmall: string;
+  /**
+   * V3 特定标识
+   */
+  v3: string;
 }
 
 const getid = () => {
@@ -682,6 +966,80 @@ class Bridge extends EventEmitter {
       return res
     } catch (e) {
       log.error('getDbAccountByWxid error:', e)
+      return e
+    }
+
+  }
+
+  // 47.获取群详情和群成员列表
+  async getMemberListFromDb (wxid: string) {
+    try {
+      const options = {
+        url: this.httpUrl + `${ApiEndpoint.DbChatRoom}?wxid=${wxid}`, //
+        body: {},
+        json: true,
+      }
+      const res = await axios.get(options.url)
+      // log.info('getRoomList res:', JSON.stringify(res.data))
+      return res as unknown as ResponseData
+    } catch (e) {
+      log.error('getRoomList error:', e)
+      return e
+    }
+
+  }
+
+  // 47-1.获取群详情(通过接口)
+  async getMemberListFromApi (wxid: string) {
+    try {
+      const options = {
+        url: this.httpUrl + `${ApiEndpoint.ChatRoom}?wxid=${wxid}`, //
+        body: {},
+        json: true,
+      }
+      const res = await axios.get(options.url)
+      // log.info('getRoomList res:', JSON.stringify(res.data))
+      return res as unknown as ResponseData
+      // const rooms: RoomRaw[] = res.data.content
+      // return rooms
+    } catch (e) {
+      log.error('getRoomList error:', e)
+      return e
+    }
+
+  }
+
+  // 从数据库中通过WXID反查信息 dbaccountbywxid
+  async getContactByWxidFromDb (wxid: string) {
+    try {
+      const options = {
+        url: this.httpUrl + `${ApiEndpoint.DbAccountByWxid}?wxid=${wxid}`, //
+        body: {},
+        json: true,
+      }
+      const res = await axios.get(options.url)
+      // log.info('getDbAccountByWxid res:', JSON.stringify(res.data))
+      return res as unknown as ResponseData
+    } catch (e) {
+      log.error('getDbAccountByWxid error:', e)
+      return e
+    }
+
+  }
+
+  // WXID反查信息 AccountByWxid
+  async getContactByWxidFromApi (wxid: string) {
+    try {
+      const options = {
+        url: this.httpUrl + `${ApiEndpoint.AccountByWxid}?wxid=${wxid}`, //
+        body: {},
+        json: true,
+      }
+      const res = await axios.get(options.url)
+      // log.info('getAccountByWxid res:', JSON.stringify(res.data))
+      return res as unknown as ResponseData
+    } catch (e) {
+      log.error('getAccountByWxid error:', e)
       return e
     }
 

@@ -1,5 +1,6 @@
 /* eslint-disable sort-keys */
 import axios from 'axios'
+import { log } from 'wechaty-puppet'
 
 // 创建 axios 实例
 const request = axios.create({
@@ -283,395 +284,133 @@ export interface MessageRaw {
   type: number;
 }
 
-// ----------wxbot-sidecar----------
-
-// 从DB获取联系人信息
-export interface ContactRawWxbotDb {
-  /**
-   * 微信号
-   */
-  Alias: string;
-  /**
-   * 昵称
-   */
-  NickName: string;
-  /**
-   * v3
-   */
-  EncryptUserName: string;
-  /**
-   * 备注
-   */
-  Remark: string;
-  /**
-   * 备注拼音首字母大写
-   */
-  RemarkPYInitial: string;
-  /**
-   * 备注拼音全
-   */
-  RemarkQuanPin: string;
-  /**
-   * 昵称拼音首字母大写
-   */
-  PYInitial: string;
-  /**
-   * 昵称拼音全
-   */
-  QuanPin: string;
-  /**
-   * 头像
-   */
-  profilePicture: string;
-  /**
-   * 小头像
-   */
-  profilePictureSmall: string;
-  /**
-   * 类型
-   */
-  type: string;
-  /**
-   * wxid
-   */
-  UserName: string;
+export const getDBInfo = () => {
+  return post('/api/getDBInfo')
 }
 
-// 从接口获取联系人信息
-export interface ContactRawWxbotApi {
-  /**
-   * 微信号
-   */
-  customAccount: string;
-  /**
-   * 昵称
-   */
-  nickname: string;
-  /**
-   * v3
-   */
-  v3: string;
-  /**
-   * 备注
-   */
-  note: string;
-  /**
-   * 备注拼音首字母大写
-   */
-  notePinyin: string;
-  /**
-   * 备注拼音全
-   */
-  notePinyinAll: string;
-  /**
-   * 昵称拼音首字母大写
-   */
-  pinyin: string;
-  /**
-   * 昵称拼音全
-   */
-  pinyinAll: string;
-  /**
-   * 头像
-   */
-  profilePicture: string;
-  /**
-   * 小头像
-   */
-  profilePictureSmall: string;
-  /**
-   * 预留字段
-   */
-  reserved1: string;
-  /**
-   * 类型
-   */
-  type: string;
-  /**
-   * 验证标志
-   */
-  verifyFlag: string;
-  /**
-   * wxid
-   */
-  wxid: string;
+export const execSql = (data:{dbHandle: number; sql: string}) => {
+  return post('/api/execSql', data)
 }
 
-// 从DB获取群成员信息
-export interface RoomMemberRawWxbotDb {
-  Alias: string; // 别名
-  BigHeadImgUrl: string; // 大头像URL
-  ChatRoomNotify: string; // 聊天室通知设置
-  ChatRoomType: string; // 聊天室类型
-  DelFlag: string; // 删除标记
-  DomainList: string; // 域名列表
-  EncryptUserName: string; // 加密用户名
+interface Table {
   /**
-   * 额外的缓冲信息
-   * 例如: 3fMmgwQCAAAAdHUsBgQAAAAAiOKPzgQAAAAAdhodLRgCAAAAAAACY6DLBAAAAAAEUf8SGAIAAAAAACKMZqgEAAAAAEbPEMQYAgAAAAAApNkCShgCAAAAAADi6qjRGAIAAAAAAB0CW78YAgAAAAAATWxFcAQAAAAA+Re8wBgCAAAAAABDNd/dGAIAAAAAAN5M2usYAgAAAAAApyvCCgT/////Bp/tUgQCAAAAmw9CmQQAAAAAPWQeIgQAAAAAEkmCLAQAAAAATrlthRgCAAAAAAC09zrLBAAAAAAJWeuSBAAAAAA89KMVGAIAAAAAAMlHesYCAeRM0OgEAAAAALes8PUEAAAAAFentagFAAAAAAAAAACBrhm0GAIAAAAAAGlfMXAYAgAAAAAA+wg92RgCAAAAAAACQON/GAIAAAAAADFdAqMYAgAAAAAAfewLwxgCAAAAAAAOcZ8TGAIAAAAAABZ5HJAXAgAAAAoA
+   * 任务名称
    */
-  ExtraBuf: string;
-  HeadImgMd5: string; // 头像MD5
-  LabelIDList: string; // 标签ID列表
+  name: string;
   /**
-   * 用户昵称
-   * 例如: 双语互译聊天&顺风车消息检测
+   * 根页面
    */
-  NickName: string;
-  PYInitial: string; // 拼音缩写
-  QuanPin: string; // 全拼
-  Remark: string; // 备注
-  RemarkPYInitial: string; // 备注的拼音缩写
-  RemarkQuanPin: string; // 备注的全拼
-  Reserved1: string; // 预留字段1
-  Reserved10: string; // 预留字段10
-  Reserved11: string; // 预留字段11
-  Reserved2: string; // 预留字段2
-  Reserved3: string; // 预留字段3
-  Reserved4: string; // 预留字段4
-  Reserved5: string; // 预留字段5
-  Reserved6: string; // 预留字段6
-  Reserved7: string; // 预留字段7
-  Reserved8: string; // 预留字段8
-  Reserved9: string; // 预留字段9
-  SmallHeadImgUrl: string; // 小头像URL
-  Type: string; // 类型
-  UserName: string; // 用户名
-  VerifyFlag: string; // 验证标记
-  profilePicture: string; // 配置文件图片
-  profilePictureSmall: string; // 小配置文件图片
+  rootpage: string;
+  /**
+   * SQL 创建表的语句
+   */
+  sql: string;
+  /**
+   * 表名称
+   */
+  tableName: string;
 }
 
-// 从接口获取群成员信息
-export interface RoomMemberRawWxbotApi {
-  /**
-   * 自定义账号，可能为空字符串
-   */
-  customAccount: string;
-  /**
-   * 昵称
-   */
-  nickname: string;
-  /**
-   * 备注信息
-   */
-  note: string;
-  /**
-   * 拼音大写
-   */
-  pinyin: string;
-  /**
-   * 拼音小写
-   */
-  pinyinAll: string;
-  /**
-   * 用户头像的 URL
-   */
-  profilePicture: string;
-  /**
-   * 用户小头像的 URL
-   */
-  profilePictureSmall: string;
-  /**
-   * 可能为空字符串的字段
-   */
-  v3: string;
+interface DB {
+  databaseName:'MicroMsg.db'|'ChatMsg.db'|'Misc.db'|'Emotion.db'|
+  'Media.db'|'FunctionMsg.db'|'MSG0.db'|'MediaMSG0.db'|'PublicMsg.db'|'PublicMsgMedia.db'|'Favorite.db'|'';
+  handle:number;
+  tables:Table[]
 }
 
-// 从DB使用wxid反查用户信息
-export interface ContactRawByWxidDb {
-  /**
-   * 微信号
-   */
-  Alias: string;
-  /**
-   * 昵称
-   */
-  NickName: string;
-  /**
-   * v3 加密用户名
-   */
-  EncryptUserName: string;
-  /**
-   * 备注
-   */
-  Remark: string;
-  /**
-   * 备注拼音首字母大写
-   */
-  RemarkPYInitial: string;
-  /**
-   * 备注拼音全
-   */
-  RemarkQuanPin: string;
-  /**
-   * 昵称拼音首字母大写
-   */
-  PYInitial: string;
-  /**
-   * 昵称拼音全
-   */
-  QuanPin: string;
-  /**
-   * 头像
-   */
-  profilePicture: string;
-  /**
-   * 小头像
-   */
-  profilePictureSmall: string;
-  /**
-   * 类型
-   */
-  type: string;
-  /**
-   * wxid
-   */
-  UserName: string;
+interface DBInfoMap {
+  [key:string]:number;
+  'MicroMsg.db':number;
+  'ChatMsg.db':number;
+  'Misc.db':number;
+  'Emotion.db':number;
+  'Media.db':number;
+  'FunctionMsg.db':number;
+  'MSG0.db':number;
+  'MediaMSG0.db':number;
+  'PublicMsg.db':number;
+  'PublicMsgMedia.db':number;
+  'Favorite.db':number;
 }
 
-// 使用wxid反查用户信息
-export interface ContactRawByWxidApi {
-  /**
-   * 微信号
-   */
-  customAccount: string;
-  /**
-   * 昵称
-   */
-  nickname: string;
-  /**
-   * 备注
-   */
-  note: string;
-  /**
-   * 昵称拼音首字母大写
-   */
-  pinyin: string;
-  /**
-   * 昵称拼音全
-   */
-  pinyinAll: string;
-  /**
-   * 头像
-   */
-  profilePicture: string;
-  /**
-   * 小头像
-   */
-  profilePictureSmall: string;
-  /**
-   * V3 特定标识
-   */
-  v3: string;
+let dbInfo:DB[] = []
+const dbInfoMap:DBInfoMap = {
+  'MicroMsg.db': 0,
+  'ChatMsg.db': 0,
+  'Misc.db': 0,
+  'Emotion.db': 0,
+  'Media.db': 0,
+  'FunctionMsg.db': 0,
+  'MSG0.db': 0,
+  'MediaMSG0.db': 0,
+  'PublicMsg.db': 0,
+  'PublicMsgMedia.db': 0,
+  'Favorite.db': 0,
 }
 
-// enum ApiEndpoint {
-//   UserInfo = '/api/userinfo', // 获取登录用户信息
-//   Contacts = '/api/contacts', // 获取通讯录信息，不建议使用，请使用 DbContacts
-//   DbContacts = '/api/dbcontacts', // 从数据库中获取通讯录信息
-//   SendTxtMsg = '/api/sendtxtmsg', // 发送文本消息
-//   SendImgMsg = '/api/sendimgmsg', // 发送图片消息
-//   SendFileMsg = '/api/sendfilemsg', // 发送文件消息
-//   ChatRoom = '/api/chatroom', // 获取群聊组成员列表，不建议使用，请使用 DbChatRoom
-//   DbChatRoom = '/api/dbchatroom', // 从数据库中获取群聊组信息和成员列表
-//   AccountByWxid = '/api/accountbywxid', // WXID反查微信昵称，不建议使用，请使用 DbAccountByWxid
-//   DbAccountByWxid = '/api/dbaccountbywxid', // 从数据库中通过WXID反查微信昵称
-//   ForwardMsg = '/api/forwardmsg', // 消息转发
-//   DBS = '/api/dbs', // 获取支持查询的数据库句柄
-//   ExecSql = '/api/execsql', // 通过数据库句柄执行SQL语句
-//   Close = '/close', // 停止 wxbot-sidecar（停止http server，并中止程序运行）
-// }
+// DB数据格式化,单条数据
+export const formatDBDataOne = (data:any[]) => {
+  const res:{
+    [key:string]:any
+  } = {}
+  const titles = data[0]
+  const values = data[1]
+  titles.forEach((title:string, index:number) => {
+    res[title] = values[index]
+  })
+  return res
+}
 
-// def checkLogin():
-//     url = "127.0.0.1:19088/api/checkLogin"
-//     payload = {}
-//     headers = {}
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
+// DB数据格式化,多条数据
+export const formatDBDataMulti = (data:any[]) => {
+  const res:{
+    [key:string]:any
+  }[] = []
+  const titles = data[0]
+  const values = data.slice(1)
+  values.forEach((item:any[]) => {
+    const obj:{
+      [key:string]:any
+    } = {}
+    titles.forEach((title:string, index:number) => {
+      obj[title] = item[index]
+    })
+    res.push(obj)
+  })
+  return res
+}
+
+export const initDBInfo = async () => {
+  const res = await getDBInfo()
+  // log.info('initDBInfo:', JSON.stringify(res.data))
+  dbInfo = res.data.data
+  dbInfo.forEach((item, _index) => {
+    dbInfoMap[item.databaseName] = item.handle
+  })
+  log.info('dbInfoMap:', JSON.stringify(dbInfoMap, null, 2))
+  return res
+}
+
 export const checkLogin = () => {
   return post('/api/checkLogin')
 }
 
-// def userInfo():
-// url = "127.0.0.1:19088/api/userInfo"
-// payload = {}
-// headers = {}
-// response = requests.request("POST", url, headers=headers, data=payload)
-// print(response.text)
 export const userInfo = () => {
   return post('/api/userInfo')
 }
 
-// def sendTextMsg():
-//     url = "127.0.0.1:19088/api/sendTextMsg"
-//     payload = json.dumps({
-//         "wxid": "filehelper",
-//         "msg": "12www"
-//     })
-//     headers = {
-//         'Content-Type': 'application/json'
-//     }
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
 export const sendTextMsg = (wxid: string, msg: string) => {
   return post('/api/sendTextMsg', { wxid, msg })
 }
-
-// def sendImagesMsg():
-//     url = "127.0.0.1:19088/api/sendImagesMsg"
-//     print("modify imagePath")
-//     raise RuntimeError("modify imagePath then deleted me")
-//     payload = json.dumps({
-//         "wxid": "filehelper",
-//         "imagePath": "C:\\pic.png"
-//     })
-//     headers = {
-//         'Content-Type': 'application/json'
-//     }
-
-//     response = requests.request("POST", url, headers=headers, data=payload)
-
-//     print(response.text)
 
 export const sendImagesMsg = (wxid: string, imagePath: string) => {
   return post('/api/sendImagesMsg', { wxid, imagePath })
 }
 
-// def sendFileMsg():
-//     url = "127.0.0.1:19088/api/sendFileMsg"
-//     print("modify filePath")
-//     raise RuntimeError("modify filePath then deleted me")
-//     payload = json.dumps({
-//         "wxid": "filehelper",
-//         "filePath": "C:\\test.zip"
-//     })
-//     headers = {
-//         'Content-Type': 'application/json'
-//     }
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
-
 export const sendFileMsg = (wxid: string, filePath: string) => {
   return post('/api/sendFileMsg', { wxid, filePath })
 }
 
-// def hookSyncMsg():
-//     url = "127.0.0.1:19088/api/hookSyncMsg"
-//     print("modify ip port url ")
-//     raise RuntimeError("modify ip port url then deleted me")
-//     payload = json.dumps({
-//         "port": "19099",
-//         "ip": "127.0.0.1",
-//         "url": "http://localhost:8080",
-//         "timeout": "3000",
-//         "enableHttp": "0"
-//     })
-//     headers = {
-//         'Content-Type': 'application/json'
-//     }
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
 export const hookSyncMsg = (parm: {
   port: string
   ip: string
@@ -682,370 +421,187 @@ export const hookSyncMsg = (parm: {
   return post('/api/hookSyncMsg', parm)
 }
 
-// def unhookSyncMsg():
-//     url = host + "/api/unhookSyncMsg"
-//     payload = {}
-//     headers = {}
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
 export const unhookSyncMsg = () => {
   return post('/api/unhookSyncMsg')
 }
 
-// def getContactList():
-//     url = host + "/api/getContactList"
-//     payload = {}
-//     headers = {}
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
 export const getContactList = () => {
   return post('/api/getContactList')
 }
 
-// def getDBInfo():
-//     url = host + "/api/getDBInfo"
-//     payload = {}
-//     headers = {}
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
-export const getDBInfo = () => {
-  return post('/api/getDBInfo')
+// 获取群详情
+export const getChatRoomDetailInfo = async (chatRoomId: string) => {
+  // return post('/api/getChatRoomDetailInfo', { chatRoomId })
+  const query = {
+    dbHandle: dbInfoMap['MicroMsg.db'],
+    sql: `SELECT * FROM ChatRoomInfo WHERE ChatRoomName = '${chatRoomId}'`,
+  }
+  // log.info('query:', JSON.stringify(query))
+  const chatRoomRes = await execSql(query)
+  // log.info('chatRoomRes:', JSON.stringify(chatRoomRes.data))
+  if (chatRoomRes.data && chatRoomRes.data.data && chatRoomRes.data.data.length > 0) {
+    const chatRoomInfo = formatDBDataOne(chatRoomRes.data.data)
+    // log.info('chatRoomInfo:', JSON.stringify(chatRoomInfo, null, 2))
+    return {
+      data:{
+        code:1,
+        msg:'success',
+        data:{
+          chatRoomId:chatRoomInfo['ChatRoomName'],
+          notice:chatRoomInfo['Announcement'],
+          xml:chatRoomInfo['Reserved2'],
+          admin:chatRoomInfo['AnnouncementEditor'],
+        },
+      },
+    }
+  } else {
+    log.info('chatRoomRes.data.data is empty')
+    return {
+      data:{
+        code:0,
+        msg:'success',
+        data:null,
+      },
+    }
+  }
+
 }
 
-// def execSql():
-//     url = host + "/api/execSql"
-//     print("modify dbHandle ")
-//     raise RuntimeError("modify dbHandle then deleted me")
-//     payload = json.dumps({
-//         "dbHandle": 1713425147584,
-//         "sql": "select * from MSG where localId =100;"
-//     })
-//     headers = {
-//         'Content-Type': 'application/json'
-//     }
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
-export const execSql = (dbHandle: number, sql: string) => {
-  return post('/api/execSql', { dbHandle, sql })
-}
-
-// def getChatRoomDetailInfo():
-//     url = host + "/api/getChatRoomDetailInfo"
-//     print("modify chatRoomId ")
-//     raise RuntimeError("modify chatRoomId then deleted me")
-//     payload = json.dumps({
-//         "chatRoomId": "123333@chatroom"
-//     })
-//     headers = {
-//         'Content-Type': 'application/json'
-//     }
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
-export const getChatRoomDetailInfo = (chatRoomId: string) => {
-  return post('/api/getChatRoomDetailInfo', { chatRoomId })
-}
-
-// def addMemberToChatRoom():
-//     url = host + "/api/addMemberToChatRoom"
-//     print("modify chatRoomId  memberIds ")
-//     raise RuntimeError("modify chatRoomId memberIds then deleted me")
-//     payload = json.dumps({
-//         "chatRoomId": "123@chatroom",
-//         "memberIds": "wxid_123"
-//     })
-//     headers = {
-//         'Content-Type': 'application/json'
-//     }
-
-//     response = requests.request("POST", url, headers=headers, data=payload)
-
-//     print(response.text)
 export const addMemberToChatRoom = (chatRoomId: string, memberIds: string) => {
   return post('/api/addMemberToChatRoom', { chatRoomId, memberIds })
 }
 
-// def delMemberFromChatRoom():
-//     url = host + "/api/delMemberFromChatRoom"
-//     print("modify chatRoomId  memberIds ")
-//     raise RuntimeError("modify chatRoomId memberIds then deleted me")
-//     payload = json.dumps({
-//         "chatRoomId": "21363231004@chatroom",
-//         "memberIds": "wxid_123"
-//     })
-//     headers = {
-//         'Content-Type': 'application/json'
-//     }
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
 export const delMemberFromChatRoom = (chatRoomId: string, memberIds: string) => {
   return post('/api/delMemberFromChatRoom', { chatRoomId, memberIds })
 }
 
-// def modifyNickname():
-//     url = host + "/api/modifyNickname"
-//     print("modify chatRoomId  wxid  nickName")
-//     raise RuntimeError("modify chatRoomId  wxid  nickName then deleted me")
-//     payload = json.dumps({
-//         "chatRoomId": "123@chatroom",
-//         "wxid": "wxid_123",
-//         "nickName": "test"
-//     })
-//     headers = {
-//         'Content-Type': 'application/json'
-//     }
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
 export const modifyNickname = (chatRoomId: string, wxid: string, nickName: string) => {
   return post('/api/modifyNickname', { chatRoomId, wxid, nickName })
 }
 
-// def getMemberFromChatRoom():
-//     print("modify chatRoomId  ")
-//     raise RuntimeError("modify chatRoomId then deleted me")
-//     url = host + "/api/getMemberFromChatRoom"
-//     payload = json.dumps({
-//         "chatRoomId": "123@chatroom"
-//     })
-//     headers = {
-//         'Content-Type': 'application/json'
-//     }
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
-export const getMemberFromChatRoom = (chatRoomId: string) => {
-  return post('/api/getMemberFromChatRoom', { chatRoomId })
+// 获取群成员
+export const getMemberFromChatRoom = async (chatRoomId: string) => {
+  // return post('/api/getMemberFromChatRoom', { chatRoomId })
+  const query = {
+    dbHandle: dbInfoMap['MicroMsg.db'],
+    sql: `SELECT * FROM ChatRoom WHERE ChatRoomName = '${chatRoomId}'`,
+  }
+  // log.info('query:', JSON.stringify(query))
+  const chatRoomRes = await execSql(query)
+  // log.info('chatRoomRes:', JSON.stringify(chatRoomRes.data))
+  if (chatRoomRes.data && chatRoomRes.data.data && chatRoomRes.data.data.length > 0) {
+    const chatRoomInfo = formatDBDataOne(chatRoomRes.data.data)
+    // log.info('chatRoomInfo:', JSON.stringify(chatRoomInfo, null, 2))
+    return {
+      data:{
+        code:1,
+        msg:'success',
+        data:{
+          chatRoomId:chatRoomInfo['ChatRoomName'],
+          admin:chatRoomInfo['Reserved2'],
+          adminNickname:'',
+          memberNickname:chatRoomInfo['DisplayNameList'],
+          members:chatRoomInfo['UserNameList'],
+        },
+      },
+    }
+  } else {
+    log.info('chatRoomRes.data.data is empty')
+    return {
+      data:{
+        code:0,
+        msg:'success',
+        data:null,
+      },
+    }
+  }
 }
 
-// def topMsg():
-//     print("modify msgId  ")
-//     raise RuntimeError("modify msgId then deleted me")
-//     url = host + "/api/topMsg"
-//     payload = json.dumps({
-//         "msgId": 1222222
-//     })
-//     headers = {
-//         'Content-Type': 'application/json'
-//     }
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
 export const topMsg = (msgId: number) => {
   return post('/api/topMsg', { msgId })
 }
 
-// def removeTopMsg():
-//     print("modify msgId chatRoomId ")
-//     raise RuntimeError("modify msgId chatRoomId then deleted me")
-
-//     url = host + "/api/removeTopMsg"
-
-//     payload = json.dumps({
-//         "chatRoomId": "123@chatroom",
-//         "msgId": 123
-//     })
-//     headers = {
-//         'Content-Type': 'application/json'
-//     }
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
 export const removeTopMsg = (chatRoomId: string, msgId: number) => {
   return post('/api/removeTopMsg', { chatRoomId, msgId })
 }
 
-// def InviteMemberToChatRoom():
-//     print("modify memberIds chatRoomId ")
-//     raise RuntimeError("modify memberIds chatRoomId then deleted me")
-
-//     url = host + "/api/InviteMemberToChatRoom"
-
-//     payload = json.dumps({
-//         "chatRoomId": "123@chatroom",
-//         "memberIds": "wxid_123"
-//     })
-//     headers = {
-//         'Content-Type': 'application/json'
-//     }
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
 export const InviteMemberToChatRoom = (chatRoomId: string, memberIds: string) => {
   return post('/api/InviteMemberToChatRoom', { chatRoomId, memberIds })
 }
 
-// def hookLog():
-//     url = host + "/api/hookLog"
-//     payload = {}
-//     headers = {}
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
 export const hookLog = () => {
   return post('/api/hookLog')
 }
 
-// def unhookLog():
-//     url = host + "/api/unhookLog"
-//     payload = {}
-//     headers = {}
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
 export const unhookLog = () => {
   return post('/api/unhookLog')
 }
 
-// def createChatRoom():
-//     print("modify memberIds  ")
-//     raise RuntimeError("modify memberIds then deleted me")
-//     url = host + "/api/createChatRoom"
-
-//     payload = json.dumps({
-//         "memberIds": "wxid_8yn4k908tdqp22,wxid_oyb662qhop4422"
-//     })
-//     headers = {
-//         'Content-Type': 'application/json'
-//     }
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
 export const createChatRoom = (memberIds: string) => {
   return post('/api/createChatRoom', { memberIds })
 }
 
-// def quitChatRoom():
-//     print("modify chatRoomId  ")
-//     raise RuntimeError("modify chatRoomId then deleted me")
-//     url = host + "/api/quitChatRoom"
-
-//     payload = json.dumps({
-//     "chatRoomId": "123@chatroom"
-//     })
-//     headers = {
-//     'Content-Type': 'application/json'
-//     }
-
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
 export const quitChatRoom = (chatRoomId: string) => {
   return post('/api/quitChatRoom', { chatRoomId })
 }
 
-// def forwardMsg():
-//     print("modify msgId  ")
-//     raise RuntimeError("modify msgId then deleted me")
-//     url = host + "/api/forwardMsg"
-
-//     payload = json.dumps({
-//     "wxid": "filehelper",
-//     "msgId": "12331"
-//     })
-//     headers = {
-//     'Content-Type': 'application/json'
-//     }
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
 export const forwardMsg = (wxid: string, msgId: string) => {
   return post('/api/forwardMsg', { wxid, msgId })
 }
 
-// def getSNSFirstPage():
-//     url = host + "/api/getSNSFirstPage"
-
-//     payload = {}
-//     headers = {}
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
 export const getSNSFirstPage = () => {
   return post('/api/getSNSFirstPage')
 }
 
-// def getSNSNextPage():
-//     print("modify snsId  ")
-//     raise RuntimeError("modify snsId then deleted me")
-//     url = host + "/api/getSNSNextPage"
-
-//     payload = json.dumps({
-//     "snsId": ""
-//     })
-//     headers = {
-//     'Content-Type': 'application/json'
-//     }
-
-//     response = requests.request("POST", url, headers=headers, data=payload)
-
-//     print(response.text)
 export const getSNSNextPage = (snsId: string) => {
   return post('/api/getSNSNextPage', { snsId })
 }
 
-// def addFavFromMsg():
-//     print("modify msgId  ")
-//     raise RuntimeError("modify msgId then deleted me")
-//     url = host + "/api/addFavFromMsg"
-
-//     payload = json.dumps({
-//     "msgId": "1222222"
-//     })
-//     headers = {
-//     'Content-Type': 'application/json'
-//     }
-
-//     response = requests.request("POST", url, headers=headers, data=payload)
-
-//     print(response.text)
 export const addFavFromMsg = (msgId: string) => {
   return post('/api/addFavFromMsg', { msgId })
 }
 
-// def addFavFromImage():
-//     print("modify wxid imagePath ")
-//     raise RuntimeError("modify wxid  imagePath then deleted me")
-//     url = host + "/api/addFavFromImage"
-
-//     payload = json.dumps({
-//     "wxid": "",
-//     "imagePath": ""
-//     })
-//     headers = {
-//     'Content-Type': 'application/json'
-//     }
-
-//     response = requests.request("POST", url, headers=headers, data=payload)
-
-//     print(response.text)
 export const addFavFromImage = (wxid: string, imagePath: string) => {
   return post('/api/addFavFromImage', { wxid, imagePath })
 }
 
-// def getContactProfile():
-//     print("modify wxid  ")
-//     raise RuntimeError("modify wxid   then deleted me")
-//     url = host + "/api/getContactProfile"
-
-//     payload = json.dumps({
-//     "wxid": ""
-//     })
-//     headers = {
-//     'Content-Type': 'application/json'
-//     }
-
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
-export const getContactProfile = (wxid: string) => {
-  return post('/api/getContactProfile', { wxid })
+export const getContactProfile = async (wxid: string) => {
+  // return post('/api/getContactProfile', { wxid })
+  const query = {
+    dbHandle: dbInfoMap['MicroMsg.db'],
+    sql: `SELECT * FROM Contact WHERE UserName = '${wxid}'`,
+  }
+  // log.info('query:', JSON.stringify(query))
+  const queryRes = await execSql(query)
+  log.info('chatRoomRes:', JSON.stringify(queryRes.data))
+  if (queryRes.data && queryRes.data.data && queryRes.data.data.length > 0) {
+    const chatRoomInfo = formatDBDataOne(queryRes.data.data)
+    log.info('chatRoomInfo:', JSON.stringify(chatRoomInfo, null, 2))
+    return {
+      data:{
+        code:1,
+        msg:'success',
+        data:{
+          account:chatRoomInfo['UserName'],
+          headImage:chatRoomInfo['BigHeadImgUrl'],
+          nickname:chatRoomInfo['NickName'],
+          v3:chatRoomInfo['EncryptUserName'],
+          wxid:chatRoomInfo['UserName'],
+        },
+      },
+    }
+  } else {
+    log.info('chatRoomRes.data.data is empty')
+    return {
+      data:{
+        code:0,
+        msg:'success',
+        data:null,
+      },
+    }
+  }
 }
 
-// def sendAtText():
-//     print("modify wxids  chatRoomId")
-//     raise RuntimeError("modify wxids   chatRoomId then deleted me")
-//     url = host + "/api/sendAtText"
-
-//     payload = json.dumps({
-//     "wxids": "notify@all",
-//     "chatRoomId": "123@chatroom",
-//     "msg": "你好啊"
-//     })
-//     headers = {
-//     'Content-Type': 'application/json'
-//     }
-
-//     response = requests.request("POST", url, headers=headers, data=payload)
-
-//     print(response.text)
 export const sendAtText = (wxids: string, chatRoomId: string, msg: string) => {
   return post('/api/sendAtText', { wxids, chatRoomId, msg })
 }
@@ -1058,27 +614,6 @@ export const sendMultiAtText = (chatRoomId: string, at:{
   return post('/api/sendMultiAtText', { chatRoomId, at })
 }
 
-// def forwardPublicMsg():
-//     print("modify param ")
-//     raise RuntimeError("modify param then deleted me")
-//     url = host + "/api/forwardPublicMsg"
-
-//     payload = json.dumps({
-//     "appName": "",
-//     "userName": "",
-//     "title": "",
-//     "url": "",
-//     "thumbUrl": "",
-//     "digest": "",
-//     "wxid": "filehelper"
-//     })
-//     headers = {
-//     'Content-Type': 'application/json'
-//     }
-
-//     response = requests.request("POST", url, headers=headers, data=payload)
-
-//     print(response.text)
 export const forwardPublicMsg = (param: {
   appName: string;
   userName: string;
@@ -1091,81 +626,18 @@ export const forwardPublicMsg = (param: {
   return post('/api/forwardPublicMsg', param)
 }
 
-// def forwardPublicMsgByMsgId():
-//     print("modify param ")
-//     raise RuntimeError("modify param then deleted me")
-//     url = host + "/api/forwardPublicMsgByMsgId"
-
-//     payload = json.dumps({
-//     "msgId": 123,
-//     "wxid": "filehelper"
-//     })
-//     headers = {
-//     'Content-Type': 'application/json'
-//     }
-
-//     response = requests.request("POST", url, headers=headers, data=payload)
-
-//     print(response.text)
 export const forwardPublicMsgByMsgId = (msgId: number, wxid: string) => {
   return post('/api/forwardPublicMsgByMsgId', { msgId, wxid })
 }
 
-// def downloadAttach():
-//     print("modify param ")
-//     raise RuntimeError("modify param then deleted me")
-//     url = host + "/api/downloadAttach"
-
-//     payload = json.dumps({
-//     "msgId": 123
-//     })
-//     headers = {
-//     'Content-Type': 'application/json'
-//     }
-
-//     response = requests.request("POST", url, headers=headers, data=payload)
-
-//     print(response.text)
 export const downloadAttach = (msgId: number) => {
   return post('/api/downloadAttach', { msgId })
 }
 
-// def decodeImage():
-//     print("modify param ")
-//     raise RuntimeError("modify param then deleted me")
-//     url = host + "/api/decodeImage"
-
-//     payload = json.dumps({
-//     "filePath": "C:\\66664816980131.dat",
-//     "storeDir": "C:\\test"
-//     })
-//     headers = {
-//     'Content-Type': 'application/json'
-//     }
-
-//     response = requests.request("POST", url, headers=headers, data=payload)
-
-//     print(response.text)
 export const decodeImage = (filePath: string, storeDir: string) => {
   return post('/api/decodeImage', { filePath, storeDir })
 }
 
-// def getVoiceByMsgId():
-//     print("modify param ")
-//     raise RuntimeError("modify param then deleted me")
-//     url = host + "/api/getVoiceByMsgId"
-
-//     payload = json.dumps({
-//     "msgId": 7880439644200,
-//     "storeDir": "c:\\test"
-//     })
-//     headers = {
-//     'Content-Type': 'application/json'
-//     }
-
-//     response = requests.request("POST", url, headers=headers, data=payload)
-
-//     print(response.text)
 export const getVoiceByMsgId = (msgId: number, storeDir: string) => {
   return post('/api/getVoiceByMsgId', { msgId, storeDir })
 }

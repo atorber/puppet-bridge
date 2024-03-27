@@ -8,29 +8,35 @@
 
 ## 简介
 
-wechaty-puppet-bridge 是一个虚拟的Wechaty Puppet，实际上它只是一个桥接服务，它将GitHub中开源的微信机器人桥接到Wechaty
+wechaty-puppet-bridge 是一个虚拟的Wechaty Puppet，实际上它只是一个桥接服务，它将GitHub中开源的机器人桥接到Wechaty，是开源IM bot搬运工
 
-如果你想方便且高效的使用免费的微信机器人，那么它是一个很好的选择，它不需要token同时又能使用Wechaty进行聊天机器人开发
+如果你想方便且高效的使用免费的机器人，那么它是一个很好的选择，它不需要token同时又能使用Wechaty进行聊天机器人开发
 
 与wechaty-puppet-xp比较：
 
 | 项目 | [puppet-xp](https://github.com/atorber/puppet-xp) | [puppet-bridge](https://github.com/atorber/puppet-bridge) |
 | :------------- |:-------------| :-----|
-| 注入 | ⭐⭐⭐<br>不需要 | ⭐⭐⭐<br>不需要 |
-| 功能| ⭐⭐⭐<br>基于[cixingguangming55555/wechat-bot](https://github.com/cixingguangming55555/wechat-bot)项目 | ⭐⭐⭐<br>基于[cixingguangming55555/wechat-bot](https://github.com/cixingguangming55555/wechat-bot)项目 |
-| 梯子 | ⭐<br>依赖frida，国内网络无法安装，需使用梯子 | ⭐⭐⭐<br>不需要，下载[funtool_wx=3.9.2.23.exe](https://github.com/cixingguangming55555/wechat-bot/blob/master/funtool/funtool_wx%3D3.9.2.23.exe)即可 |
-| 启动| ⭐⭐⭐<br>直接运行nodejs程序 | ⭐⭐<br>需先手动启动funtool_wx=3.9.2.23.exe|
-| 环境| ⭐⭐⭐<br>nodejs | ⭐⭐<br>nodejs + funtool_wx=3.9.2.23.exe|
+| 手动注入 | ⭐⭐⭐<br>不需要 | ⭐⭐⭐<br>不需要 |
+| 功能| ⭐⭐⭐<br>基于[cixingguangming55555/wechat-bot](https://github.com/cixingguangming55555/wechat-bot)项目 | ⭐⭐⭐<br>基于[cixingguangming55555/wechat-bot](https://github.com/cixingguangming55555/wechat-bot)、[jwping/wxbot](https://github.com/jwping/wxbot)、[ttttupup/wxhelper](https://github.com/ttttupup/wxhelper)等开源项目 |
+| 梯子 | ⭐<br>依赖frida，国内网络无法安装，需使用梯子 | ⭐⭐⭐<br>不需要，直接运行程序即可 |
+| 启动| ⭐⭐⭐<br>直接运行nodejs程序 | ⭐⭐<br>需先手动启动确认启动，但很简单|
+| 环境| ⭐⭐⭐<br>nodejs | ⭐⭐<br>nodejs|
 
 获取更多信息[访问项目语雀文档](https://www.yuque.com/atorber/chatflow/mean34ibdoonvox4)
+
+## 功能清单
+
+> 最新功能清单查看[功能清单](https://www.yuque.com/atorber/chatflow/imovlh1l8ypxmd9n#eTg6)
+
+![功能清单](./docs/images/fnlist.png)
 
 ## 快速开始
 
 ### 使用[cixingguangming55555/wechat-bot](https://github.com/cixingguangming55555/wechat-bot)
 
-1. 在您的Windows电脑上安装微信客户端（需要微信版本v3.9.2.23,下载微信[v3.9.2.23](https://github.com/tom-snow/wechat-windows-versions/releases/tag/v3.9.2.23)）
+1. 在您的Windows电脑上安装客户端（需要版本v3.9.2.23,下载[v3.9.2.23](https://github.com/tom-snow/wechat-windows-versions/releases/tag/v3.9.2.23)）
 
-2. 在电脑上登录微信客户端
+2. 在电脑上登录客户端
 
 3. 到[cixingguangming55555/wechat-bot](https://github.com/cixingguangming55555/wechat-bot)项目下载[funtool_wx=3.9.2.23.exe](https://github.com/cixingguangming55555/wechat-bot/blob/master/funtool/funtool_wx%3D3.9.2.23.exe)运行程序并点击【Start】开启功能。
 
@@ -54,9 +60,9 @@ npm start
 
 ### 使用[jwping/wxbot](https://github.com/jwping/wxbot)
 
-1. 在您的Windows电脑上安装微信客户端（需要微信版本v3.9.8.25,下载微信[v3.9.8.25](https://github.com/tom-snow/wechat-windows-versions/releases/tag/v3.9.8.25)）
+1. 在您的Windows电脑上安装客户端（需要版本v3.9.8.25,下载[v3.9.8.25](https://github.com/tom-snow/wechat-windows-versions/releases/tag/v3.9.8.25)）
 
-2. 在电脑上登录微信客户端
+2. 在电脑上登录客户端
 
 3. 到[jwping/wxbot](https://github.com/jwping/wxbot)项目下载[wxbot-sidecar.exe](https://github.com/jwping/wxbot/blob/main/bin/wxbot-sidecar.exe)运行程序并点击【Start】开启功能。
 
@@ -88,7 +94,7 @@ npm i wechaty-puppet-bridge
 
 示例代码：
 
-- [cixingguangming55555/wechat-bot](https://github.com/cixingguangming55555/wechat-bot)
+- 运行在[cixingguangming55555/wechat-bot](https://github.com/cixingguangming55555/wechat-bot)上的v3.9.2.23
 
 ```javascript
 import {
@@ -96,7 +102,7 @@ import {
     log,
   } from 'wechaty'
   import { FileBox } from 'file-box'
-  import { PuppetBridge } from 'wechaty-puppet-bridge'
+  import {PuppetBridgeCixingguangming55555WechatBotV3090223 as PuppetBridge } from 'wechaty-puppet-bridge'
   
   async function onLogin (user) {
     log.info('onLogin', '%s login', user)
@@ -124,7 +130,7 @@ import {
   }
   
   const puppet = new PuppetBridge({
-   nickName: '大师'  // 登录微信的昵称
+   token: '大师'  // 当前登录账号的昵称作为token
    })
 
   const bot = WechatyBuilder.build({
@@ -142,7 +148,7 @@ import {
     .catch(console.error)
 ```
 
-- [jwping/wxbot](https://github.com/jwping/wxbot)
+- 运行在[jwping/wxbot](https://github.com/jwping/wxbot)上的v3.9.8.25
 
 ```javascript
 import {
@@ -150,7 +156,7 @@ import {
     log,
   } from 'wechaty'
   import { FileBox } from 'file-box'
-  import { PuppetBridgeJwpingWxbot as PuppetBridge } from 'wechaty-puppet-bridge'
+  import { PuppetBridgeJwpingWxbotV3090825 as PuppetBridge } from 'wechaty-puppet-bridge'
 
   async function onLogin (user) {
     log.info('onLogin', '%s login', user)
@@ -177,9 +183,111 @@ import {
   
   }
   
-  const puppet = new PuppetBridge({
-   nickName: '大师'  // 登录微信的昵称
-   })
+  const puppet = new PuppetBridge()
+
+  const bot = WechatyBuilder.build({
+    name: 'ding-dong-bot',
+    puppet,
+  })
+  
+  bot.on('login', onLogin)
+  bot.on('message', onMessage)
+  
+  bot.start()
+    .then(() => {
+      return log.info('StarterBot', 'Starter Bot Started.')
+    })
+    .catch(console.error)
+```
+
+- 运行在[ttttupup/wxhelper](https://github.com/ttttupup/wxhelper)上的v3.9.8.25
+
+```javascript
+import {
+    WechatyBuilder,
+    log,
+  } from 'wechaty'
+  import { FileBox } from 'file-box'
+  import { PuppetBridgeAtorberFusedV3090825 as PuppetBridge } from 'wechaty-puppet-bridge'
+
+  async function onLogin (user) {
+    log.info('onLogin', '%s login', user)
+    const roomList = await bot.Room.findAll()
+    console.info('room count:', roomList.length)
+    const contactList = await bot.Contact.findAll()
+    console.info('contact count:', contactList.length)
+  }
+  
+  async function onMessage (message) {
+    log.info('onMessage', JSON.stringify(message))
+  
+    // 1. send Image
+    if (/^ding$/i.test(message.text())) {
+      const fileBox = FileBox.fromUrl('https://wechaty.github.io/wechaty/images/bot-qr-code.png')
+      await message.say(fileBox)
+    }
+  
+    // 2. send Text
+  
+    if (/^dong$/i.test(message.text())) {
+      await message.say('dingdingding')
+    }
+  
+  }
+  
+  const puppet = new PuppetBridge()
+
+  const bot = WechatyBuilder.build({
+    name: 'ding-dong-bot',
+    puppet,
+  })
+  
+  bot.on('login', onLogin)
+  bot.on('message', onMessage)
+  
+  bot.start()
+    .then(() => {
+      return log.info('StarterBot', 'Starter Bot Started.')
+    })
+    .catch(console.error)
+```
+
+- 运行在[ttttupup/wxhelper](https://github.com/ttttupup/wxhelper)上的v3.9.5.81
+
+```javascript
+import {
+    WechatyBuilder,
+    log,
+  } from 'wechaty'
+  import { FileBox } from 'file-box'
+  import { PuppetBridgeTtttupupWxhelperV3090581 as PuppetBridge } from 'wechaty-puppet-bridge'
+
+  async function onLogin (user) {
+    log.info('onLogin', '%s login', user)
+    const roomList = await bot.Room.findAll()
+    console.info('room count:', roomList.length)
+    const contactList = await bot.Contact.findAll()
+    console.info('contact count:', contactList.length)
+  }
+  
+  async function onMessage (message) {
+    log.info('onMessage', JSON.stringify(message))
+  
+    // 1. send Image
+    if (/^ding$/i.test(message.text())) {
+      const fileBox = FileBox.fromUrl('https://wechaty.github.io/wechaty/images/bot-qr-code.png')
+      await message.say(fileBox)
+    }
+  
+    // 2. send Text
+  
+    if (/^dong$/i.test(message.text())) {
+      await message.say('dingdingding')
+    }
+  
+  }
+  
+  const puppet = new PuppetBridge()
 
   const bot = WechatyBuilder.build({
     name: 'ding-dong-bot',
@@ -236,9 +344,18 @@ wechaty-puppet-bridge 是一个全新的wechaty-puppet，它可以连接所有�
 
 1. DONE：Wechat-bot 馈人玫瑰之手，历久犹有余香 [cixingguangming55555/wechat-bot](https://github.com/cixingguangming55555/wechat-bot)
 
-2. DONE：wxbot - 微信聊天机器人 [jwping/wxbot](https://github.com/jwping/wxbot)
+2. DONE：wxbot - 聊天机器人 [jwping/wxbot](https://github.com/jwping/wxbot)
 
 ## 更新日志
+
+### v0.7.0
+
+- 升级atorber-fused仅需要[ttttupup/wxhelper](https://github.com/ttttupup/wxhelper)启动
+- 拓展[ttttupup/wxhelper](https://github.com/ttttupup/wxhelper)使用32.获取数据库句柄拓展支持：
+  - 47.获取群详情
+  - 25.获取群成员
+  - 60.获取群/群成员详情
+- 支持自动注入及自动登录
 
 ### v0.6.1
 

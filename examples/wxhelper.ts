@@ -1,0 +1,18 @@
+import { log } from 'wechaty-puppet'
+import * as wxhelper from '../src/agents/atorber-fused-api.js'
+
+const testRoom1 = '21341182572@chatroom'
+const testRoom2 = '25172281579@chatroom'
+const main = async () => {
+  await wxhelper.initDBInfo()
+  const res1 = await wxhelper.getChatRoomDetailInfo(testRoom1)
+  log.info('res1:', JSON.stringify(res1, null, 2))
+  //   await wxhelper.getChatRoomDetailInfo(testRoom2)
+  // await wxhelper.getMemberFromChatRoom(testRoom1)
+  const res2 = await wxhelper.getMemberFromChatRoom(testRoom2)
+  log.info('res2:', JSON.stringify(res2, null, 2))
+  const res3 = await wxhelper.getContactProfile('ledongmao')
+  log.info('res3:', JSON.stringify(res3, null, 2))
+}
+
+void main()

@@ -1,7 +1,6 @@
 /* eslint-disable camelcase */
 /* eslint-disable sort-keys */
 import net from 'net'
-import http from 'http'
 import axios from 'axios'
 import { EventEmitter } from 'events'
 import { log } from 'wechaty-puppet'
@@ -19,43 +18,6 @@ import sudo from 'sudo-prompt'
 const __dirname = path.resolve(path.dirname(''))
 log.info('当前文件的目录路径:', __dirname)
 
-enum ApiEndpoint {
-  Checklogin = '/api/checkLogin', // 检查登录状态
-  SyncUrl = '/api/syncurl', // 获取二维码
-  UserInfo = '/api/userinfo', // 获取登录用户信息
-  Contacts = '/api/contacts', // 获取通讯录信息，不建议使用，请使用 DbContacts
-  DbContacts = '/api/dbcontacts', // 从数据库中获取通讯录信息
-  SendTxtMsg = '/api/sendtxtmsg', // 发送文本消息
-  SendImgMsg = '/api/sendimgmsg', // 发送图片消息
-  SendFileMsg = '/api/sendfilemsg', // 发送文件消息
-  ChatRoom = '/api/chatroom', // 获取群聊组成员列表，不建议使用，请使用 DbChatRoom
-  DbChatRoom = '/api/dbchatroom', // 从数据库中获取群聊组信息和成员列表
-  AccountByWxid = '/api/accountbywxid', // WXID反查微信昵称，不建议使用，请使用 DbAccountByWxid
-  DbAccountByWxid = '/api/dbaccountbywxid', // 从数据库中通过WXID反查微信昵称
-  ForwardMsg = '/api/forwardmsg', // 消息转发
-  DBS = '/api/dbs', // 获取支持查询的数据库句柄
-  ExecSql = '/api/execsql', // 通过数据库句柄执行SQL语句
-  Close = '/close', // 停止 wxbot-sidecar（停止http server，并中止程序运行）
-}
-
-// const HEART_BEAT = 5005 // 心跳
-// const RECV_TXT_MSG = 1 // 文本消息
-// const RECV_PIC_MSG = 3 // 图片消息
-// const SEND_FILE_MSG = 49 // 文件消息
-// const USER_LIST = 5000 // 微信联系人列表
-// const GET_USER_LIST_SUCCSESS = 5001 // 获取联系人列表成功
-// const GET_USER_LIST_FAIL = 5002 // 获取联系人列表失败
-// const TXT_MSG = 555 // 发送文本消息
-// const PIC_MSG = 500 // 发送图片消息
-// const AT_MSG = 550 // 发送AT消息
-// const CHATROOM_MEMBER = 5010 // 群成员列表
-// const CHATROOM_MEMBER_NICK = 5020 // 群成员昵称
-// const PERSONAL_INFO = 6500 // 个人信息
-// const DEBUG_SWITCH = 6000 // 调试开关
-// const PERSONAL_DETAIL = 6550 // 个人详细信息
-// const NEW_FRIEND_REQUEST = 37// 微信好友请求消息
-// const AGREE_TO_FRIEND_REQUEST = 10000// 同意微信好友请求消息
-
 // 设置axios请求超时时间
 axios.defaults.timeout = 5000
 
@@ -68,7 +30,7 @@ class Bridge extends EventEmitter {
 
   private wsUrl: string = 'ws://127.0.0.1:19099'
 
-  private httpUrl: string = 'http://127.0.0.1:8080'
+  private httpUrl: string = 'http://127.0.0.1:19088'
 
   wxhelper: typeof wxhelper = wxhelper
 
@@ -90,8 +52,6 @@ class Bridge extends EventEmitter {
     this.wsUrl = options?.wsUrl || this.wsUrl
     this.httpUrl = options?.httpUrl || this.httpUrl
 
-    // 启动一个http server，监听8081端口
-    this.createHttpServer()
     const execOptions = {
       name: 'Wechaty Puppet Bridge',
     }
@@ -115,6 +75,11 @@ class Bridge extends EventEmitter {
 
         const wechatVersion = stdout.trim()
         log.info(`微信版本: ${wechatVersion}`)
+        if (wechatVersion !== '3.9.8.1000') {
+          throw new Error('不支持当前微信版本，请安装微信版本3.9.8.25')
+        } else {
+          log.info('微信版本检测通过，支持当前微信版本')
+        }
       })
     }
 
@@ -131,7 +96,8 @@ class Bridge extends EventEmitter {
     //   }
     // })
 
-    // 启动wxbot-sidecar-
+    // 启动wxbot-sidecar
+    /*
     const execString = join(__dirname, 'assets', 'wxbot-sidecar-3.9.8.25.exe')
     log.info('execString:', execString)
 
@@ -150,6 +116,7 @@ class Bridge extends EventEmitter {
         log.info(`command执行stdout: ${stdout}`)
       }
     })
+    */
 
     // 启动wxhelper
     let pid = 0
@@ -223,6 +190,15 @@ class Bridge extends EventEmitter {
               throw new Error(`注入执行出错: ${error}`)
             } else {
               log.info(`注入执行标准输出stdout: ${stdout}`)
+
+              // 初始化数据库信息
+              this.wxhelper.initDBInfo().then((res) => {
+                log.info('initDBInfo success...')
+                return res
+              }).catch((e) => {
+                log.error('initDBInfo error:', e)
+              })
+
               const doLogin = () => {
                 this.wxhelper.checkLogin()
                   .then((res:any) => {
@@ -288,35 +264,6 @@ class Bridge extends EventEmitter {
       }
     })
 
-  }
-
-  private createHttpServer () {
-    const server = http.createServer()
-
-    server.on('close', () => {
-      log.info('Server closed')
-    })
-
-    // qrcode-callback
-    server.on('request', (req: any, res: any) => {
-      log.info('request:', req.url)
-      if (req.url === '/qrcode-callback') {
-        log.info('qrcode-callback...', req)
-        let data = ''
-        req.on('data', (chunk: any) => {
-          data += chunk
-        })
-
-        req.on('end', () => {
-          log.info('http data:', data)
-          res.writeHead(200, { 'Content-Type': 'text/plain' })
-          res.end('Hello World\n')
-        })
-      }
-    })
-
-    server.listen(8081)
-    log.info('Server running at http://127.0.0.1:8081/')
   }
 
   private createWebSocket (port: string) {
@@ -502,98 +449,6 @@ class Bridge extends EventEmitter {
   handleHeartbeat (j: any) {
     this.emit('heartbeat', j)
     // log.info(utf16ToUtf8(wxid),utf16ToUtf8(name));
-  }
-
-  // checklogin
-  async checkLogin () {
-    try {
-      const options = {
-        url: this.httpUrl + ApiEndpoint.Checklogin,
-        body: {},
-        json: true,
-      }
-      log.info('checkLogin options:', options.url)
-      const res = await axios.get(options.url)
-      // log.info('checkLogin res:', JSON.stringify(res.data))
-      return res as unknown as wxhelper.ResponseData
-    } catch (e) {
-      log.error('checkLogin error:', e)
-      return e
-    }
-  }
-
-  // 47.获取群详情和群成员列表
-  async getMemberListFromDb (wxid: string) {
-    try {
-      const options = {
-        url: this.httpUrl + `${ApiEndpoint.DbChatRoom}?wxid=${wxid}`, //
-        body: {},
-        json: true,
-      }
-      const res = await axios.get(options.url)
-      // log.info('getRoomList res:', JSON.stringify(res.data))
-      return res as unknown as wxhelper.ResponseData
-    } catch (e) {
-      log.error('getRoomList error:', e)
-      return e
-    }
-
-  }
-
-  // 47-1.获取群详情(通过接口)
-  async getMemberListFromApi (wxid: string) {
-    try {
-      const options = {
-        url: this.httpUrl + `${ApiEndpoint.ChatRoom}?wxid=${wxid}`, //
-        body: {},
-        json: true,
-      }
-      const res = await axios.get(options.url)
-      // log.info('getRoomList res:', JSON.stringify(res.data))
-      return res as unknown as wxhelper.ResponseData
-      // const rooms: RoomRaw[] = res.data.content
-      // return rooms
-    } catch (e) {
-      log.error('getRoomList error:', e)
-      return e
-    }
-
-  }
-
-  // 从数据库中通过WXID反查信息 dbaccountbywxid
-  async getContactByWxidFromDb (wxid: string) {
-    try {
-      const options = {
-        url: this.httpUrl + `${ApiEndpoint.DbAccountByWxid}?wxid=${wxid}`, //
-        body: {},
-        json: true,
-      }
-      const res = await axios.get(options.url)
-      // log.info('getDbAccountByWxid res:', JSON.stringify(res.data))
-      return res as unknown as wxhelper.ResponseData
-    } catch (e) {
-      log.error('getDbAccountByWxid error:', e)
-      return e
-    }
-
-  }
-
-  // WXID反查信息 AccountByWxid
-  async getContactByWxidFromApi (wxid: string) {
-    try {
-      const options = {
-        url: this.httpUrl + `${ApiEndpoint.AccountByWxid}?wxid=${wxid}`, //
-        body: {},
-        json: true,
-      }
-      const res = await axios.get(options.url)
-      // log.info('getAccountByWxid res:', JSON.stringify(res.data))
-      return res as unknown as wxhelper.ResponseData
-    } catch (e) {
-      log.error('getAccountByWxid error:', e)
-      return e
-    }
-
   }
 
 }

@@ -166,15 +166,7 @@ async function onMessage (msg: Message) {
 
 }
 
-const puppet = new PuppetBridge()
-const bot = WechatyBuilder.build({
-  name: 'ding-dong-bot',
-  puppet,
-})
-
-bot.on('scan', onScan)
-bot.on('login', onLogin)
-bot.on('ready', async () => {
+const onReady = async () => {
   log.info('bot已经准备好了')
   // const roomList = await bot.Room.findAll()
   // writeLog('群信息：' + JSON.stringify(roomList))
@@ -191,13 +183,24 @@ bot.on('ready', async () => {
   const contact = await bot.Contact.find({ name:'luyuchao' })
   log.info('contact', contact)
 
-  if (room && contact) {
-    const contacts:Contact[] = [ contact ]
-    const msg = `${new Date().toLocaleString()}${bot.currentUser.name()}上线了！`
-    await contact.say(msg)
-    await room.say(msg, ...contacts)
-  }
+  // if (room && contact) {
+  //   const contacts:Contact[] = [ contact ]
+  //   const msg = `${new Date().toLocaleString()}${bot.currentUser.name()}上线了！`
+  //   await contact.say(msg)
+  //   await room.say(msg, ...contacts)
+  // }
+
+}
+
+const puppet = new PuppetBridge()
+const bot = WechatyBuilder.build({
+  name: 'ding-dong-bot',
+  puppet,
 })
+
+bot.on('scan', onScan)
+bot.on('login', onLogin)
+bot.on('ready', onReady)
 bot.on('logout', onLogout)
 bot.on('message', onMessage)
 bot.on('room-join', async (room, inviteeList, inviter) => {

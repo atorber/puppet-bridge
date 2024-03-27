@@ -25,24 +25,6 @@ export {
 const __dirname = path.resolve(path.dirname(''))
 log.info('当前文件的目录路径:', __dirname)
 
-// const HEART_BEAT = 5005 // 心跳
-// const RECV_TXT_MSG = 1 // 文本消息
-// const RECV_PIC_MSG = 3 // 图片消息
-// const SEND_FILE_MSG = 49 // 文件消息
-// const USER_LIST = 5000 // 微信联系人列表
-// const GET_USER_LIST_SUCCSESS = 5001 // 获取联系人列表成功
-// const GET_USER_LIST_FAIL = 5002 // 获取联系人列表失败
-// const TXT_MSG = 555 // 发送文本消息
-// const PIC_MSG = 500 // 发送图片消息
-// const AT_MSG = 550 // 发送AT消息
-// const CHATROOM_MEMBER = 5010 // 群成员列表
-// const CHATROOM_MEMBER_NICK = 5020 // 群成员昵称
-// const PERSONAL_INFO = 6500 // 个人信息
-// const DEBUG_SWITCH = 6000 // 调试开关
-// const PERSONAL_DETAIL = 6550 // 个人详细信息
-// const NEW_FRIEND_REQUEST = 37// 微信好友请求消息
-// const AGREE_TO_FRIEND_REQUEST = 10000// 同意微信好友请求消息
-
 // 设置axios请求超时时间
 axios.defaults.timeout = 5000
 

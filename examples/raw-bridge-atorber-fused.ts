@@ -37,63 +37,6 @@ const main = async () => {
       listenerId  = message.toUser
     }
     log.info('roomId:', roomId, 'talkerId:', talkerId, 'listenerId:', listenerId, 'text:', text)
-    // 获取群成员
-    if (text.indexOf('25.获取群成员') > -1 && roomId) {
-      bridge.getMemberListFromApi(roomId).then((res:any) => {
-        log.info('getRoomListFromAPI_res:', JSON.stringify(res.data, undefined, 2))
-        const roomMembers = res.data.data as {[key:string]:wxhelper.RoomMemberRawWxbotApi}
-
-        for (const key in roomMembers) {
-          const roomMember = roomMembers[key]
-          log.info('roomMember:', roomMember?.nickname + '@' + key)
-        }
-
-        return res
-      }).catch(error => {
-        log.error('getRoomListFromAPI_error:', error)
-      })
-
-      bridge.getMemberListFromDb(roomId).then((res:any) => {
-        log.info('getRoomList_res:', JSON.stringify(res.data, undefined, 2))
-        const roomMembers = res.data.data.Members as {[key:string]:wxhelper.RoomMemberRawWxbotDb}
-        for (const key in roomMembers) {
-          const roomMember = roomMembers[key]
-          log.info('roomMember:', roomMember?.NickName + '@' + roomMember?.UserName)
-        }
-        return res
-      }).catch(error => {
-        log.error('getRoomList_error:', error)
-      })
-    }
-
-    if (text.indexOf('60.获取群/群成员详情') > -1) {
-      bridge.getContactByWxidFromApi(talkerId).then((res:any) => {
-        log.info('getAccountByWxid:', JSON.stringify(res.data, undefined, 2))
-        const contactInfo = res.data.data as wxhelper.ContactRawByWxidApi
-        log.info('accountInfo:', contactInfo.nickname + '@' + (contactInfo.customAccount || talkerId))
-        return res
-      }).catch(error => {
-        log.error('getAccountByWxid:', error)
-      })
-
-      bridge.getContactByWxidFromDb(talkerId).then((res:any) => {
-        log.info('getAccountByWxid:', JSON.stringify(res.data, undefined, 2))
-        const contactInfo = res.data.data as wxhelper.ContactRawByWxidDb
-        log.info('accountInfo:', contactInfo.NickName + '@' + contactInfo.UserName)
-        return res
-      }).catch(error => {
-        log.error('getAccountByWxid:', error)
-      })
-    }
-
-    if (text.indexOf('获取扫码登录地址') > -1) {
-      bridge.wxhelper.getLoginUrl().then((res:any) => {
-        log.info('getLoginUrl_res:', JSON.stringify(res.data, undefined, 2))
-        return res
-      }).catch(error => {
-        log.error('getLoginUrl_error:', error)
-      })
-    }
 
     // 46.联系人列表
     if (text.indexOf('46.联系人列表') > -1) {
@@ -164,23 +107,23 @@ const main = async () => {
   // }
 
   // // 发送文本消息
-  // const messageSendText = await bridge.messageSendText('tyutluyc', 'Bridge is ready!')
+  // const messageSendText = await bridge.messageSendText('ledongmao', 'Bridge is ready!')
   // log.info('messageSendText_res:', messageSendText.id, messageSendText.status, messageSendText.content, messageSendText.time, messageSendText.type, messageSendText.sender, messageSendText.receiver)
 
   // // 发送@消息
-  // const messageSendTextAt = await bridge.messageSendTextAt('21341182572@chatroom', ['tyutluyc'], 'Bridge is ready!', ['超哥'])
+  // const messageSendTextAt = await bridge.messageSendTextAt('21341182572@chatroom', ['ledongmao'], 'Bridge is ready!', ['超哥'])
   // log.info('messageSendTextAt:', messageSendTextAt)
 
   // // 发送图片
-  // const messageSendFile1 = await bridge.messageSendPicture('tyutluyc', rootPath + '\\Documents\\GitHub\\puppet-bridge\\examples\\media\\test.gif')
+  // const messageSendFile1 = await bridge.messageSendPicture('ledongmao', rootPath + '\\Documents\\GitHub\\puppet-bridge\\examples\\media\\test.gif')
   // log.info('messageSendFile1:', messageSendFile1)
 
   // // 发送视频
-  // const messageSendFile2 = await bridge.messageSendFile('tyutluyc', rootPath + '\\Documents\\GitHub\\puppet-bridge\\examples\\media\\test.mp4')
+  // const messageSendFile2 = await bridge.messageSendFile('ledongmao', rootPath + '\\Documents\\GitHub\\puppet-bridge\\examples\\media\\test.mp4')
   // log.info('messageSendFile2:', messageSendFile2)
 
   // // 发送文件
-  // const messageSendFile3 = await bridge.messageSendFile('tyutluyc', rootPath + '\\Documents\\GitHub\\puppet-bridge\\examples\\media\\test.txt')
+  // const messageSendFile3 = await bridge.messageSendFile('ledongmao', rootPath + '\\Documents\\GitHub\\puppet-bridge\\examples\\media\\test.txt')
   // log.info('messageSendFile3:', messageSendFile3)
 
   // bridge.on('hook', async ({ method, args }) => {

@@ -56,13 +56,24 @@ async function test() {
     }
 }
 
+// GET /api/dbchatroom?wxid=xxxx
+async function dbchatroom(wxid) {
+    try {
+        const response = await axios.get(`http://127.0.0.1:8080/api/dbchatroom?wxid=${wxid}`);
+        console.log("success:", JSON.stringify(response.data, undefined, 2));
+    } catch (error) {
+        console.error("failed:", error.response.data);
+    }
+}
+
 async function main() {
     // Uncomment the function calls you need
     // await test();
-    await deleteSyncurl();
+    // await deleteSyncurl();
     // await getSyncurl();
     // await syncurl();
-    await getSyncurl();
+    // await getSyncurl();
+    await dbchatroom('21341182572@chatroom');
 }
 
 main().catch(console.error);

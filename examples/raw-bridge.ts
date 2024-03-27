@@ -74,23 +74,23 @@ async function main () {
   // }
 
   // // 发送文本消息
-  // const messageSendText = await bridge.messageSendText('tyutluyc', 'Bridge is ready!')
+  // const messageSendText = await bridge.messageSendText('ledongmao', 'Bridge is ready!')
   // console.log('messageSendText_res:', messageSendText.id, messageSendText.status, messageSendText.content, messageSendText.time, messageSendText.type, messageSendText.sender, messageSendText.receiver)
 
   // // 发送图片
-  // const messageSendFile1 = await bridge.messageSendFile('tyutluyc', 'C:\\Users\\Administrator\\Documents\\GitHub\\puppet-bridge\\examples\\media\\test.gif');
+  // const messageSendFile1 = await bridge.messageSendFile('ledongmao', 'C:\\Users\\Administrator\\Documents\\GitHub\\puppet-bridge\\examples\\media\\test.gif');
   // console.log('messageSendFile1:', messageSendFile1)
 
   // // 发送视频
-  // const messageSendFile2 = await bridge.messageSendFile('tyutluyc', 'C:\\Users\\Administrator\\Documents\\GitHub\\puppet-bridge\\examples\\media\\test.mp4');
+  // const messageSendFile2 = await bridge.messageSendFile('ledongmao', 'C:\\Users\\Administrator\\Documents\\GitHub\\puppet-bridge\\examples\\media\\test.mp4');
   // console.log('messageSendFile2:', messageSendFile2)
 
   // // 发送文件
-  // const messageSendFile3 = await bridge.messageSendFile('tyutluyc', 'C:\\Users\\Administrator\\Documents\\GitHub\\puppet-bridge\\examples\\media\\test.txt');
+  // const messageSendFile3 = await bridge.messageSendFile('ledongmao', 'C:\\Users\\Administrator\\Documents\\GitHub\\puppet-bridge\\examples\\media\\test.txt');
   // console.log('messageSendFile3:', messageSendFile3)
 
   // // 发送@消息
-  // const messageSendTextAt = await bridge.messageSendTextAt('21341182572@chatroom', 'Bridge is ready!', 'tyutluyc', '超哥');
+  // const messageSendTextAt = await bridge.messageSendTextAt('21341182572@chatroom', 'Bridge is ready!', 'ledongmao', '超哥');
   // console.log('messageSendTextAt:', messageSendTextAt)
 
   // await refresh_memberlist();
@@ -101,7 +101,7 @@ async function main () {
   // for (const item of JSON.parse(contact)) {
   //   for(const wxid of item.roomMember){
   //     //console.log(wxid)
-  //     if(wxid === 'tyutluyc'){
+  //     if(wxid === 'ledongmao'){
   //       const nick = await Bridge.getChatroomMemberNickInfo(wxid,item.roomid)
   //       console.log('wxid:====',wxid,"==nick:===",nick)
   //     }

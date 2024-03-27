@@ -581,30 +581,25 @@ class PuppetBridge extends PUPPET.Puppet {
     let contact = this.contactStore[contactId]
     log.info('getMemberDetail contactId:', JSON.stringify(contact, undefined, 2))
     if (!contact || !contact.name) {
-      try {
-        log.info('缓存中没有找到联系人信息，开始请求:', contactId)
-        const contactInfoRes = await this.bridge.getContactByWxidFromApi(contactId) as wxhelper.ResponseData
-        log.info('请求联系人结果contactInfoRes:', JSON.stringify(contactInfoRes.data))
-        const contactInfo = contactInfoRes.data as wxhelper.ContactRawByWxidApi
-        if (contactInfo.nickname) {
-          log.info('查询信息成功:', JSON.stringify(contactInfo, undefined, 2))
-          contact =  {
-            alias: '',
-            avatar:  '',
-            friend: false,
-            gender: PUPPET.types.ContactGender.Unknown,
-            id: contactId,
-            name: contactInfo.nickname,
-            phone: [],
-            type: PUPPET.types.Contact.Individual,
-          }
-          this.contactStore[contactId] = contact
-        } else {
-          log.info('请求联系人信息失败:', JSON.stringify(contactInfoRes.data))
+      log.info('缓存中没有找到联系人信息，开始请求:', contactId)
+      const contactInfoRes = await this.bridge.wxhelper.getContactProfile(contactId)
+      log.info('请求联系人结果contactInfoRes:', JSON.stringify(contactInfoRes.data))
+      if (contactInfoRes.data.data !== null) {
+        log.info('查询信息成功:', JSON.stringify(contactInfoRes.data.data))
+        const contactInfo = contactInfoRes.data.data as wxhelper.MemberDetailRaw
+        contact =  {
+          alias: '',
+          avatar: contactInfo.headImage || '',
+          friend: false,
+          gender: PUPPET.types.ContactGender.Unknown,
+          id: contactId,
+          name: contactInfo.nickname,
+          phone: [],
+          type: PUPPET.types.Contact.Individual,
         }
-      } catch (err) {
-        log.error('getMemberDetail fail:', err)
-        throw new Error(`getMemberDetail fail, contactId:${contactId}`)
+        this.contactStore[contactId] = contact
+      } else {
+        log.info('请求联系人信息失败:', JSON.stringify(contactInfoRes.data))
       }
     } else {
       log.info('缓存中找到联系人信息:', contactId)
@@ -614,52 +609,58 @@ class PuppetBridge extends PUPPET.Puppet {
 
   async updateMembers (roomId: string): Promise<void> {
     log.info('updateMembers roomId:', roomId)
+    const rooms = this.roomStore
     // 本地缓存的群信息
-    const roomStore = this.roomStore[roomId] as PUPPET.payloads.Room
+    const roomStore = rooms[roomId] as PUPPET.payloads.Room
 
-    try {
-      // 获取群详情
-      const roomMemberRes = await this.bridge.getMemberListFromApi(roomId) as wxhelper.ResponseData
-      const roomMemberRaw = roomMemberRes.data.data as {[key:string]:wxhelper.RoomMemberRawWxbotApi}
-      const memberIdList:string[] = []
+    // 获取群详情
+    const roomRes = await this.bridge.wxhelper.getChatRoomDetailInfo(roomId)
+    const roomRaw = roomRes.data.data as wxhelper.RoomRaw
 
-      for (const key in roomMemberRaw) {
-        const member = roomMemberRaw[key]
-        const nickName = member?.nickname
-        const contact = this.contactStore[key]
-        if (!contact) {
-          try {
+    // 获取群成员列表
+    const roomMemberRes = await this.bridge.wxhelper.getMemberFromChatRoom(roomId)
+    const roomMember = roomMemberRes.data.data as wxhelper.RoomMembersRaw
+    const memberIdList:string[] = roomMember.members.split('^G')
+    // log.info('memberIdList:', memberIdList)
+    const topic:string = roomStore.topic
+    await this.getMemberDetail(roomRaw.admin)
+
+    roomStore.adminIdList = [ roomRaw.admin ]
+    roomStore.avatar = ''
+    roomStore.external = false
+    roomStore.memberIdList = memberIdList
+    roomStore.ownerId = roomRaw.admin
+    roomStore.topic = topic
+
+    this.roomStore[roomStore.id] = roomStore
+
+    const memberNicknameList = roomMember.memberNickname.split('^G')
+    for (const memberKey in memberIdList) {
+      const memberId = memberIdList[memberKey] as string
+      const nickName = memberNicknameList[memberKey]
+      const contact = this.contactStore[memberId]
+      if (!contact) {
+        try {
           // log.info('memberNickName:', memberNickName.content)
-            const contact = {
-              alias: '',
-              avatar: '',
-              friend: false,
-              gender: PUPPET.types.ContactGender.Unknown,
-              id: key,
-              name: nickName || '',
-              phone: [],
-              type: PUPPET.types.Contact.Individual,
-            }
-            this.contactStore[key] = contact
-          } catch (err) {
-            log.error('loadRoomList fail:', err)
+          const contact = {
+            alias: '',
+            avatar: '',
+            friend: false,
+            gender: PUPPET.types.ContactGender.Unknown,
+            id: memberId,
+            name: nickName || '',
+            phone: [],
+            type: PUPPET.types.Contact.Individual,
           }
-        } else if (!contact.name) {
-          contact.name = nickName || ''
-        } else {
-          log.verbose('contact is already in contactStore and has name...')
+          this.contactStore[memberId] = contact
+        } catch (err) {
+          log.error('loadRoomList fail:', err)
         }
-        memberIdList.push(key)
+      } else if (!contact.name) {
+        contact.name = nickName || ''
+      } else {
+        log.verbose('contact is already in contactStore and has name...')
       }
-
-      roomStore.avatar = ''
-      roomStore.external = false
-      roomStore.memberIdList = memberIdList
-
-      this.roomStore[roomStore.id] = roomStore
-    } catch (err) {
-      log.error('updateMembers fail:', err)
-      throw new Error(`updateMembers fail, roomId:${roomId}`)
     }
 
   }

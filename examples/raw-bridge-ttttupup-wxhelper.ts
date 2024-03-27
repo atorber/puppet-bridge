@@ -103,23 +103,23 @@ const main = async () => {
   // }
 
   // // 发送文本消息
-  // const messageSendText = await bridge.messageSendText('tyutluyc', 'Bridge is ready!')
+  // const messageSendText = await bridge.messageSendText('ledongmao', 'Bridge is ready!')
   // log.info('messageSendText_res:', messageSendText.id, messageSendText.status, messageSendText.content, messageSendText.time, messageSendText.type, messageSendText.sender, messageSendText.receiver)
 
   // // 发送@消息
-  // const messageSendTextAt = await bridge.messageSendTextAt('21341182572@chatroom', ['tyutluyc'], 'Bridge is ready!', ['超哥'])
+  // const messageSendTextAt = await bridge.messageSendTextAt('21341182572@chatroom', ['ledongmao'], 'Bridge is ready!', ['超哥'])
   // log.info('messageSendTextAt:', messageSendTextAt)
 
   // // 发送图片
-  // const messageSendFile1 = await bridge.messageSendPicture('tyutluyc', rootPath + '\\Documents\\GitHub\\puppet-bridge\\examples\\media\\test.gif')
+  // const messageSendFile1 = await bridge.messageSendPicture('ledongmao', rootPath + '\\Documents\\GitHub\\puppet-bridge\\examples\\media\\test.gif')
   // log.info('messageSendFile1:', messageSendFile1)
 
   // // 发送视频
-  // const messageSendFile2 = await bridge.messageSendFile('tyutluyc', rootPath + '\\Documents\\GitHub\\puppet-bridge\\examples\\media\\test.mp4')
+  // const messageSendFile2 = await bridge.messageSendFile('ledongmao', rootPath + '\\Documents\\GitHub\\puppet-bridge\\examples\\media\\test.mp4')
   // log.info('messageSendFile2:', messageSendFile2)
 
   // // 发送文件
-  // const messageSendFile3 = await bridge.messageSendFile('tyutluyc', rootPath + '\\Documents\\GitHub\\puppet-bridge\\examples\\media\\test.txt')
+  // const messageSendFile3 = await bridge.messageSendFile('ledongmao', rootPath + '\\Documents\\GitHub\\puppet-bridge\\examples\\media\\test.txt')
   // log.info('messageSendFile3:', messageSendFile3)
 
   // bridge.on('hook', async ({ method, args }) => {
