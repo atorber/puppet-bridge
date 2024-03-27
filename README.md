@@ -4,7 +4,7 @@
 [![NPM Version](https://img.shields.io/npm/v/wechaty-puppet-bridge?color=brightgreen)](https://www.npmjs.com/package/wechaty-puppet-bridge)
 [![npm (tag)](https://img.shields.io/npm/v/wechaty-puppet-bridge/next.svg)](https://www.npmjs.com/package/wechaty-puppet-bridge?activeTab=versions) ![npm downloads](https://img.shields.io/npm/dm/wechaty-puppet-bridge.svg)
 
-<img src="https://github.com/atorber/puppet-bridge/assets/19552906/086cff53-2c4a-4889-938b-23ee26acb6fc" alt="chatie puppet bridge" height="350" align="bottom" />
+<img src="./docs/images/core.png" alt="chatie puppet bridge" height="350" align="bottom" />
 
 ## 简介
 
@@ -26,9 +26,17 @@ wechaty-puppet-bridge 是一个虚拟的Wechaty Puppet，实际上它只是一�
 
 ## 功能清单
 
+wechaty-puppet-bridge 是一个全新的wechaty-puppet，它可以连接所有的通过ws、http、mqtt开放IM访问的聊天机器人.
+
 > 最新功能清单查看[功能清单](https://www.yuque.com/atorber/chatflow/imovlh1l8ypxmd9n#eTg6)
 
 ![功能清单](./docs/images/fnlist.png)
+
+## 机器人支持
+
+1. DONE：Wechat-bot 馈人玫瑰之手，历久犹有余香 [cixingguangming55555/wechat-bot](https://github.com/cixingguangming55555/wechat-bot)
+
+2. DONE：wxbot - 聊天机器人 [jwping/wxbot](https://github.com/jwping/wxbot)
 
 ## 快速开始
 
@@ -303,48 +311,6 @@ import {
     })
     .catch(console.error)
 ```
-
-## 功能清单
-
-wechaty-puppet-bridge 是一个全新的wechaty-puppet，它可以连接所有的通过ws、http、mqtt开放IM访问的聊天机器人.
-
-版本|[cixingguangming55555/wechat-bot](https://github.com/cixingguangming55555/wechat-bot)|[jwping/wxbot](https://github.com/jwping/wxbot)|
-:---|:---|:---|
-**<客户端>**|
-平台|Windows|Windows|
-版本|3.9.2.23|3.9.8.25|
-**<消息>**|
-接收文本|✅|✅|
-接收图片|✅|✅|
-接收文件|✅|✅|
-接收动图|✅|✅|
-接收表情|✅|✅|
-接收小程序卡片|✅|✅|
-接收联系人卡片|✅|✅|
-接收位置卡片|✅|✅|
-2.发送文本|✅|✅|
-5.发送图片|✅|✅|
-6.发送文件|✅|✅|
-发送动图|✅|✅|
-**<群组>**|
-3.发送@文本|✅|✅|
-46.群列表|✅|✅|
-25.群成员列表|✅|✅|
-47.群详情|✅|✅|
-进群提示|✅|✅|
-**<联系人>**|✅|
-46.好友列表|✅|✅|
-55.好友详情|✅|✅|
-**<其他>**|
-0.登录事件|✅|✅|
-1.获取账号信息|✅|✅|
-58.扫码登录|||
-
-## 机器人支持
-
-1. DONE：Wechat-bot 馈人玫瑰之手，历久犹有余香 [cixingguangming55555/wechat-bot](https://github.com/cixingguangming55555/wechat-bot)
-
-2. DONE：wxbot - 聊天机器人 [jwping/wxbot](https://github.com/jwping/wxbot)
 
 ## 更新日志
 
