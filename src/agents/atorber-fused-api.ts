@@ -1047,7 +1047,7 @@ export const getContactProfile = (wxid: string) => {
 
 //     print(response.text)
 export const sendAtText = (wxids: string, chatRoomId: string, msg: string) => {
-  return post('/api/sendMultiAtText', { wxids, chatRoomId, msg })
+  return post('/api/sendAtText', { wxids, chatRoomId, msg })
 }
 
 // sendMultiAtText

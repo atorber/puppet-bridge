@@ -193,7 +193,7 @@ bot.on('ready', async () => {
 
   if (room && contact) {
     const contacts:Contact[] = [ contact ]
-    const msg = `${new Date().toLocaleString()}${bot.currentUser.name}上线了！`
+    const msg = `${new Date().toLocaleString()}${bot.currentUser.name()}上线了！`
     await contact.say(msg)
     await room.say(msg, ...contacts)
   }

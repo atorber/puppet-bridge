@@ -581,25 +581,30 @@ class PuppetBridge extends PUPPET.Puppet {
     let contact = this.contactStore[contactId]
     log.info('getMemberDetail contactId:', JSON.stringify(contact, undefined, 2))
     if (!contact || !contact.name) {
-      log.info('缓存中没有找到联系人信息，开始请求:', contactId)
-      const contactInfoRes = await this.bridge.getContactByWxidFromApi(contactId) as wxhelper.ResponseData
-      log.info('请求联系人结果contactInfoRes:', JSON.stringify(contactInfoRes.data))
-      const contactInfo = contactInfoRes.data as wxhelper.ContactRawByWxidApi
-      if (contactInfo.nickname) {
-        log.info('查询信息成功:', JSON.stringify(contactInfo, undefined, 2))
-        contact =  {
-          alias: '',
-          avatar:  '',
-          friend: false,
-          gender: PUPPET.types.ContactGender.Unknown,
-          id: contactId,
-          name: contactInfo.nickname,
-          phone: [],
-          type: PUPPET.types.Contact.Individual,
+      try {
+        log.info('缓存中没有找到联系人信息，开始请求:', contactId)
+        const contactInfoRes = await this.bridge.getContactByWxidFromApi(contactId) as wxhelper.ResponseData
+        log.info('请求联系人结果contactInfoRes:', JSON.stringify(contactInfoRes.data))
+        const contactInfo = contactInfoRes.data as wxhelper.ContactRawByWxidApi
+        if (contactInfo.nickname) {
+          log.info('查询信息成功:', JSON.stringify(contactInfo, undefined, 2))
+          contact =  {
+            alias: '',
+            avatar:  '',
+            friend: false,
+            gender: PUPPET.types.ContactGender.Unknown,
+            id: contactId,
+            name: contactInfo.nickname,
+            phone: [],
+            type: PUPPET.types.Contact.Individual,
+          }
+          this.contactStore[contactId] = contact
+        } else {
+          log.info('请求联系人信息失败:', JSON.stringify(contactInfoRes.data))
         }
-        this.contactStore[contactId] = contact
-      } else {
-        log.info('请求联系人信息失败:', JSON.stringify(contactInfoRes.data))
+      } catch (err) {
+        log.error('getMemberDetail fail:', err)
+        throw new Error(`getMemberDetail fail, contactId:${contactId}`)
       }
     } else {
       log.info('缓存中找到联系人信息:', contactId)
@@ -612,45 +617,50 @@ class PuppetBridge extends PUPPET.Puppet {
     // 本地缓存的群信息
     const roomStore = this.roomStore[roomId] as PUPPET.payloads.Room
 
-    // 获取群详情
-    const roomMemberRes = await this.bridge.getMemberListFromApi(roomId) as wxhelper.ResponseData
-    const roomMemberRaw = roomMemberRes.data.data as {[key:string]:wxhelper.RoomMemberRawWxbotApi}
-    const memberIdList:string[] = []
+    try {
+      // 获取群详情
+      const roomMemberRes = await this.bridge.getMemberListFromApi(roomId) as wxhelper.ResponseData
+      const roomMemberRaw = roomMemberRes.data.data as {[key:string]:wxhelper.RoomMemberRawWxbotApi}
+      const memberIdList:string[] = []
 
-    for (const key in roomMemberRaw) {
-      const member = roomMemberRaw[key]
-      const nickName = member?.nickname
-      const contact = this.contactStore[key]
-      if (!contact) {
-        try {
+      for (const key in roomMemberRaw) {
+        const member = roomMemberRaw[key]
+        const nickName = member?.nickname
+        const contact = this.contactStore[key]
+        if (!contact) {
+          try {
           // log.info('memberNickName:', memberNickName.content)
-          const contact = {
-            alias: '',
-            avatar: '',
-            friend: false,
-            gender: PUPPET.types.ContactGender.Unknown,
-            id: key,
-            name: nickName || '',
-            phone: [],
-            type: PUPPET.types.Contact.Individual,
+            const contact = {
+              alias: '',
+              avatar: '',
+              friend: false,
+              gender: PUPPET.types.ContactGender.Unknown,
+              id: key,
+              name: nickName || '',
+              phone: [],
+              type: PUPPET.types.Contact.Individual,
+            }
+            this.contactStore[key] = contact
+          } catch (err) {
+            log.error('loadRoomList fail:', err)
           }
-          this.contactStore[key] = contact
-        } catch (err) {
-          log.error('loadRoomList fail:', err)
+        } else if (!contact.name) {
+          contact.name = nickName || ''
+        } else {
+          log.verbose('contact is already in contactStore and has name...')
         }
-      } else if (!contact.name) {
-        contact.name = nickName || ''
-      } else {
-        log.verbose('contact is already in contactStore and has name...')
+        memberIdList.push(key)
       }
-      memberIdList.push(key)
+
+      roomStore.avatar = ''
+      roomStore.external = false
+      roomStore.memberIdList = memberIdList
+
+      this.roomStore[roomStore.id] = roomStore
+    } catch (err) {
+      log.error('updateMembers fail:', err)
+      throw new Error(`updateMembers fail, roomId:${roomId}`)
     }
-
-    roomStore.avatar = ''
-    roomStore.external = false
-    roomStore.memberIdList = memberIdList
-
-    this.roomStore[roomStore.id] = roomStore
 
   }
 
