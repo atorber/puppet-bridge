@@ -34,9 +34,11 @@ wechaty-puppet-bridge 是一个全新的wechaty-puppet，它可以连接所有�
 
 ## 机器人支持
 
-1. DONE：Wechat-bot 馈人玫瑰之手，历久犹有余香 [cixingguangming55555/wechat-bot](https://github.com/cixingguangming55555/wechat-bot)
+1. Wechat-bot 馈人玫瑰之手，历久犹有余香 [cixingguangming55555/wechat-bot](https://github.com/cixingguangming55555/wechat-bot)
 
-2. DONE：wxbot - 聊天机器人 [jwping/wxbot](https://github.com/jwping/wxbot)
+2. wxbot - 聊天机器人 [jwping/wxbot](https://github.com/jwping/wxbot)
+
+3. wxhelper - PC端微信逆向学习 [ttttupup/wxhelper](https://github.com/ttttupup/wxhelper)
 
 ## 快速开始
 
@@ -46,25 +48,23 @@ wechaty-puppet-bridge 是一个全新的wechaty-puppet，它可以连接所有�
 
 2. 在电脑上登录客户端
 
-3. 到[cixingguangming55555/wechat-bot](https://github.com/cixingguangming55555/wechat-bot)项目下载[funtool_wx=3.9.2.23.exe](https://github.com/cixingguangming55555/wechat-bot/blob/master/funtool/funtool_wx%3D3.9.2.23.exe)运行程序并点击【Start】开启功能。
+3. 运行以下指令启动程序,程序启动时会自动打开注入程序，运行程序并点击【Start】开启功能。
+
+  ```sh
+  git clone https://github.com/atorber/puppet-bridg
+  cd puppet-bridge
+
+  # 安装依赖
+  npm install
+
+  # 启动程序
+  npm start
+  #
+  # Do not forget to install WeChat with requried version and login.
+  #
+  ```
 
    ![image](https://github.com/atorber/puppet-bridge/assets/19552906/c2c86ff8-8a48-439f-a48a-6830883693d2)
-
-4. 运行以下指令启动程序
-
-```sh
-git clone https://github.com/atorber/puppet-bridg
-cd puppet-bridge
-
-# 安装依赖
-npm install
-
-# 启动程序
-npm start
-#
-# Do not forget to install WeChat with requried version and login.
-#
-```
 
 ### 使用[jwping/wxbot](https://github.com/jwping/wxbot)
 
@@ -72,11 +72,7 @@ npm start
 
 2. 在电脑上登录客户端
 
-3. 到[jwping/wxbot](https://github.com/jwping/wxbot)项目下载[wxbot-sidecar.exe](https://github.com/jwping/wxbot/blob/main/bin/wxbot-sidecar.exe)运行程序并点击【Start】开启功能。
-
-   ![image](https://github.com/atorber/puppet-bridge/assets/19552906/59495943-dcfc-4ff1-9c66-e6c097e9b0a5)
-
-4. 运行以下指令启动程序
+3. 运行以下指令启动程序
 
 ```sh
 git clone https://github.com/atorber/puppet-bridg
