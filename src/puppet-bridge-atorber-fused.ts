@@ -30,7 +30,7 @@ import {
 import {
   Bridge,
   wxhelper,
-} from './agents/ttttupup-wxhelper.js'
+} from './agents/atorber-fused.js'
 
 import { ImageDecrypt } from './pure-functions/image-decrypt.js'
 import { XmlDecrypt } from './pure-functions/xml-msgpayload.js'
@@ -197,10 +197,12 @@ class PuppetBridge extends PUPPET.Puppet {
       // 初始化机器人信息
       await super.login(this.selfInfo.id)
       // await this.onAgentReady()
+      log.info('puppet 登录成功')
     } else {
-      log.info('已处于登录状态，无需再次登录')
+      log.info('puppet 已处于登录状态，无需再次登录')
     }
 
+    log.info('puppet 登录状态：', this.isLoggedIn ? '已登录' : '未登录')
     if (this.isLoggedIn) {
       await this.onAgentReady()
     }
@@ -541,6 +543,8 @@ class PuppetBridge extends PUPPET.Puppet {
           this.messageStore[payload.id] = payload
           if (this.isReady) {
             this.emit('message', { messageId: payload.id })
+          } else {
+            log.info('isReady is false, wait for ready...')
           }
         }
       }
@@ -578,14 +582,14 @@ class PuppetBridge extends PUPPET.Puppet {
     log.info('getMemberDetail contactId:', JSON.stringify(contact, undefined, 2))
     if (!contact || !contact.name) {
       log.info('缓存中没有找到联系人信息，开始请求:', contactId)
-      const contactInfoRes = await this.bridge.wxhelper.getContactProfile(contactId)
+      const contactInfoRes = await this.bridge.getContactByWxidFromApi(contactId) as wxhelper.ResponseData
       log.info('请求联系人结果contactInfoRes:', JSON.stringify(contactInfoRes.data))
-      if (contactInfoRes.data && contactInfoRes.data.data !== null) {
-        log.info('查询信息成功:', JSON.stringify(contactInfoRes.data.data))
-        const contactInfo = contactInfoRes.data.data as wxhelper.MemberDetailRaw
+      const contactInfo = contactInfoRes.data as wxhelper.ContactRawByWxidApi
+      if (contactInfo.nickname) {
+        log.info('查询信息成功:', JSON.stringify(contactInfo, undefined, 2))
         contact =  {
           alias: '',
-          avatar: contactInfo.headImage || '',
+          avatar:  '',
           friend: false,
           gender: PUPPET.types.ContactGender.Unknown,
           id: contactId,
@@ -605,36 +609,18 @@ class PuppetBridge extends PUPPET.Puppet {
 
   async updateMembers (roomId: string): Promise<void> {
     log.info('updateMembers roomId:', roomId)
-    const rooms = this.roomStore
     // 本地缓存的群信息
-    const roomStore = rooms[roomId] as PUPPET.payloads.Room
+    const roomStore = this.roomStore[roomId] as PUPPET.payloads.Room
 
     // 获取群详情
-    const roomRes = await this.bridge.wxhelper.getChatRoomDetailInfo(roomId)
-    const roomRaw = roomRes.data.data as wxhelper.RoomRaw
+    const roomMemberRes = await this.bridge.getMemberListFromApi(roomId) as wxhelper.ResponseData
+    const roomMemberRaw = roomMemberRes.data.data as {[key:string]:wxhelper.RoomMemberRawWxbotApi}
+    const memberIdList:string[] = []
 
-    // 获取群成员列表
-    const roomMemberRes = await this.bridge.wxhelper.getMemberFromChatRoom(roomId)
-    const roomMember = roomMemberRes.data.data as wxhelper.RoomMembersRaw
-    const memberIdList:string[] = roomMember.members.split('^G')
-    // log.info('memberIdList:', memberIdList)
-    const topic:string = roomStore.topic
-    await this.getMemberDetail(roomRaw.admin)
-
-    roomStore.adminIdList = [ roomRaw.admin ]
-    roomStore.avatar = ''
-    roomStore.external = false
-    roomStore.memberIdList = memberIdList
-    roomStore.ownerId = roomRaw.admin
-    roomStore.topic = topic
-
-    this.roomStore[roomStore.id] = roomStore
-
-    const memberNicknameList = roomMember.memberNickname.split('^G')
-    for (const memberKey in memberIdList) {
-      const memberId = memberIdList[memberKey] as string
-      const nickName = memberNicknameList[memberKey]
-      const contact = this.contactStore[memberId]
+    for (const key in roomMemberRaw) {
+      const member = roomMemberRaw[key]
+      const nickName = member?.nickname
+      const contact = this.contactStore[key]
       if (!contact) {
         try {
           // log.info('memberNickName:', memberNickName.content)
@@ -643,12 +629,12 @@ class PuppetBridge extends PUPPET.Puppet {
             avatar: '',
             friend: false,
             gender: PUPPET.types.ContactGender.Unknown,
-            id: memberId,
+            id: key,
             name: nickName || '',
             phone: [],
             type: PUPPET.types.Contact.Individual,
           }
-          this.contactStore[memberId] = contact
+          this.contactStore[key] = contact
         } catch (err) {
           log.error('loadRoomList fail:', err)
         }
@@ -657,7 +643,14 @@ class PuppetBridge extends PUPPET.Puppet {
       } else {
         log.verbose('contact is already in contactStore and has name...')
       }
+      memberIdList.push(key)
     }
+
+    roomStore.avatar = ''
+    roomStore.external = false
+    roomStore.memberIdList = memberIdList
+
+    this.roomStore[roomStore.id] = roomStore
 
   }
 

@@ -12,7 +12,7 @@ import {
 } from 'wechaty'
 import { FileBox } from 'file-box'
 
-import { PuppetBridge } from '../src/puppet-bridge-ttttupup-wxhelper.js'
+import { PuppetBridgeTtttupupWxhelperV3090581 as PuppetBridge } from '../src/mod.js'
 import qrcodeTerminal from 'qrcode-terminal'
 import * as fs from 'fs'
 
@@ -58,10 +58,11 @@ async function onMessage (msg: Message) {
   const room = msg.room()
   let sendRes:any = ''
   if (room) {
-    log.info('当前群信息：', JSON.stringify(room))
+    log.info('当前群名称：', await room.topic())
+    log.info('当前群ID：', room.id)
     const owner = await room.owner()
     log.info('当前群群主：', JSON.stringify(owner) || 'undefined')
-    log.info('当前群昵称：', owner && owner.name())
+    log.info('当前群群主昵称：', owner && owner.name())
   }
 
   if (msg.text() === 'ding') {
@@ -123,10 +124,7 @@ async function onMessage (msg: Message) {
   let filePath = 'file/'
   // 检查文件夹是否存在，不存在则创建
   if (!fs.existsSync(filePath)) {
-    log.info('文件夹不存在，创建文件夹：', filePath)
     fs.mkdirSync(filePath)
-  } else {
-    log.info('文件夹已存在：', filePath)
   }
 
   try {

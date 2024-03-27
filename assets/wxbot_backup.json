@@ -1,0 +1,32 @@
+{
+    "addr": "127.0.0.1:8080",
+    "sync-url": {
+        "qrcode": [
+          {
+            "timeout": 3000,
+            "url": "http://127.0.0.1:8081/qrlogin-callback"
+          }
+        ],
+        "public-msg": [],
+        "general-msg": []
+    },
+    "authorization": {
+        "enable": false,
+        "users": [
+            {
+                "user": "admin",
+                "password": "123",
+                "token": "token123"
+            },
+            {
+                "user": "user",
+                "password": "321",
+                "token": "token321"
+            }
+        ]
+    },
+    "root-dir": "",
+    "log": {
+        "level": "info"
+    }
+}

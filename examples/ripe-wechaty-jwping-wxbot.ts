@@ -12,7 +12,7 @@ import {
 } from 'wechaty'
 import { FileBox } from 'file-box'
 
-import { PuppetBridge } from '../src/puppet-bridge-jwping-wxbot.js'
+import { PuppetBridgeJwpingWxbotV3090825 as PuppetBridge } from '../src/mod.js'
 import qrcodeTerminal from 'qrcode-terminal'
 import * as fs from 'fs'
 
@@ -143,7 +143,7 @@ async function onMessage (msg: Message) {
     log.info('文件夹不存在，创建文件夹：', filePath)
     fs.mkdirSync(filePath)
   } else {
-    log.info('文件夹已存在：', filePath)
+    // log.info('文件夹已存在：', filePath)
   }
 
   try {

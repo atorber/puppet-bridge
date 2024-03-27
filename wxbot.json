@@ -1,0 +1,10 @@
+{
+    "sync-url": {
+        "qrcode": [
+            {
+                "timeout": 60,
+                "url": "http://localhost:8081/qrcode-callback"
+            }
+        ]
+    }
+}

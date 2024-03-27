@@ -32,6 +32,7 @@ const AGREE_TO_FRIEND_REQUEST = 10000// 同意微信好友请求消息
 const ATTATCH_FILE = 5003 // 发送文件
 
 enum ApiEndpoint {
+  Checklogin = '/api/checklogin', // 检查登录状态
   UserInfo = '/api/userinfo', // 获取登录用户信息
   Contacts = '/api/contacts', // 获取通讯录信息，不建议使用，请使用 DbContacts
   DbContacts = '/api/dbcontacts', // 从数据库中获取通讯录信息
@@ -251,13 +252,12 @@ class Bridge extends EventEmitter {
     this.wsUrl = options?.wsUrl || this.wsUrl
     this.httpUrl = options?.httpUrl || this.httpUrl
 
-    // 替换__dirname中的src\agents为assets\wxbot-sidecar.exe得到execString
-    const execString = join(__dirname, 'assets', 'wxbot-sidecar.exe')
+    const execString = join(__dirname, 'assets', 'wxbot-sidecar-3.9.8.25.exe')
     console.log('execString:', execString)
 
-    // 使用命令行自动运行 \assets\wxbot-sidecar.exe，先检查execString是否已经在运行，如果没有运行，则自动运行
-
-    exec(execString, (error: any, stdout: any, stderr: any) => {
+    // 在Windows上，使用cmd /k 执行exe并在执行完毕后保留窗口
+    const command = `cmd /c "${execString} & pause"`
+    exec(command, (error: any, stdout: any, stderr: any) => {
       if (error) {
         console.error(`执行出错: ${error}`)
         return
@@ -552,36 +552,6 @@ class Bridge extends EventEmitter {
     return res.data
   }
 
-  // 26.获取群成员昵称
-  async getMemberNickName (wxid: string, roomid: string) {
-    const jpara = {
-      id: getid(),
-      type: CHATROOM_MEMBER_NICK,
-      wxid,
-      roomid,
-      content: 'null',
-      nickname: 'null',
-      ext: 'null',
-      // wxid:'22428457414@chatroom'
-
-    }
-    const options
-      = {
-
-        url: this.httpUrl + '/api/getmembernick',
-        body: {
-          para: jpara,
-        },
-        json: true,
-      }
-    const res = await axios.post(options.url, options.body)
-    const data: ResponseData = res.data
-
-    // log.info(j.id);
-    // log.info(j.status);
-    return data
-  }
-
   // 40.转发消息
   async messageForward (wxid: string, msgId: string) {
     const jpara = {
@@ -676,6 +646,42 @@ class Bridge extends EventEmitter {
       // return rooms
     } catch (e) {
       log.error('getRoomList error:', e)
+      return e
+    }
+
+  }
+
+  // WXID反查信息 AccountByWxid
+  async getAccountByWxid (wxid: string) {
+    try {
+      const options = {
+        url: this.httpUrl + `${ApiEndpoint.DbAccountByWxid}?wxid=${wxid}`, //
+        body: {},
+        json: true,
+      }
+      const res = await axios.get(options.url)
+      // log.info('getAccountByWxid res:', JSON.stringify(res.data))
+      return res
+    } catch (e) {
+      log.error('getAccountByWxid error:', e)
+      return e
+    }
+
+  }
+
+  // 从数据库中通过WXID反查信息 dbaccountbywxid
+  async getDbAccountByWxid (wxid: string) {
+    try {
+      const options = {
+        url: this.httpUrl + `${ApiEndpoint.DbAccountByWxid}?wxid=${wxid}`, //
+        body: {},
+        json: true,
+      }
+      const res = await axios.get(options.url)
+      // log.info('getDbAccountByWxid res:', JSON.stringify(res.data))
+      return res
+    } catch (e) {
+      log.error('getDbAccountByWxid error:', e)
       return e
     }
 

@@ -6,9 +6,7 @@
   "exclude": [
     "node_modules/",
     "dist/",
-    "tests/fixtures/",
-    "src/init-agent-script.ts",
-    "src/init-agent-script.js"
+    "tests/fixtures/"
   ],
   "include": [
     "app/**/*.ts",

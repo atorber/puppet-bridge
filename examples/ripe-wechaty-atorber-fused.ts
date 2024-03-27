@@ -12,9 +12,20 @@ import {
 } from 'wechaty'
 import { FileBox } from 'file-box'
 
-import { PuppetBridgeCixingguangming55555WechatBotV3090223 as PuppetBridge } from '../src/mod.js'
+import { PuppetBridgeAtorberFusedV3090825 as PuppetBridge } from '../src/mod.js'
 import qrcodeTerminal from 'qrcode-terminal'
 import * as fs from 'fs'
+
+// 初始化检查当前文件加下是否存在日志文件info.log，如果不存在则创建
+const logPath = 'info.log'
+if (!fs.existsSync(logPath)) {
+  fs.writeFileSync(logPath, '')
+}
+
+// 定义写日志的方法
+export function writeLog (info: string) {
+  fs.appendFileSync(logPath, info + '\n')
+}
 
 function onScan (qrcode: string, status: ScanStatus) {
   if (qrcode) {
@@ -32,22 +43,7 @@ function onScan (qrcode: string, status: ScanStatus) {
 }
 
 async function onLogin (user: Contact) {
-  log.info('onLogin', '%s login', user)
-  const roomList = await bot.Room.findAll()
-  log.info('群数量：', roomList.length)
-  const contactList = await bot.Contact.findAll()
-  log.info('联系人数量：', contactList.length)
-  const friends = contactList.filter(c => c.friend())
-  log.info('好友数量：', friends.length)
-
-  // 发送@好友消息
-  // const room = await bot.Room.find({topic:'大师是群主'})
-  // const contact = await bot.Contact.find({name:'luyuchao'})
-  // log.info('room：', room)
-  // if(room && contact){
-  //   const contacts:Contact[]= [contact]
-  //   await room.say(new Date().toLocaleString() + '：瓦力上线了！', ...contacts)
-  // }
+  log.info('ripe onLogin event:', JSON.stringify(user))
 }
 
 function onLogout (user: Contact) {
@@ -62,8 +58,11 @@ async function onMessage (msg: Message) {
   const room = msg.room()
   let sendRes:any = ''
   if (room) {
-    log.info('当前群信息：', await room.topic())
-    log.info('当前群群主：', JSON.stringify(room.owner()) || 'undefined')
+    log.info('当前群名称：', await room.topic())
+    log.info('当前群ID：', room.id)
+    const owner = await room.owner()
+    log.info('当前群群主：', JSON.stringify(owner) || 'undefined')
+    log.info('当前群群主昵称：', owner && owner.name())
   }
 
   if (msg.text() === 'ding') {
@@ -125,10 +124,7 @@ async function onMessage (msg: Message) {
   let filePath = 'file/'
   // 检查文件夹是否存在，不存在则创建
   if (!fs.existsSync(filePath)) {
-    log.info('文件夹不存在，创建文件夹：', filePath)
     fs.mkdirSync(filePath)
-  } else {
-    // log.info('文件夹已存在：', filePath)
   }
 
   try {
@@ -170,9 +166,7 @@ async function onMessage (msg: Message) {
 
 }
 
-const puppet = new PuppetBridge({
-  nickName: '大师',  // 登录微信的昵称
-})
+const puppet = new PuppetBridge()
 const bot = WechatyBuilder.build({
   name: 'ding-dong-bot',
   puppet,
@@ -180,6 +174,30 @@ const bot = WechatyBuilder.build({
 
 bot.on('scan', onScan)
 bot.on('login', onLogin)
+bot.on('ready', async () => {
+  log.info('bot已经准备好了')
+  // const roomList = await bot.Room.findAll()
+  // writeLog('群信息：' + JSON.stringify(roomList))
+  // log.info('群数量：', roomList.length)
+  // const contactList = await bot.Contact.findAll()
+  // writeLog('联系人信息：' + JSON.stringify(contactList))
+  // log.info('联系人数量：', contactList.length)
+  // const friends = contactList.filter(c => c.friend())
+  // log.info('好友数量：', friends.length)
+  // 发送@好友消息
+  const room = await bot.Room.find({ topic:'大师是群主' })
+  log.info('room：', room)
+
+  const contact = await bot.Contact.find({ name:'luyuchao' })
+  log.info('contact', contact)
+
+  if (room && contact) {
+    const contacts:Contact[] = [ contact ]
+    const msg = `${new Date().toLocaleString()}${bot.ContactSelf.name}上线了！`
+    await contact.say(msg)
+    await room.say(msg, ...contacts)
+  }
+})
 bot.on('logout', onLogout)
 bot.on('message', onMessage)
 bot.on('room-join', async (room, inviteeList, inviter) => {
@@ -205,6 +223,6 @@ bot.on('room-invite', async roomInvitation => {
 
 bot.start()
   .then(() => {
-    return log.info('StarterBot', 'Starter Bot Started.')
+    return log.info('ripe', 'Bot Started.')
   })
   .catch(log.error)

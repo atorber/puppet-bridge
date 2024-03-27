@@ -1,6 +1,6 @@
 {
   "name": "wechaty-puppet-bridge",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Puppet Bridge for Wechaty",
   "type": "module",
   "exports": {
@@ -35,6 +35,8 @@
     "start:ripe-bridge-jwping-wxbot:info": "cross-env WECHATY_LOG=info NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/ripe-wechaty-jwping-wxbot.ts",
     "start:raw-bridge-ttttupup-wxhelper:info": "cross-env BROLOG_LEVEL=info NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/raw-bridge-ttttupup-wxhelper.ts",
     "start:ripe-bridge-ttttupup-wxhelper:info": "cross-env WECHATY_LOG=info NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/ripe-wechaty-ttttupup-wxhelper.ts",
+    "start:raw-bridge-atorber-fused:info": "cross-env BROLOG_LEVEL=info NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/raw-bridge-atorber-fused.ts",
+    "start:ripe-wechaty-atorber-fused:info": "cross-env WECHATY_LOG=info NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/ripe-wechaty-atorber-fused.ts",
     "lint": "npm run lint:es && npm run lint:ts && npm run lint:md",
     "lint:md": "markdownlint README.md",
     "lint:ts": "tsc --isolatedModules --noEmit",
