@@ -391,6 +391,60 @@ export const initDBInfo = async () => {
   return res
 }
 
+export const getMsg = async () => {
+  const query = {
+    dbHandle: dbInfoMap['MediaMSG0.db'],
+    // sql: `SELECT * FROM Media WHERE Reserved0 = ${msgId}`,
+    // sql: "SELECT * FROM Media WHERE Type = '3'",
+    // sql: 'SELECT * FROM Media LIMIT 2',
+    sql: `SELECT GROUP_CONCAT(Dir, '/') AS imgSuffix  
+    FROM (  
+        SELECT Dir  
+        FROM HardLinkImageID hlii  
+        WHERE DirId = (  
+            SELECT DirID2  
+            FROM HardLinkImageAttribute hlia  
+            WHERE hex(Md5) = UPPER(msg_xml_img_md5)  
+        )  
+        UNION ALL  
+        SELECT Dir  
+        FROM HardLinkImageID hlii  
+        WHERE DirId = (  
+            SELECT DirID1  
+            FROM HardLinkImageAttribute hlia  
+            WHERE hex(Md5) = UPPER(msg_xml_img_md5)  
+        )  
+        UNION ALL 
+         SELECT FileName  
+            FROM HardLinkImageAttribute hlia  
+            WHERE hex(Md5) = UPPER(msg_xml_img_md5)  
+    );`,
+  }
+  log.info('query:', JSON.stringify(query))
+  const queryRes = await execSql(query)
+  log.info('queryRes:', JSON.stringify(queryRes.data))
+  if (queryRes.data && queryRes.data.data && queryRes.data.data.length > 0) {
+    const msgInfo = formatDBDataOne(queryRes.data.data)
+    // log.info('msgInfo:', JSON.stringify(msgInfo, null, 2))
+    return {
+      data:{
+        code:1,
+        msg:'success',
+        data:msgInfo,
+      },
+    }
+  } else {
+    log.info('queryRes.data.data is empty')
+    return {
+      data:{
+        code:0,
+        msg:'success',
+        data:null,
+      },
+    }
+  }
+}
+
 export const checkLogin = () => {
   return post('/api/checkLogin')
 }

@@ -10,7 +10,7 @@ import { exec } from 'child_process'
 import path, { join } from 'path'
 
 const __dirname = path.resolve(path.dirname(''))
-console.log('当前文件的目录路径:', __dirname)
+log.info('当前文件的目录路径:', __dirname)
 
 // 获取当前文件夹的绝对路径，不使用fileURLToPath(import.meta.url)方法
 
@@ -111,8 +111,7 @@ class Bridge extends EventEmitter {
     // 收集消息类型，临时保存到文件'/msgStore.json'
     this.messageTypeTest = JSON.parse(fs.readFileSync('msgStore.json', 'utf-8'))
 
-    // 替换__dirname中的src\agents为assets\funtool_wx_3.9.2.23.exe得到execString
-    const execString = join(__dirname, 'assets', 'funtool_wx_3.9.2.23.exe')
+    const execString = join(__dirname, 'src', 'assets', 'funtool_wx_3.9.2.23.exe')
     console.log('execString:', execString)
 
     // 检查funtool_wx_3.9.2.23.exe是否已经在运行，如果已经在运行则结束进程

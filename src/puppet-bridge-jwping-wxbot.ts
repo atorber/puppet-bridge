@@ -101,7 +101,7 @@ class PuppetBridge extends PUPPET.Puppet {
     // log.debug('selfInfoRaw:\n\n\n', selfInfoRaw)
     const selfInfoRawRes = await this.bridge.getPersonalInfo()
     const selfInfoRaw:AccountInfo = selfInfoRawRes.data
-    // log.info('bridge selfInfoRaw:', JSON.stringify(selfInfoRaw, undefined, 2))
+    log.info('bridge selfInfoRaw:', JSON.stringify(selfInfoRaw, undefined, 2))
     if (!selfInfoRaw.wxid) {
       log.error('selfInfoRaw is not find')
       return

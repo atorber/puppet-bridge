@@ -115,8 +115,8 @@ class Bridge extends EventEmitter {
           log.error('获取微信进程号出错: 未找到微信进程号')
           throw new Error('获取微信进程号出错: 未找到微信进程号,请检查微信是否已经启动')
         } else {
-          const injectorPath = join(__dirname, 'assets', 'Injector.exe')
-          const dllPath = join(__dirname, 'assets', 'wxhelper-3.9.5.81-v11.dll')
+          const injectorPath = join(__dirname, 'src', 'assets', 'Injector.exe')
+          const dllPath = join(__dirname, 'src', 'assets', 'wxhelper-3.9.5.81-v11.dll')
           // const execString = `${injectorPath} --process-name WeChat.exe --inject ${dllPath}`
           const execString = `${injectorPath} -p ${pid} --inject ${dllPath}`
 
