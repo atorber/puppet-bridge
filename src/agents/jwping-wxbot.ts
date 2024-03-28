@@ -10,7 +10,7 @@ import { exec } from 'child_process'
 import path, { join } from 'path'
 
 const __dirname = path.resolve(path.dirname(''))
-console.log('当前文件的目录路径:', __dirname)
+log.info('当前文件的目录路径:', __dirname)
 
 const HEART_BEAT = 5005 // 心跳
 const RECV_TXT_MSG = 1 // 文本消息
@@ -536,7 +536,7 @@ class Bridge extends EventEmitter {
     this.wsUrl = options?.wsUrl || this.wsUrl
     this.httpUrl = options?.httpUrl || this.httpUrl
 
-    const execString = join(__dirname, 'assets', 'wxbot-sidecar-3.9.8.25.exe')
+    const execString = join(__dirname, 'src', 'assets', 'wxbot-sidecar-3.9.8.25.exe')
     console.log('execString:', execString)
 
     // 在Windows上，使用cmd /k 执行exe并在执行完毕后保留窗口

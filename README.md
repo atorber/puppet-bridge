@@ -336,7 +336,3 @@ import {
 ### v0.1.0 (2023-1-21)
 
 初始化版本，适配 [cixingguangming55555/wechat-bot](https://github.com/cixingguangming55555/wechat-bot) 项目，支持v3.9.2.23版本
-
-## 作者
-
-Chao Lu [@atorber](https://github.com/atorber)
