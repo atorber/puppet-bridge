@@ -1,6 +1,6 @@
 {
   "name": "wechaty-puppet-bridge",
-  "version": "0.8.4",
+  "version": "0.8.5",
   "description": "Puppet Bridge for Wechaty",
   "type": "module",
   "exports": {
@@ -20,8 +20,8 @@
     "build": "tsc && tsc -p tsconfig.cjs.json",
     "dist:commonjs": "jq -n \"{ type: \\\"commonjs\\\" }\" > dist/cjs/package.json",
     "dist:copy": "npm-run-all copy:esm copy:cjs",
-    "copy:esm": "shx cp -R commonjs/ dist/esm/",
-    "copy:cjs": "shx cp -R commonjs/ dist/cjs/",
+    "copy:esm": "shx cp -R commonjs/ dist/esm/ && shx cp -R src/assets/ dist/esm/src/assets/",
+    "copy:cjs": "shx cp -R commonjs/ dist/cjs/ && shx cp -R src/assets/ dist/cjs/src/assets/",
     "start": "cross-env NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/ding-dong-bot.ts",
     "start:quick:ts": "cross-env NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/quick-start.ts",
     "start:quick:js": "cross-env NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/quick-start.js",
