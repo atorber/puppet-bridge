@@ -70,7 +70,7 @@ class PuppetBridge extends PUPPET.Puppet {
 
   constructor (
     public override options: PuppetBridgeOptions = {
-      sidecarName: 'ttttupup-wxhelper',
+      sidecarName: 'atorber-fused',
     },
   ) {
 

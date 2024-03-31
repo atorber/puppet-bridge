@@ -1,6 +1,6 @@
 {
   "name": "wechaty-puppet-bridge",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "description": "Puppet Bridge for Wechaty",
   "type": "module",
   "exports": {

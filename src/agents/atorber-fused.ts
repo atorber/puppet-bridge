@@ -52,218 +52,136 @@ class Bridge extends EventEmitter {
     this.wsUrl = options?.wsUrl || this.wsUrl
     this.httpUrl = options?.httpUrl || this.httpUrl
 
-    const execOptions = {
-      name: 'Wechaty Puppet Bridge',
-    }
-
-    // 检测当前PC上安装的微信客户端的版本
-    const checkWechatVersion = () => {
-
-      // 这里可以添加获取 WeChat 版本的代码
-      const filePath = 'C:\\Program Files (x86)\\Tencent\\WeChat\\WeChat.exe'
-      const command = `(Get-Item '${filePath}').VersionInfo | Select-Object -ExpandProperty ProductVersion`
-
-      exec(`powershell -command "${command}"`, (error, stdout, stderr) => {
-        if (error) {
-          console.error(`执行的错误: ${error}`)
-          return
-        }
-        if (stderr) {
-          console.error(`执行的错误: ${stderr}`)
-          return
-        }
-
-        const wechatVersion = stdout.trim()
-        log.info(`微信版本: ${wechatVersion}`)
-        if (wechatVersion !== '3.9.8.1000') {
-          throw new Error('不支持当前微信版本，请安装微信版本3.9.8.25')
-        } else {
-          log.info('微信版本检测通过，支持当前微信版本')
-        }
-      })
-    }
-
-    checkWechatVersion()
-
-    // 结束所有名称为wxbot-sidecar-3.9.8.25.exe的进程
-    // const killWxbotSidecar = 'taskkill /F /IM wxbot-sidecar-3.9.8.25.exe'
-    // exec(killWxbotSidecar, (error: any, stdout: any, stderr: any) => {
-    //   if (error) {
-    //     log.error(`结束进程执行出错: ${error}`)
-    //     log.error(`结束进程执行stderr: ${stderr}`)
-    //   } else {
-    //     log.info(`结束进程执行stdout: ${stdout}`)
-    //   }
-    // })
-
-    // 启动wxbot-sidecar
-    /*
-    const execString = join(__dirname, 'assets', 'wxbot-sidecar-3.9.8.25.exe')
-    log.info('execString:', execString)
-
-    // 在Windows上，使用cmd /k 执行exe并在执行完毕后保留窗口
-    const command = `cmd /c "${execString} -q http://127.0.0.1:8081/qrcode-callback & pause"`
-    // const command = `cmd /c "${execString} & pause"`
-    // const command = `${execString} -q http://127.0.0.1:8081/qrcode-callback`
-    log.info('command:', command)
-
-    sudo.exec(command, execOptions, (error: any, stdout: any, stderr: any) => {
-      log.info('command is called', command)
-      if (error) {
-        log.error(`command执行出错: ${error}`)
-        log.error(`command执行stderr: ${stderr}`)
+    // 如果未登录，则每隔5s检测一次是否已登录，未登录则获取登录二维码或操作登录
+    const timer = setInterval(() => {
+      if (this.isLoggedIn) {
+        log.info('已登录，清除定时器...')
+        this.server = this.createWebSocket(this.wsUrl.split(':')[2] as string)
+        // 启动wxbot-sidecar-3.9.8.25.exe
+        clearInterval(timer)
       } else {
-        log.info(`command执行stdout: ${stdout}`)
+        log.info('未登录，每隔5s获取一次登录二维码...')
+        this.doLogin().then((res) => {
+          log.info('doLogin success...')
+          return res
+        }).catch((e) => {
+          log.error('doLogin error:', e)
+        })
       }
-    })
-    */
+    }, 5000)
 
-    // 启动wxhelper
-    let pid = 0
-    const getWehcatPid = 'tasklist | findstr WeChat.exe'
-    exec(getWehcatPid, (error: any, stdout, stderr) => {
-      if (error) {
-        log.error(`获取微信进程号出错: ${error}`)
-        log.error(`获取微信进程号stderr: ${stderr}`)
-        return
-      }
-      log.info('获取微信进程号stdout: ', stdout)
+    // 检查http server是否已经启动,如果未启动，则自动注入dll
+    this.checkHttpServer().then((res) => {
+      log.info('checkHttpServer成功：', res ? '已启动' : '未启动')
+      // 如果http server未启动，且未指定httpUrl，则自动注入dll
+      if (!res && !options?.httpUrl) {
+        log.info('http server未启动，自动注入dll...')
+        // this.checkWechatVersion()
+        const execOptions = {
+          name: 'Wechaty Puppet Bridge',
+        }
 
-      // 解析stdout，获取微信进程号，去除空格、换行符
-      function findLargestProcess (input: string): number {
-        // 将输入字符串按行分割
-        const lines = input.split('\n')
-        // log.info('lines:', lines)
-        // 初始化最大资源使用量及其对应的进程号
-        let maxMemory = 0
-        let processIdOfMaxMemory = 0
-
-        // 遍历每一行
-        for (const line of lines) {
-          // 分割行以提取进程号和资源使用量
-          const parts = line.split(/\s+/)
-          // log.info('parts:', parts)
-          let processIdString = parts.join('')
-          // log.info('processIdString:', processIdString)
-          processIdString = processIdString.replace(/,/g, '')
-          // log.info('processIdString:', processIdString)
-          // 使用一个正则提取出进程号和内存用量，例如：WeChat.exe47484Console1113308K提取出47484和1113308
-          const reg = /WeChat\.exe(\d+)Console(\d+)K/
-          const result = reg.exec(processIdString)
-          // log.info('result:', result)
-          if (!result || result.length < 3) {
-            continue
-          } else {
-            const processId = parseInt(result[1] as string, 10)
-            // 将资源使用量中的逗号移除，然后转换为数字
-            const memory = parseInt(result[2] as string, 10)
-            // 如果当前进程的资源使用量大于已记录的最大值，则更新最大值及其对应的进程号
-            if (memory > maxMemory) {
-              maxMemory = memory
-              processIdOfMaxMemory = processId
-            }
+        // 启动wxhelper
+        let pid = 0
+        const getWehcatPid = 'tasklist | findstr WeChat.exe'
+        exec(getWehcatPid, (error: any, stdout, stderr) => {
+          if (error) {
+            log.error(`获取微信进程号出错: ${error}`)
+            log.error(`获取微信进程号stderr: ${stderr}`)
+            return
           }
-        }
+          log.info('获取微信进程号stdout: ', stdout)
 
-        // 返回占用资源最大的进程号
-        return processIdOfMaxMemory
-      }
+          try {
+            pid = this.findLargestProcess(stdout)
+            log.info('微信进程号:', pid)
 
-      try {
-        pid = findLargestProcess(stdout)
-        log.info('微信进程号:', pid)
-        if (pid === 0) {
-          log.error('获取微信进程号出错: 未找到微信进程号')
-          throw new Error('获取微信进程号出错: 未找到微信进程号,请检查微信是否已经启动')
-        } else {
-          const injectorPath = join(__dirname, 'src', 'assets', 'Injector.exe')
-          const dllPath = join(__dirname, 'src', 'assets', 'wxhelper-3.9.8.25-v2.dll')
-          // const execString = `${injectorPath} --process-name WeChat.exe --inject ${dllPath}`
-          const execString = `${injectorPath} -p ${pid} --inject ${dllPath}`
-
-          log.info('execString:', execString)
-
-          sudo.exec(execString, execOptions, (error: any, stdout: any, stderr: any) => {
-            if (error) {
-              console.error(`注入执行出错: ${error}`)
-              log.error(`注入执行标准错误stderr: ${stderr}`)
-              throw new Error(`注入执行出错: ${error}`)
+            if (pid === 0) {
+              log.error('获取微信进程号出错: 未找到微信进程号')
+              throw new Error('获取微信进程号出错: 未找到微信进程号,请检查微信是否已经启动')
             } else {
-              log.info(`注入执行标准输出stdout: ${stdout}`)
+              const injectorPath = join(__dirname, 'src', 'assets', 'Injector.exe')
+              const dllPath = join(__dirname, 'src', 'assets', 'wxhelper-3.9.8.25-v2.dll')
+              // const execString = `${injectorPath} --process-name WeChat.exe --inject ${dllPath}`
+              const execString = `${injectorPath} -p ${pid} --inject ${dllPath}`
 
-              // 初始化数据库信息
-              this.wxhelper.initDBInfo().then((res) => {
-                log.info('initDBInfo success...')
-                return res
-              }).catch((e) => {
-                log.error('initDBInfo error:', e)
-              })
+              log.info('execString:', execString)
 
-              const doLogin = () => {
-                this.wxhelper.checkLogin()
-                  .then((res:any) => {
-                    log.info('checkLogin success:', JSON.stringify(res.data))
-                    const checkLoginRes = res.data
-                    log.info('checkLoginRes:', JSON.stringify(checkLoginRes))
-                    const isLoggedIn = checkLoginRes.code > 0
-                    if (isLoggedIn) {
-                      log.info('agent login success...')
-                      this.isLoggedIn = true
-                      this.emit('login', 'login')
-                    } else {
-                      this.wxhelper.clickEnterWeChat()
-                        .then((res) => {
-                          log.info('clickEnterWeChat success:', JSON.stringify(res.data))
-                          const clickEnterWeChatRes = res.data
-                          if (clickEnterWeChatRes.code > 0) {
-                            this.isLoggedIn = true
-                            this.emit('login', 'login')
-                          } else {
-                            log.info('clickEnterWeChat success, but not login, getLoginUrl...')
-                            this.isLoggedIn = false
-                            this.wxhelper.getLoginUrl().then((res) => {
-                              log.info('getLoginUrl_res:', JSON.stringify(res.data))
-                              if (res.data && res.data.code > 0) {
-                                this.emit('getLoginUrl', res.data)
-                              }
-                              return res
-                            }).catch((e) => {
-                              log.error('getLoginUrl error:', e)
-                            })
-                          }
-                          return res
-                        })
-                        .catch((e) => {
-                          log.error('clickEnterWeChat error:', e)
-                        })
-                    }
-                    return res
-                  })
-                  .catch((e) => {
-                    log.error('checkLogin error:', e)
-                  })
-              }
-              // 如果未登录，则每隔5s获取一次登录二维码
-              const timer = setInterval(() => {
-                if (this.isLoggedIn) {
-                  log.info('已登录，清除定时器...')
-                  this.server = this.createWebSocket(this.wsUrl.split(':')[2] as string)
-                  // 启动wxbot-sidecar-3.9.8.25.exe
-                  clearInterval(timer)
+              sudo.exec(execString, execOptions, (error: any, stdout: any, stderr: any) => {
+                if (error) {
+                  console.error(`注入执行出错: ${error}`)
+                  log.error(`注入执行标准错误stderr: ${stderr}`)
+                  throw new Error(`注入执行出错,确认客户端【以管理员身份运行】: ${error}`)
                 } else {
-                  log.info('未登录，每隔5s获取一次登录二维码...')
-                  doLogin()
+                  log.info(`注入执行标准输出stdout: ${stdout}`)
                 }
-              }, 10000)
+              })
             }
-
-          })
-        }
-      } catch (e) {
-        log.error('获取微信进程号出错:', e)
+          } catch (e) {
+            log.error('获取微信进程号出错:', e)
+          }
+        })
+      } else if (!res && options?.httpUrl) {
+        log.info('http server未启动，但已指定httpUrl，不自动注入dll...')
+        throw new Error('由于指定了httpUrl，不自动注入dll，需要手动注入dll启动服务...')
+      } else {
+        log.info('http server已启动，无需注入dll...')
       }
+      return res
+    }).catch((e) => {
+      log.error('checkHttpServer error:', e)
     })
 
+  }
+
+  private async checkHttpServer () {
+    try {
+      await axios.get(this.httpUrl)
+      log.info('http server is running')
+      return true
+    } catch (e) {
+      log.error('http server is not running:', e)
+      return false
+    }
+  }
+
+  private findLargestProcess = (input: string): number => {
+    // 将输入字符串按行分割
+    const lines = input.split('\n')
+    // log.info('lines:', lines)
+    // 初始化最大资源使用量及其对应的进程号
+    let maxMemory = 0
+    let processIdOfMaxMemory = 0
+
+    // 遍历每一行
+    for (const line of lines) {
+      // 分割行以提取进程号和资源使用量
+      const parts = line.split(/\s+/)
+      // log.info('parts:', parts)
+      let processIdString = parts.join('')
+      // log.info('processIdString:', processIdString)
+      processIdString = processIdString.replace(/,/g, '')
+      // log.info('processIdString:', processIdString)
+      // 使用一个正则提取出进程号和内存用量，例如：WeChat.exe47484Console1113308K提取出47484和1113308
+      const reg = /WeChat\.exe(\d+)Console(\d+)K/
+      const result = reg.exec(processIdString)
+      // log.info('result:', result)
+      if (!result || result.length < 3) {
+        continue
+      } else {
+        const processId = parseInt(result[1] as string, 10)
+        // 将资源使用量中的逗号移除，然后转换为数字
+        const memory = parseInt(result[2] as string, 10)
+        // 如果当前进程的资源使用量大于已记录的最大值，则更新最大值及其对应的进程号
+        if (memory > maxMemory) {
+          maxMemory = memory
+          processIdOfMaxMemory = processId
+        }
+      }
+    }
+
+    // 返回占用资源最大的进程号
+    return processIdOfMaxMemory
   }
 
   private createWebSocket (port: string) {
@@ -429,6 +347,53 @@ class Bridge extends EventEmitter {
     //     })
     // }, 10000)
     return server
+  }
+
+  private doLogin = async () => {
+    // 初始化数据库信息
+    await this.wxhelper.initDBInfo()
+    this.wxhelper.checkLogin()
+      .then((res:any) => {
+        log.info('checkLogin success:', JSON.stringify(res.data))
+        const checkLoginRes = res.data
+        log.info('checkLoginRes:', JSON.stringify(checkLoginRes))
+        const isLoggedIn = checkLoginRes.code > 0
+        if (isLoggedIn) {
+          log.info('agent login success...')
+          this.isLoggedIn = true
+          this.emit('login', 'login')
+        } else {
+          this.wxhelper.clickEnterWeChat()
+            .then((res) => {
+              log.info('clickEnterWeChat success:', JSON.stringify(res.data))
+              const clickEnterWeChatRes = res.data
+              if (clickEnterWeChatRes.code > 0) {
+                this.isLoggedIn = true
+                this.emit('login', 'login')
+              } else {
+                log.info('clickEnterWeChat success, but not login, getLoginUrl...')
+                this.isLoggedIn = false
+                this.wxhelper.getLoginUrl().then((res) => {
+                  log.info('getLoginUrl_res:', JSON.stringify(res.data))
+                  if (res.data && res.data.code > 0) {
+                    this.emit('getLoginUrl', res.data)
+                  }
+                  return res
+                }).catch((e) => {
+                  log.error('getLoginUrl error:', e)
+                })
+              }
+              return res
+            })
+            .catch((e) => {
+              log.error('clickEnterWeChat error:', e)
+            })
+        }
+        return res
+      })
+      .catch((e) => {
+        log.error('checkLogin error:', e)
+      })
   }
 
   // 处理消息hook

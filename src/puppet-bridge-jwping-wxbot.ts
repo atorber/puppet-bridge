@@ -68,7 +68,7 @@ class PuppetBridge extends PUPPET.Puppet {
   constructor (
     public override options: PuppetBridgeOptions = {},
   ) {
-    options.sidecarName = options.sidecarName || 'jwping'
+    options.sidecarName = 'jwping-wxbot'
 
     log.info('options...', JSON.stringify(options))
     super(options)
