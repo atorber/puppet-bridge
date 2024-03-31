@@ -310,6 +310,11 @@ import {
 
 ## 更新日志
 
+### v0.8.2
+
+- 优化注入逻辑，当设置了httpUrl时，不自动注入，默认为已完成手动注入
+- 当http服务已存在时不重复注入
+
 ### v0.7.0
 
 - 升级atorber-fused仅需要[ttttupup/wxhelper](https://github.com/ttttupup/wxhelper)启动

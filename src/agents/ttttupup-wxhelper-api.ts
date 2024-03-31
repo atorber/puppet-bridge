@@ -1,5 +1,6 @@
 /* eslint-disable sort-keys */
 import axios from 'axios'
+import { log } from 'wechaty-puppet'
 
 // 创建 axios 实例
 const request = axios.create({
@@ -283,22 +284,166 @@ export interface MessageRaw {
   type: number;
 }
 
-// enum ApiEndpoint {
-//   UserInfo = '/api/userinfo', // 获取登录用户信息
-//   Contacts = '/api/contacts', // 获取通讯录信息，不建议使用，请使用 DbContacts
-//   DbContacts = '/api/dbcontacts', // 从数据库中获取通讯录信息
-//   SendTxtMsg = '/api/sendtxtmsg', // 发送文本消息
-//   SendImgMsg = '/api/sendimgmsg', // 发送图片消息
-//   SendFileMsg = '/api/sendfilemsg', // 发送文件消息
-//   ChatRoom = '/api/chatroom', // 获取群聊组成员列表，不建议使用，请使用 DbChatRoom
-//   DbChatRoom = '/api/dbchatroom', // 从数据库中获取群聊组信息和成员列表
-//   AccountByWxid = '/api/accountbywxid', // WXID反查微信昵称，不建议使用，请使用 DbAccountByWxid
-//   DbAccountByWxid = '/api/dbaccountbywxid', // 从数据库中通过WXID反查微信昵称
-//   ForwardMsg = '/api/forwardmsg', // 消息转发
-//   DBS = '/api/dbs', // 获取支持查询的数据库句柄
-//   ExecSql = '/api/execsql', // 通过数据库句柄执行SQL语句
-//   Close = '/close', // 停止 wxbot-sidecar（停止http server，并中止程序运行）
-// }
+export const getDBInfo = () => {
+  return post('/api/getDBInfo')
+}
+
+export const execSql = (data:{dbHandle: number; sql: string}) => {
+  return post('/api/execSql', data)
+}
+
+interface Table {
+  /**
+   * 任务名称
+   */
+  name: string;
+  /**
+   * 根页面
+   */
+  rootpage: string;
+  /**
+   * SQL 创建表的语句
+   */
+  sql: string;
+  /**
+   * 表名称
+   */
+  tableName: string;
+}
+
+interface DB {
+  databaseName:'MicroMsg.db'|'ChatMsg.db'|'Misc.db'|'Emotion.db'|
+  'Media.db'|'FunctionMsg.db'|'MSG0.db'|'MediaMSG0.db'|'PublicMsg.db'|'PublicMsgMedia.db'|'Favorite.db'|'';
+  handle:number;
+  tables:Table[]
+}
+
+interface DBInfoMap {
+  [key:string]:number;
+  'MicroMsg.db':number;
+  'ChatMsg.db':number;
+  'Misc.db':number;
+  'Emotion.db':number;
+  'Media.db':number;
+  'FunctionMsg.db':number;
+  'MSG0.db':number;
+  'MediaMSG0.db':number;
+  'PublicMsg.db':number;
+  'PublicMsgMedia.db':number;
+  'Favorite.db':number;
+}
+
+let dbInfo:DB[] = []
+const dbInfoMap:DBInfoMap = {
+  'MicroMsg.db': 0,
+  'ChatMsg.db': 0,
+  'Misc.db': 0,
+  'Emotion.db': 0,
+  'Media.db': 0,
+  'FunctionMsg.db': 0,
+  'MSG0.db': 0,
+  'MediaMSG0.db': 0,
+  'PublicMsg.db': 0,
+  'PublicMsgMedia.db': 0,
+  'Favorite.db': 0,
+}
+
+// DB数据格式化,单条数据
+export const formatDBDataOne = (data:any[]) => {
+  const res:{
+    [key:string]:any
+  } = {}
+  const titles = data[0]
+  const values = data[1]
+  titles.forEach((title:string, index:number) => {
+    res[title] = values[index]
+  })
+  return res
+}
+
+// DB数据格式化,多条数据
+export const formatDBDataMulti = (data:any[]) => {
+  const res:{
+    [key:string]:any
+  }[] = []
+  const titles = data[0]
+  const values = data.slice(1)
+  values.forEach((item:any[]) => {
+    const obj:{
+      [key:string]:any
+    } = {}
+    titles.forEach((title:string, index:number) => {
+      obj[title] = item[index]
+    })
+    res.push(obj)
+  })
+  return res
+}
+
+export const initDBInfo = async () => {
+  const res = await getDBInfo()
+  // log.info('initDBInfo:', JSON.stringify(res.data))
+  dbInfo = res.data.data
+  dbInfo.forEach((item, _index) => {
+    dbInfoMap[item.databaseName] = item.handle
+  })
+  log.info('dbInfoMap:', JSON.stringify(dbInfoMap, null, 2))
+  return res
+}
+
+export const getMsg = async () => {
+  const query = {
+    dbHandle: dbInfoMap['MediaMSG0.db'],
+    // sql: `SELECT * FROM Media WHERE Reserved0 = ${msgId}`,
+    // sql: "SELECT * FROM Media WHERE Type = '3'",
+    // sql: 'SELECT * FROM Media LIMIT 2',
+    sql: `SELECT GROUP_CONCAT(Dir, '/') AS imgSuffix  
+    FROM (  
+        SELECT Dir  
+        FROM HardLinkImageID hlii  
+        WHERE DirId = (  
+            SELECT DirID2  
+            FROM HardLinkImageAttribute hlia  
+            WHERE hex(Md5) = UPPER(msg_xml_img_md5)  
+        )  
+        UNION ALL  
+        SELECT Dir  
+        FROM HardLinkImageID hlii  
+        WHERE DirId = (  
+            SELECT DirID1  
+            FROM HardLinkImageAttribute hlia  
+            WHERE hex(Md5) = UPPER(msg_xml_img_md5)  
+        )  
+        UNION ALL 
+         SELECT FileName  
+            FROM HardLinkImageAttribute hlia  
+            WHERE hex(Md5) = UPPER(msg_xml_img_md5)  
+    );`,
+  }
+  log.info('query:', JSON.stringify(query))
+  const queryRes = await execSql(query)
+  log.info('queryRes:', JSON.stringify(queryRes.data))
+  if (queryRes.data && queryRes.data.data && queryRes.data.data.length > 0) {
+    const msgInfo = formatDBDataOne(queryRes.data.data)
+    // log.info('msgInfo:', JSON.stringify(msgInfo, null, 2))
+    return {
+      data:{
+        code:1,
+        msg:'success',
+        data:msgInfo,
+      },
+    }
+  } else {
+    log.info('queryRes.data.data is empty')
+    return {
+      data:{
+        code:0,
+        msg:'success',
+        data:null,
+      },
+    }
+  }
+}
 
 // def checkLogin():
 //     url = "127.0.0.1:19088/api/checkLogin"
@@ -417,33 +562,6 @@ export const unhookSyncMsg = () => {
 //     print(response.text)
 export const getContactList = () => {
   return post('/api/getContactList')
-}
-
-// def getDBInfo():
-//     url = host + "/api/getDBInfo"
-//     payload = {}
-//     headers = {}
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
-export const getDBInfo = () => {
-  return post('/api/getDBInfo')
-}
-
-// def execSql():
-//     url = host + "/api/execSql"
-//     print("modify dbHandle ")
-//     raise RuntimeError("modify dbHandle then deleted me")
-//     payload = json.dumps({
-//         "dbHandle": 1713425147584,
-//         "sql": "select * from MSG where localId =100;"
-//     })
-//     headers = {
-//         'Content-Type': 'application/json'
-//     }
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
-export const execSql = (dbHandle: number, sql: string) => {
-  return post('/api/execSql', { dbHandle, sql })
 }
 
 // def getChatRoomDetailInfo():

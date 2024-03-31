@@ -1,13 +1,13 @@
 /* eslint-disable camelcase */
 /* eslint-disable sort-keys */
-/* eslint-disable no-console */
 import WebSocket from 'ws'
 import axios from 'axios'
 import { EventEmitter } from 'events'
 import { log } from 'wechaty-puppet'
 import * as fs from 'fs'
-import { exec } from 'child_process'
+// import { exec } from 'child_process'
 import path, { join } from 'path'
+import sudo from 'sudo-prompt'
 
 const __dirname = path.resolve(path.dirname(''))
 log.info('当前文件的目录路径:', __dirname)
@@ -508,7 +508,7 @@ class Bridge extends EventEmitter {
 
   private httpUrl: string = 'http://127.0.0.1:8080'
 
-  ws: WebSocket
+  ws: WebSocket |undefined
 
   messageTypeTest: any = {}
 
@@ -527,7 +527,7 @@ class Bridge extends EventEmitter {
     super()
     // 检测根目录下是否有msgStore.json文件，如果没有，则创建一个，内容为{}
     if (!fs.existsSync('msgStore.json')) {
-      console.log('msgStore.json not exist')
+      log.info('msgStore.json not exist')
       fs.writeFileSync('msgStore.json', '{}')
     }
 
@@ -536,22 +536,96 @@ class Bridge extends EventEmitter {
     this.wsUrl = options?.wsUrl || this.wsUrl
     this.httpUrl = options?.httpUrl || this.httpUrl
 
-    const execString = join(__dirname, 'src', 'assets', 'wxbot-sidecar-3.9.8.25.exe')
-    console.log('execString:', execString)
-
-    // 在Windows上，使用cmd /k 执行exe并在执行完毕后保留窗口
-    const command = `cmd /c "${execString} & pause"`
-    exec(command, (error: any, stdout: any, stderr: any) => {
-      if (error) {
-        console.error(`执行出错: ${error}`)
-        return
+    // 如果未登录，则每隔5s检测一次是否已登录，未登录则获取登录二维码或操作登录
+    const timer = setInterval(() => {
+      log.info('checkLogin...')
+      if (this.isLoggedIn) {
+        log.info('已登录，清除定时器...')
+        this.ws = this.connectWebSocket()
+        clearInterval(timer)
+      } else {
+        log.info('未登录，每隔5s检测一次...')
+        this.doLogin().then((res) => {
+          log.info('doLogin success...')
+          return res
+        }).catch((e) => {
+          log.error('doLogin error:', e)
+        })
       }
-      console.log(`stdout: ${stdout}`)
-      console.error(`stderr: ${stderr}`)
+    }, 5000)
+
+    // 检查http server是否已经启动,如果未启动，则自动注入dll
+    this.checkHttpServer().then((res) => {
+      log.info('checkHttpServer成功：', res ? '已启动' : '未启动')
+      // 如果http server未启动，且未指定httpUrl，则自动注入dll
+      if (!res && !options?.httpUrl) {
+        log.info('http server未启动，自动注入...')
+        // this.checkWechatVersion()
+        const execOptions = {
+          name: 'Wechaty Puppet Bridge',
+        }
+        const execString = join(__dirname, 'src', 'assets', 'wxbot-sidecar-3.9.8.25.exe')
+        log.info('execString:', execString)
+        // 在Windows上，使用cmd /k 执行exe并在执行完毕后保留窗口
+        const command = `cmd /c "${execString} & pause"`
+        log.info('command', command)
+        sudo.exec(command, execOptions, (error: any, stdout: any, stderr: any) => {
+          if (error) {
+            log.error('执行出错:', error)
+            return
+          }
+          log.info('stdout:', stdout)
+          log.error('stderr:', stderr)
+        })
+        log.info('http server注入成功...')
+      } else if (!res && options?.httpUrl) {
+        log.info('http server未启动，但已指定httpUrl，不自动注入dll...')
+        throw new Error('由于指定了httpUrl，不自动注入dll，需要手动注入dll启动服务...')
+      } else {
+        log.info('http server已启动，无需注入dll...')
+      }
+      return res
+    }).catch((e) => {
+      log.error('checkHttpServer error:', e)
     })
+  }
 
-    this.ws = this.connectWebSocket()
+  // 检测当前PC上安装的微信客户端的版本
+  // private checkWechatVersion = () => {
 
+  //   // 这里可以添加获取 WeChat 版本的代码
+  //   const filePath = 'C:\\Program Files (x86)\\Tencent\\WeChat\\WeChat.exe'
+  //   const command = `(Get-Item '${filePath}').VersionInfo | Select-Object -ExpandProperty ProductVersion`
+
+  //   exec(`powershell -command "${command}"`, (error, stdout, stderr) => {
+  //     if (error) {
+  //       log.error(`执行的错误: ${error}`)
+  //       return
+  //     }
+  //     if (stderr) {
+  //       log.error(`执行的错误: ${stderr}`)
+  //       return
+  //     }
+
+  //     const wechatVersion = stdout.trim()
+  //     log.info(`微信版本: ${wechatVersion}`)
+  //     if (wechatVersion !== '3.9.8.1000') {
+  //       throw new Error('不支持当前微信版本，请安装微信版本3.9.8.25或者选择其他bridge，详情查看https://github.com/atorber/puppet-bridge')
+  //     } else {
+  //       log.info('微信版本检测通过，支持当前微信版本')
+  //     }
+  //   })
+  // }
+
+  private async checkHttpServer () {
+    try {
+      await axios.get(this.httpUrl)
+      log.info('http server is running')
+      return true
+    } catch (e) {
+      log.error('http server is not running:', e)
+      return false
+    }
   }
 
   private connectWebSocket () {
@@ -693,6 +767,29 @@ class Bridge extends EventEmitter {
     return this.ws
   }
 
+  private doLogin = async () => {
+    log.info('checkLogin...')
+    this.getPersonalInfo()
+      .then((res:any) => {
+        log.info('checkLogin success:', JSON.stringify(res.data))
+        const checkLoginRes = res.data
+        log.info('checkLoginRes:', JSON.stringify(checkLoginRes))
+        const isLoggedIn = !!((checkLoginRes && checkLoginRes.wxid))
+        if (isLoggedIn) {
+          log.info('agent login success...')
+          this.isLoggedIn = true
+          this.emit('login', 'login')
+        } else {
+          log.info('agent login fail...')
+          this.isLoggedIn = false
+        }
+        return res
+      })
+      .catch((e) => {
+        log.error('checkLogin error:', e)
+      })
+  }
+
   // 处理消息hook
   handleReceiveMessage (messageRaw: MessageRaw) {
     // log.info('handleReceiveMessage...:', messageRaw)
@@ -738,7 +835,7 @@ class Bridge extends EventEmitter {
         json: true,
       }
     const res = await axios.post(options.url, options.body)
-    console.log('messageSendText res:', res.data)
+    log.info('messageSendText res:', res.data)
     return res.data
 
   }
@@ -764,7 +861,7 @@ class Bridge extends EventEmitter {
         json: true,
       }
     const res = await axios.post(options.url, options.body)
-    console.log('messageSendTextAt res:', res.data)
+    log.info('messageSendTextAt res:', res.data)
     return res.data
   }
 

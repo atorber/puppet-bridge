@@ -73,7 +73,7 @@ class PuppetBridge extends PUPPET.Puppet {
 
   constructor (
     public override options: PuppetBridgeOptions = {
-      sidecarName: 'cixingguangming55555',
+      sidecarName: 'cixingguangming55555-wechat-bot',
     },
   ) {
 
