@@ -17,5 +17,6 @@
     "src/**/*.ts",
     "src/**/*.d.ts",
     "tests/**/*.spec.ts",
+    "assets/**/*" 
   ],
 }
