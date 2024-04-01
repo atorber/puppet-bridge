@@ -11,7 +11,7 @@ import {
   writeMsgStore,
   // getTimeLocaleString,
 } from '../utils/messageStore.js'
-import * as wxhelper from './ttttupup-wxhelper-api.js'
+import { Wxhelper, MessageRaw } from './ttttupup-wxhelper-api.js'
 
 import sudo from 'sudo-prompt'
 import type {
@@ -39,7 +39,7 @@ class Bridge extends EventEmitter {
 
   private httpUrl: string = 'http://127.0.0.1:19088'
 
-  wxhelper: typeof wxhelper = wxhelper
+  wxhelper: Wxhelper
 
   server: net.Server | undefined
 
@@ -58,6 +58,8 @@ class Bridge extends EventEmitter {
     this.messageTypeTest = readMsgStore()
     this.wsUrl = options?.wsUrl || this.wsUrl
     this.httpUrl = options?.httpUrl || this.httpUrl
+
+    this.wxhelper = new Wxhelper(this.httpUrl)
 
     // 如果未登录，则每隔5s检测一次是否已登录，未登录则获取登录二维码或操作登录
     const timer = setInterval(() => {
@@ -381,7 +383,7 @@ class Bridge extends EventEmitter {
   }
 
   // 处理消息hook
-  handleReceiveMessage (messageRaw: wxhelper.MessageRaw) {
+  handleReceiveMessage (messageRaw: MessageRaw) {
     // log.info('handleReceiveMessage...:', messageRaw)
     if (messageRaw.type === 3) {
       this.wxhelper.downloadAttach(messageRaw.msgId).then((res) => {
@@ -402,4 +404,4 @@ class Bridge extends EventEmitter {
 
 }
 
-export { Bridge, log, wxhelper }
+export { Bridge, log }
