@@ -1,9 +1,10 @@
 import {
   Bridge,
   log,
-  wxhelper,
 } from '../src/agents/atorber-fused.js'
 import os from 'os'
+
+import type { MessageRaw, AccountInfo, ContactRaw } from '../src/agents/atorber-fused-api.js'
 
 const userInfo = os.userInfo()
 const rootPath = userInfo.homedir
@@ -17,7 +18,7 @@ const main = async () => {
     log.info('raw getLoginUrl event:', JSON.stringify(data, undefined, 2))
   })
 
-  bridge.on('message', (message: wxhelper.MessageRaw) => {
+  bridge.on('message', (message: MessageRaw) => {
     log.info('onmessage get message:', JSON.stringify(message, undefined, 2))
     let roomId = ''
     let talkerId = ''
@@ -42,7 +43,7 @@ const main = async () => {
     if (text.indexOf('46.联系人列表') > -1) {
       bridge.wxhelper.getContactList().then((res:any) => {
         log.info('getContactList_res:', JSON.stringify(res.data, undefined, 2))
-        const contacts = res.data.data as wxhelper.ContactRaw[]
+        const contacts = res.data.data as ContactRaw[]
         for (const contact of contacts) {
           log.info('contact:', JSON.stringify(contact, undefined, 2))
         }
@@ -65,7 +66,7 @@ const main = async () => {
     bridge.wxhelper.userInfo()
       .then(userInfoRes => {
         // log.info('onready userinfo:', JSON.stringify(userInfoRes.data, undefined, 2))
-        const userInfo = userInfoRes.data as wxhelper.AccountInfo
+        const userInfo = userInfoRes.data as AccountInfo
         log.info('raw get userInfo:', JSON.stringify(userInfo, undefined, 2))
         return userInfoRes
       })

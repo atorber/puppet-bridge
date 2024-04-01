@@ -310,9 +310,10 @@ import {
 
 ## 更新日志
 
-### v0.8.6
+### v0.8.7
 
 - wxhelper类抽离，支持指定httpUrl
+- fused类抽离，支持指定httpUrl
 
 ### v0.8.2
 
