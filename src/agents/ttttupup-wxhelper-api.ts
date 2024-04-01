@@ -2,67 +2,6 @@
 import axios from 'axios'
 import { log } from 'wechaty-puppet'
 
-// 创建 axios 实例
-const request = axios.create({
-  // API 请求的默认前缀
-  baseURL: 'http://127.0.0.1:19088',
-
-  // 请求超时时间
-  timeout: 120000,
-})
-
-/**
-  * 异常拦截处理器
-  *
-  * @param {*} error
-  */
-export const errorHandler = (error: { response?: { status: number, config: any } }) => {
-  // 判断是否是响应错误信息
-  if (error.response) {
-    if (error.response.status === 401) {
-      return request(error.response.config)
-    }
-  }
-  return Promise.reject(error)
-}
-
-/**
-   * GET 请求
-   *
-   * @param {String} url
-   * @param {Object} data
-   * @param {Object} options
-   * @returns {Promise<any>}
-   */
-export const get = (url: string, data = {}, options = {}) => {
-
-  // request.interceptors.response.use((response) => response.data, errorHandler)
-  return request({
-    url,
-    params: data,
-    method: 'get',
-    ...options,
-  })
-}
-
-/**
-   * POST 请求
-   *
-   * @param {String} url
-   * @param {Object} data
-   * @param {Object} options
-   * @returns {Promise<any>}
-   */
-export const post = (url: string, data = {}, options = {}) => {
-  // request.interceptors.response.use((response) => response.data, errorHandler)
-  return request({
-    url,
-    method: 'post',
-    data,
-    ...options,
-  })
-}
-
 /**
  * 定义用户账户信息接口
  */
@@ -284,15 +223,7 @@ export interface MessageRaw {
   type: number;
 }
 
-export const getDBInfo = () => {
-  return post('/api/getDBInfo')
-}
-
-export const execSql = (data:{dbHandle: number; sql: string}) => {
-  return post('/api/execSql', data)
-}
-
-interface Table {
+export interface Table {
   /**
    * 任务名称
    */
@@ -311,14 +242,14 @@ interface Table {
   tableName: string;
 }
 
-interface DB {
+export interface DB {
   databaseName:'MicroMsg.db'|'ChatMsg.db'|'Misc.db'|'Emotion.db'|
   'Media.db'|'FunctionMsg.db'|'MSG0.db'|'MediaMSG0.db'|'PublicMsg.db'|'PublicMsgMedia.db'|'Favorite.db'|'';
   handle:number;
   tables:Table[]
 }
 
-interface DBInfoMap {
+export interface DBInfoMap {
   [key:string]:number;
   'MicroMsg.db':number;
   'ChatMsg.db':number;
@@ -333,692 +264,777 @@ interface DBInfoMap {
   'Favorite.db':number;
 }
 
-let dbInfo:DB[] = []
-const dbInfoMap:DBInfoMap = {
-  'MicroMsg.db': 0,
-  'ChatMsg.db': 0,
-  'Misc.db': 0,
-  'Emotion.db': 0,
-  'Media.db': 0,
-  'FunctionMsg.db': 0,
-  'MSG0.db': 0,
-  'MediaMSG0.db': 0,
-  'PublicMsg.db': 0,
-  'PublicMsgMedia.db': 0,
-  'Favorite.db': 0,
-}
+export class Wxhelper {
 
-// DB数据格式化,单条数据
-export const formatDBDataOne = (data:any[]) => {
-  const res:{
-    [key:string]:any
-  } = {}
-  const titles = data[0]
-  const values = data[1]
-  titles.forEach((title:string, index:number) => {
-    res[title] = values[index]
+  // 单例模式
+  // eslint-disable-next-line no-use-before-define
+  private static instance: Wxhelper | undefined
+
+  private baseURL: string = 'http://127.0.0.1:19088'
+
+  private request = axios.create({
+    // API 请求的默认前缀
+    baseURL: 'http://127.0.0.1:19088',
+
+    // 请求超时时间
+    timeout: 120000,
   })
-  return res
-}
 
-// DB数据格式化,多条数据
-export const formatDBDataMulti = (data:any[]) => {
-  const res:{
-    [key:string]:any
-  }[] = []
-  const titles = data[0]
-  const values = data.slice(1)
-  values.forEach((item:any[]) => {
-    const obj:{
+  private dbInfo:DB[] = []
+  private dbInfoMap:DBInfoMap = {
+    'MicroMsg.db': 0,
+    'ChatMsg.db': 0,
+    'Misc.db': 0,
+    'Emotion.db': 0,
+    'Media.db': 0,
+    'FunctionMsg.db': 0,
+    'MSG0.db': 0,
+    'MediaMSG0.db': 0,
+    'PublicMsg.db': 0,
+    'PublicMsgMedia.db': 0,
+    'Favorite.db': 0,
+  }
+
+  constructor (baseURL?: string) {
+    if (baseURL) {
+      this.baseURL = baseURL
+    }
+
+    // 创建 axios 实例
+    this.request = axios.create({
+      // API 请求的默认前缀
+      baseURL: this.baseURL,
+
+      // 请求超时时间
+      timeout: 120000,
+    })
+  }
+
+  public static getInstance (baseURL?: string) {
+    if (!this.instance) {
+      this.instance = new Wxhelper(baseURL)
+    }
+    return this.instance
+  }
+
+  /**
+   * GET 请求
+   *
+   * @param {String} url
+   * @param {Object} data
+   * @param {Object} options
+   * @returns {Promise<any>}
+   */
+  ge (url: string, data = {}, options = {}) {
+
+    // request.interceptors.response.use((response) => response.data, errorHandler)
+    return this.request({
+      url,
+      params: data,
+      method: 'get',
+      ...options,
+    })
+  }
+
+  /**
+   * POST 请求
+   *
+   * @param {String} url
+   * @param {Object} data
+   * @param {Object} options
+   * @returns {Promise<any>}
+   */
+  post (url: string, data = {}, options = {}) {
+  // request.interceptors.response.use((response) => response.data, errorHandler)
+    return this.request({
+      url,
+      method: 'post',
+      data,
+      ...options,
+    })
+  }
+
+  getDBInfo = () => {
+    return this.post('/api/getDBInfo')
+  }
+
+  execSql = (data:{dbHandle: number; sql: string}) => {
+    return this.post('/api/execSql', data)
+  }
+
+  // DB数据格式化,单条数据
+  formatDBDataOne = (data:any[]) => {
+    const res:{
       [key:string]:any
     } = {}
+    const titles = data[0]
+    const values = data[1]
     titles.forEach((title:string, index:number) => {
-      obj[title] = item[index]
+      res[title] = values[index]
     })
-    res.push(obj)
-  })
-  return res
-}
-
-export const initDBInfo = async () => {
-  const res = await getDBInfo()
-  // log.info('initDBInfo:', JSON.stringify(res.data))
-  dbInfo = res.data.data
-  dbInfo.forEach((item, _index) => {
-    dbInfoMap[item.databaseName] = item.handle
-  })
-  log.info('dbInfoMap:', JSON.stringify(dbInfoMap, null, 2))
-  return res
-}
-
-export const getMsg = async () => {
-  const query = {
-    dbHandle: dbInfoMap['MediaMSG0.db'],
-    // sql: `SELECT * FROM Media WHERE Reserved0 = ${msgId}`,
-    // sql: "SELECT * FROM Media WHERE Type = '3'",
-    // sql: 'SELECT * FROM Media LIMIT 2',
-    sql: `SELECT GROUP_CONCAT(Dir, '/') AS imgSuffix  
-    FROM (  
-        SELECT Dir  
-        FROM HardLinkImageID hlii  
-        WHERE DirId = (  
-            SELECT DirID2  
-            FROM HardLinkImageAttribute hlia  
-            WHERE hex(Md5) = UPPER(msg_xml_img_md5)  
-        )  
-        UNION ALL  
-        SELECT Dir  
-        FROM HardLinkImageID hlii  
-        WHERE DirId = (  
-            SELECT DirID1  
-            FROM HardLinkImageAttribute hlia  
-            WHERE hex(Md5) = UPPER(msg_xml_img_md5)  
-        )  
-        UNION ALL 
-         SELECT FileName  
-            FROM HardLinkImageAttribute hlia  
-            WHERE hex(Md5) = UPPER(msg_xml_img_md5)  
-    );`,
+    return res
   }
-  log.info('query:', JSON.stringify(query))
-  const queryRes = await execSql(query)
-  log.info('queryRes:', JSON.stringify(queryRes.data))
-  if (queryRes.data && queryRes.data.data && queryRes.data.data.length > 0) {
-    const msgInfo = formatDBDataOne(queryRes.data.data)
-    // log.info('msgInfo:', JSON.stringify(msgInfo, null, 2))
-    return {
-      data:{
-        code:1,
-        msg:'success',
-        data:msgInfo,
-      },
+
+  // DB数据格式化,多条数据
+  formatDBDataMulti = (data:any[]) => {
+    const res:{
+      [key:string]:any
+    }[] = []
+    const titles = data[0]
+    const values = data.slice(1)
+    values.forEach((item:any[]) => {
+      const obj:{
+        [key:string]:any
+      } = {}
+      titles.forEach((title:string, index:number) => {
+        obj[title] = item[index]
+      })
+      res.push(obj)
+    })
+    return res
+  }
+
+  initDBInfo = async () => {
+    const res = await this.getDBInfo()
+    // log.info('initDBInfo:', JSON.stringify(res.data))
+    this.dbInfo = res.data.data
+    this.dbInfo.forEach((item, _index) => {
+      this.dbInfoMap[item.databaseName] = item.handle
+    })
+    log.info('dbInfoMap:', JSON.stringify(this.dbInfoMap, null, 2))
+    return res
+  }
+
+  getMsg = async () => {
+    const query = {
+      dbHandle: this.dbInfoMap['MediaMSG0.db'],
+      // sql: `SELECT * FROM Media WHERE Reserved0 = ${msgId}`,
+      // sql: "SELECT * FROM Media WHERE Type = '3'",
+      // sql: 'SELECT * FROM Media LIMIT 2',
+      sql: `SELECT GROUP_CONCAT(Dir, '/') AS imgSuffix  
+      FROM (  
+          SELECT Dir  
+          FROM HardLinkImageID hlii  
+          WHERE DirId = (  
+              SELECT DirID2  
+              FROM HardLinkImageAttribute hlia  
+              WHERE hex(Md5) = UPPER(msg_xml_img_md5)  
+          )  
+          UNION ALL  
+          SELECT Dir  
+          FROM HardLinkImageID hlii  
+          WHERE DirId = (  
+              SELECT DirID1  
+              FROM HardLinkImageAttribute hlia  
+              WHERE hex(Md5) = UPPER(msg_xml_img_md5)  
+          )  
+          UNION ALL 
+           SELECT FileName  
+              FROM HardLinkImageAttribute hlia  
+              WHERE hex(Md5) = UPPER(msg_xml_img_md5)  
+      );`,
     }
-  } else {
-    log.info('queryRes.data.data is empty')
-    return {
-      data:{
-        code:0,
-        msg:'success',
-        data:null,
-      },
+    log.info('query:', JSON.stringify(query))
+    const queryRes = await this.execSql(query)
+    log.info('queryRes:', JSON.stringify(queryRes.data))
+    if (queryRes.data && queryRes.data.data && queryRes.data.data.length > 0) {
+      const msgInfo = this.formatDBDataOne(queryRes.data.data)
+      // log.info('msgInfo:', JSON.stringify(msgInfo, null, 2))
+      return {
+        data:{
+          code:1,
+          msg:'success',
+          data:msgInfo,
+        },
+      }
+    } else {
+      log.info('queryRes.data.data is empty')
+      return {
+        data:{
+          code:0,
+          msg:'success',
+          data:null,
+        },
+      }
     }
   }
-}
-
-// def checkLogin():
-//     url = "127.0.0.1:19088/api/checkLogin"
-//     payload = {}
-//     headers = {}
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
-export const checkLogin = () => {
-  return post('/api/checkLogin')
-}
-
-// def userInfo():
-// url = "127.0.0.1:19088/api/userInfo"
-// payload = {}
-// headers = {}
-// response = requests.request("POST", url, headers=headers, data=payload)
-// print(response.text)
-export const userInfo = () => {
-  return post('/api/userInfo')
-}
-
-// def sendTextMsg():
-//     url = "127.0.0.1:19088/api/sendTextMsg"
-//     payload = json.dumps({
-//         "wxid": "filehelper",
-//         "msg": "12www"
-//     })
-//     headers = {
-//         'Content-Type': 'application/json'
-//     }
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
-export const sendTextMsg = (wxid: string, msg: string) => {
-  return post('/api/sendTextMsg', { wxid, msg })
-}
-
-// def sendImagesMsg():
-//     url = "127.0.0.1:19088/api/sendImagesMsg"
-//     print("modify imagePath")
-//     raise RuntimeError("modify imagePath then deleted me")
-//     payload = json.dumps({
-//         "wxid": "filehelper",
-//         "imagePath": "C:\\pic.png"
-//     })
-//     headers = {
-//         'Content-Type': 'application/json'
-//     }
-
-//     response = requests.request("POST", url, headers=headers, data=payload)
-
-//     print(response.text)
-
-export const sendImagesMsg = (wxid: string, imagePath: string) => {
-  return post('/api/sendImagesMsg', { wxid, imagePath })
-}
-
-// def sendFileMsg():
-//     url = "127.0.0.1:19088/api/sendFileMsg"
-//     print("modify filePath")
-//     raise RuntimeError("modify filePath then deleted me")
-//     payload = json.dumps({
-//         "wxid": "filehelper",
-//         "filePath": "C:\\test.zip"
-//     })
-//     headers = {
-//         'Content-Type': 'application/json'
-//     }
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
-
-export const sendFileMsg = (wxid: string, filePath: string) => {
-  return post('/api/sendFileMsg', { wxid, filePath })
-}
-
-// def hookSyncMsg():
-//     url = "127.0.0.1:19088/api/hookSyncMsg"
-//     print("modify ip port url ")
-//     raise RuntimeError("modify ip port url then deleted me")
-//     payload = json.dumps({
-//         "port": "19099",
-//         "ip": "127.0.0.1",
-//         "url": "http://localhost:8080",
-//         "timeout": "3000",
-//         "enableHttp": "0"
-//     })
-//     headers = {
-//         'Content-Type': 'application/json'
-//     }
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
-export const hookSyncMsg = (parm: {
-  port: string
-  ip: string
-  url: string
-  timeout: string
-  enableHttp: string
-}) => {
-  return post('/api/hookSyncMsg', parm)
-}
-
-// def unhookSyncMsg():
-//     url = host + "/api/unhookSyncMsg"
-//     payload = {}
-//     headers = {}
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
-export const unhookSyncMsg = () => {
-  return post('/api/unhookSyncMsg')
-}
-
-// def getContactList():
-//     url = host + "/api/getContactList"
-//     payload = {}
-//     headers = {}
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
-export const getContactList = () => {
-  return post('/api/getContactList')
-}
-
-// def getChatRoomDetailInfo():
-//     url = host + "/api/getChatRoomDetailInfo"
-//     print("modify chatRoomId ")
-//     raise RuntimeError("modify chatRoomId then deleted me")
-//     payload = json.dumps({
-//         "chatRoomId": "123333@chatroom"
-//     })
-//     headers = {
-//         'Content-Type': 'application/json'
-//     }
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
-export const getChatRoomDetailInfo = (chatRoomId: string) => {
-  return post('/api/getChatRoomDetailInfo', { chatRoomId })
-}
-
-// def addMemberToChatRoom():
-//     url = host + "/api/addMemberToChatRoom"
-//     print("modify chatRoomId  memberIds ")
-//     raise RuntimeError("modify chatRoomId memberIds then deleted me")
-//     payload = json.dumps({
-//         "chatRoomId": "123@chatroom",
-//         "memberIds": "wxid_123"
-//     })
-//     headers = {
-//         'Content-Type': 'application/json'
-//     }
-
-//     response = requests.request("POST", url, headers=headers, data=payload)
-
-//     print(response.text)
-export const addMemberToChatRoom = (chatRoomId: string, memberIds: string) => {
-  return post('/api/addMemberToChatRoom', { chatRoomId, memberIds })
-}
-
-// def delMemberFromChatRoom():
-//     url = host + "/api/delMemberFromChatRoom"
-//     print("modify chatRoomId  memberIds ")
-//     raise RuntimeError("modify chatRoomId memberIds then deleted me")
-//     payload = json.dumps({
-//         "chatRoomId": "21363231004@chatroom",
-//         "memberIds": "wxid_123"
-//     })
-//     headers = {
-//         'Content-Type': 'application/json'
-//     }
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
-export const delMemberFromChatRoom = (chatRoomId: string, memberIds: string) => {
-  return post('/api/delMemberFromChatRoom', { chatRoomId, memberIds })
-}
-
-// def modifyNickname():
-//     url = host + "/api/modifyNickname"
-//     print("modify chatRoomId  wxid  nickName")
-//     raise RuntimeError("modify chatRoomId  wxid  nickName then deleted me")
-//     payload = json.dumps({
-//         "chatRoomId": "123@chatroom",
-//         "wxid": "wxid_123",
-//         "nickName": "test"
-//     })
-//     headers = {
-//         'Content-Type': 'application/json'
-//     }
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
-export const modifyNickname = (chatRoomId: string, wxid: string, nickName: string) => {
-  return post('/api/modifyNickname', { chatRoomId, wxid, nickName })
-}
-
-// def getMemberFromChatRoom():
-//     print("modify chatRoomId  ")
-//     raise RuntimeError("modify chatRoomId then deleted me")
-//     url = host + "/api/getMemberFromChatRoom"
-//     payload = json.dumps({
-//         "chatRoomId": "123@chatroom"
-//     })
-//     headers = {
-//         'Content-Type': 'application/json'
-//     }
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
-export const getMemberFromChatRoom = (chatRoomId: string) => {
-  return post('/api/getMemberFromChatRoom', { chatRoomId })
-}
-
-// def topMsg():
-//     print("modify msgId  ")
-//     raise RuntimeError("modify msgId then deleted me")
-//     url = host + "/api/topMsg"
-//     payload = json.dumps({
-//         "msgId": 1222222
-//     })
-//     headers = {
-//         'Content-Type': 'application/json'
-//     }
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
-export const topMsg = (msgId: number) => {
-  return post('/api/topMsg', { msgId })
-}
-
-// def removeTopMsg():
-//     print("modify msgId chatRoomId ")
-//     raise RuntimeError("modify msgId chatRoomId then deleted me")
-
-//     url = host + "/api/removeTopMsg"
-
-//     payload = json.dumps({
-//         "chatRoomId": "123@chatroom",
-//         "msgId": 123
-//     })
-//     headers = {
-//         'Content-Type': 'application/json'
-//     }
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
-export const removeTopMsg = (chatRoomId: string, msgId: number) => {
-  return post('/api/removeTopMsg', { chatRoomId, msgId })
-}
-
-// def InviteMemberToChatRoom():
-//     print("modify memberIds chatRoomId ")
-//     raise RuntimeError("modify memberIds chatRoomId then deleted me")
-
-//     url = host + "/api/InviteMemberToChatRoom"
-
-//     payload = json.dumps({
-//         "chatRoomId": "123@chatroom",
-//         "memberIds": "wxid_123"
-//     })
-//     headers = {
-//         'Content-Type': 'application/json'
-//     }
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
-export const InviteMemberToChatRoom = (chatRoomId: string, memberIds: string) => {
-  return post('/api/InviteMemberToChatRoom', { chatRoomId, memberIds })
-}
-
-// def hookLog():
-//     url = host + "/api/hookLog"
-//     payload = {}
-//     headers = {}
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
-export const hookLog = () => {
-  return post('/api/hookLog')
-}
-
-// def unhookLog():
-//     url = host + "/api/unhookLog"
-//     payload = {}
-//     headers = {}
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
-export const unhookLog = () => {
-  return post('/api/unhookLog')
-}
-
-// def createChatRoom():
-//     print("modify memberIds  ")
-//     raise RuntimeError("modify memberIds then deleted me")
-//     url = host + "/api/createChatRoom"
-
-//     payload = json.dumps({
-//         "memberIds": "wxid_8yn4k908tdqp22,wxid_oyb662qhop4422"
-//     })
-//     headers = {
-//         'Content-Type': 'application/json'
-//     }
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
-export const createChatRoom = (memberIds: string) => {
-  return post('/api/createChatRoom', { memberIds })
-}
-
-// def quitChatRoom():
-//     print("modify chatRoomId  ")
-//     raise RuntimeError("modify chatRoomId then deleted me")
-//     url = host + "/api/quitChatRoom"
-
-//     payload = json.dumps({
-//     "chatRoomId": "123@chatroom"
-//     })
-//     headers = {
-//     'Content-Type': 'application/json'
-//     }
-
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
-export const quitChatRoom = (chatRoomId: string) => {
-  return post('/api/quitChatRoom', { chatRoomId })
-}
-
-// def forwardMsg():
-//     print("modify msgId  ")
-//     raise RuntimeError("modify msgId then deleted me")
-//     url = host + "/api/forwardMsg"
-
-//     payload = json.dumps({
-//     "wxid": "filehelper",
-//     "msgId": "12331"
-//     })
-//     headers = {
-//     'Content-Type': 'application/json'
-//     }
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
-export const forwardMsg = (wxid: string, msgId: string) => {
-  return post('/api/forwardMsg', { wxid, msgId })
-}
-
-// def getSNSFirstPage():
-//     url = host + "/api/getSNSFirstPage"
-
-//     payload = {}
-//     headers = {}
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
-export const getSNSFirstPage = () => {
-  return post('/api/getSNSFirstPage')
-}
-
-// def getSNSNextPage():
-//     print("modify snsId  ")
-//     raise RuntimeError("modify snsId then deleted me")
-//     url = host + "/api/getSNSNextPage"
-
-//     payload = json.dumps({
-//     "snsId": ""
-//     })
-//     headers = {
-//     'Content-Type': 'application/json'
-//     }
-
-//     response = requests.request("POST", url, headers=headers, data=payload)
-
-//     print(response.text)
-export const getSNSNextPage = (snsId: string) => {
-  return post('/api/getSNSNextPage', { snsId })
-}
-
-// def addFavFromMsg():
-//     print("modify msgId  ")
-//     raise RuntimeError("modify msgId then deleted me")
-//     url = host + "/api/addFavFromMsg"
-
-//     payload = json.dumps({
-//     "msgId": "1222222"
-//     })
-//     headers = {
-//     'Content-Type': 'application/json'
-//     }
-
-//     response = requests.request("POST", url, headers=headers, data=payload)
-
-//     print(response.text)
-export const addFavFromMsg = (msgId: string) => {
-  return post('/api/addFavFromMsg', { msgId })
-}
-
-// def addFavFromImage():
-//     print("modify wxid imagePath ")
-//     raise RuntimeError("modify wxid  imagePath then deleted me")
-//     url = host + "/api/addFavFromImage"
-
-//     payload = json.dumps({
-//     "wxid": "",
-//     "imagePath": ""
-//     })
-//     headers = {
-//     'Content-Type': 'application/json'
-//     }
-
-//     response = requests.request("POST", url, headers=headers, data=payload)
-
-//     print(response.text)
-export const addFavFromImage = (wxid: string, imagePath: string) => {
-  return post('/api/addFavFromImage', { wxid, imagePath })
-}
-
-// def getContactProfile():
-//     print("modify wxid  ")
-//     raise RuntimeError("modify wxid   then deleted me")
-//     url = host + "/api/getContactProfile"
-
-//     payload = json.dumps({
-//     "wxid": ""
-//     })
-//     headers = {
-//     'Content-Type': 'application/json'
-//     }
-
-//     response = requests.request("POST", url, headers=headers, data=payload)
-//     print(response.text)
-export const getContactProfile = (wxid: string) => {
-  return post('/api/getContactProfile', { wxid })
-}
-
-// def sendAtText():
-//     print("modify wxids  chatRoomId")
-//     raise RuntimeError("modify wxids   chatRoomId then deleted me")
-//     url = host + "/api/sendAtText"
-
-//     payload = json.dumps({
-//     "wxids": "notify@all",
-//     "chatRoomId": "123@chatroom",
-//     "msg": "你好啊"
-//     })
-//     headers = {
-//     'Content-Type': 'application/json'
-//     }
-
-//     response = requests.request("POST", url, headers=headers, data=payload)
-
-//     print(response.text)
-export const sendAtText = (wxids: string, chatRoomId: string, msg: string) => {
-  return post('/api/sendAtText', { wxids, chatRoomId, msg })
-}
-
-// def forwardPublicMsg():
-//     print("modify param ")
-//     raise RuntimeError("modify param then deleted me")
-//     url = host + "/api/forwardPublicMsg"
-
-//     payload = json.dumps({
-//     "appName": "",
-//     "userName": "",
-//     "title": "",
-//     "url": "",
-//     "thumbUrl": "",
-//     "digest": "",
-//     "wxid": "filehelper"
-//     })
-//     headers = {
-//     'Content-Type': 'application/json'
-//     }
-
-//     response = requests.request("POST", url, headers=headers, data=payload)
-
-//     print(response.text)
-export const forwardPublicMsg = (param: {
-  appName: string;
-  userName: string;
-  title: string;
-  url: string;
-  thumbUrl: string;
-  digest: string;
-  wxid: string
-}) => {
-  return post('/api/forwardPublicMsg', param)
-}
-
-// def forwardPublicMsgByMsgId():
-//     print("modify param ")
-//     raise RuntimeError("modify param then deleted me")
-//     url = host + "/api/forwardPublicMsgByMsgId"
-
-//     payload = json.dumps({
-//     "msgId": 123,
-//     "wxid": "filehelper"
-//     })
-//     headers = {
-//     'Content-Type': 'application/json'
-//     }
-
-//     response = requests.request("POST", url, headers=headers, data=payload)
-
-//     print(response.text)
-export const forwardPublicMsgByMsgId = (msgId: number, wxid: string) => {
-  return post('/api/forwardPublicMsgByMsgId', { msgId, wxid })
-}
-
-// def downloadAttach():
-//     print("modify param ")
-//     raise RuntimeError("modify param then deleted me")
-//     url = host + "/api/downloadAttach"
-
-//     payload = json.dumps({
-//     "msgId": 123
-//     })
-//     headers = {
-//     'Content-Type': 'application/json'
-//     }
-
-//     response = requests.request("POST", url, headers=headers, data=payload)
-
-//     print(response.text)
-export const downloadAttach = (msgId: number) => {
-  return post('/api/downloadAttach', { msgId })
-}
-
-// def decodeImage():
-//     print("modify param ")
-//     raise RuntimeError("modify param then deleted me")
-//     url = host + "/api/decodeImage"
-
-//     payload = json.dumps({
-//     "filePath": "C:\\66664816980131.dat",
-//     "storeDir": "C:\\test"
-//     })
-//     headers = {
-//     'Content-Type': 'application/json'
-//     }
-
-//     response = requests.request("POST", url, headers=headers, data=payload)
-
-//     print(response.text)
-export const decodeImage = (filePath: string, storeDir: string) => {
-  return post('/api/decodeImage', { filePath, storeDir })
-}
-
-// def getVoiceByMsgId():
-//     print("modify param ")
-//     raise RuntimeError("modify param then deleted me")
-//     url = host + "/api/getVoiceByMsgId"
-
-//     payload = json.dumps({
-//     "msgId": 7880439644200,
-//     "storeDir": "c:\\test"
-//     })
-//     headers = {
-//     'Content-Type': 'application/json'
-//     }
-
-//     response = requests.request("POST", url, headers=headers, data=payload)
-
-//     print(response.text)
-export const getVoiceByMsgId = (msgId: number, storeDir: string) => {
-  return post('/api/getVoiceByMsgId', { msgId, storeDir })
-}
-
-// /api/sendApplet
-export const sendApplet = (param: {
-  wxid: string
-  waidConcat: string
-  appletWxid: string
-  jsonParam: string
-  headImgUrl: string
-  mainImg: string
-  indexPage: string
-}) => {
-  return post('/api/sendApplet', param)
-}
-
-// /api/sendPatMsg
-export const sendPatMsg = (receiver: string,
-  wxid: string) => {
-  return post('/api/sendPatMsg', { wxid, receiver })
-}
-
-// /api/ocr
-export const ocr = (
-  imagePath: string,
-) => {
-  return post('/api/ocr', { imagePath })
+
+  // def checkLogin():
+  //     url = "127.0.0.1:19088/api/checkLogin"
+  //     payload = {}
+  //     headers = {}
+  //     response = requests.request("POST", url, headers=headers, data=payload)
+  //     print(response.text)
+  checkLogin = () => {
+    return this.post('/api/checkLogin')
+  }
+
+  // def userInfo():
+  // url = "127.0.0.1:19088/api/userInfo"
+  // payload = {}
+  // headers = {}
+  // response = requests.request("POST", url, headers=headers, data=payload)
+  // print(response.text)
+  userInfo = () => {
+    return this.post('/api/userInfo')
+  }
+
+  // def sendTextMsg():
+  //     url = "127.0.0.1:19088/api/sendTextMsg"
+  //     payload = json.dumps({
+  //         "wxid": "filehelper",
+  //         "msg": "12www"
+  //     })
+  //     headers = {
+  //         'Content-Type': 'application/json'
+  //     }
+  //     response = requests.request("POST", url, headers=headers, data=payload)
+  //     print(response.text)
+  sendTextMsg = (wxid: string, msg: string) => {
+    return this.post('/api/sendTextMsg', { wxid, msg })
+  }
+
+  // def sendImagesMsg():
+  //     url = "127.0.0.1:19088/api/sendImagesMsg"
+  //     print("modify imagePath")
+  //     raise RuntimeError("modify imagePath then deleted me")
+  //     payload = json.dumps({
+  //         "wxid": "filehelper",
+  //         "imagePath": "C:\\pic.png"
+  //     })
+  //     headers = {
+  //         'Content-Type': 'application/json'
+  //     }
+
+  //     response = requests.request("POST", url, headers=headers, data=payload)
+
+  //     print(response.text)
+
+  sendImagesMsg = (wxid: string, imagePath: string) => {
+    return this.post('/api/sendImagesMsg', { wxid, imagePath })
+  }
+
+  // def sendFileMsg():
+  //     url = "127.0.0.1:19088/api/sendFileMsg"
+  //     print("modify filePath")
+  //     raise RuntimeError("modify filePath then deleted me")
+  //     payload = json.dumps({
+  //         "wxid": "filehelper",
+  //         "filePath": "C:\\test.zip"
+  //     })
+  //     headers = {
+  //         'Content-Type': 'application/json'
+  //     }
+  //     response = requests.request("POST", url, headers=headers, data=payload)
+  //     print(response.text)
+
+  sendFileMsg = (wxid: string, filePath: string) => {
+    return this.post('/api/sendFileMsg', { wxid, filePath })
+  }
+
+  // def hookSyncMsg():
+  //     url = "127.0.0.1:19088/api/hookSyncMsg"
+  //     print("modify ip port url ")
+  //     raise RuntimeError("modify ip port url then deleted me")
+  //     payload = json.dumps({
+  //         "port": "19099",
+  //         "ip": "127.0.0.1",
+  //         "url": "http://localhost:8080",
+  //         "timeout": "3000",
+  //         "enableHttp": "0"
+  //     })
+  //     headers = {
+  //         'Content-Type': 'application/json'
+  //     }
+  //     response = requests.request("POST", url, headers=headers, data=payload)
+  //     print(response.text)
+  hookSyncMsg = (parm: {
+    port: string
+    ip: string
+    url: string
+    timeout: string
+    enableHttp: string
+  }) => {
+    return this.post('/api/hookSyncMsg', parm)
+  }
+
+  // def unhookSyncMsg():
+  //     url = host + "/api/unhookSyncMsg"
+  //     payload = {}
+  //     headers = {}
+  //     response = requests.request("POST", url, headers=headers, data=payload)
+  //     print(response.text)
+  unhookSyncMsg = () => {
+    return this.post('/api/unhookSyncMsg')
+  }
+
+  // def getContactList():
+  //     url = host + "/api/getContactList"
+  //     payload = {}
+  //     headers = {}
+  //     response = requests.request("POST", url, headers=headers, data=payload)
+  //     print(response.text)
+  getContactList = () => {
+    return this.post('/api/getContactList')
+  }
+
+  // def getChatRoomDetailInfo():
+  //     url = host + "/api/getChatRoomDetailInfo"
+  //     print("modify chatRoomId ")
+  //     raise RuntimeError("modify chatRoomId then deleted me")
+  //     payload = json.dumps({
+  //         "chatRoomId": "123333@chatroom"
+  //     })
+  //     headers = {
+  //         'Content-Type': 'application/json'
+  //     }
+  //     response = requests.request("POST", url, headers=headers, data=payload)
+  //     print(response.text)
+  getChatRoomDetailInfo = (chatRoomId: string) => {
+    return this.post('/api/getChatRoomDetailInfo', { chatRoomId })
+  }
+
+  // def addMemberToChatRoom():
+  //     url = host + "/api/addMemberToChatRoom"
+  //     print("modify chatRoomId  memberIds ")
+  //     raise RuntimeError("modify chatRoomId memberIds then deleted me")
+  //     payload = json.dumps({
+  //         "chatRoomId": "123@chatroom",
+  //         "memberIds": "wxid_123"
+  //     })
+  //     headers = {
+  //         'Content-Type': 'application/json'
+  //     }
+
+  //     response = requests.request("POST", url, headers=headers, data=payload)
+
+  //     print(response.text)
+  addMemberToChatRoom = (chatRoomId: string, memberIds: string) => {
+    return this.post('/api/addMemberToChatRoom', { chatRoomId, memberIds })
+  }
+
+  // def delMemberFromChatRoom():
+  //     url = host + "/api/delMemberFromChatRoom"
+  //     print("modify chatRoomId  memberIds ")
+  //     raise RuntimeError("modify chatRoomId memberIds then deleted me")
+  //     payload = json.dumps({
+  //         "chatRoomId": "21363231004@chatroom",
+  //         "memberIds": "wxid_123"
+  //     })
+  //     headers = {
+  //         'Content-Type': 'application/json'
+  //     }
+  //     response = requests.request("POST", url, headers=headers, data=payload)
+  //     print(response.text)
+  delMemberFromChatRoom = (chatRoomId: string, memberIds: string) => {
+    return this.post('/api/delMemberFromChatRoom', { chatRoomId, memberIds })
+  }
+
+  // def modifyNickname():
+  //     url = host + "/api/modifyNickname"
+  //     print("modify chatRoomId  wxid  nickName")
+  //     raise RuntimeError("modify chatRoomId  wxid  nickName then deleted me")
+  //     payload = json.dumps({
+  //         "chatRoomId": "123@chatroom",
+  //         "wxid": "wxid_123",
+  //         "nickName": "test"
+  //     })
+  //     headers = {
+  //         'Content-Type': 'application/json'
+  //     }
+  //     response = requests.request("POST", url, headers=headers, data=payload)
+  //     print(response.text)
+  modifyNickname = (chatRoomId: string, wxid: string, nickName: string) => {
+    return this.post('/api/modifyNickname', { chatRoomId, wxid, nickName })
+  }
+
+  // def getMemberFromChatRoom():
+  //     print("modify chatRoomId  ")
+  //     raise RuntimeError("modify chatRoomId then deleted me")
+  //     url = host + "/api/getMemberFromChatRoom"
+  //     payload = json.dumps({
+  //         "chatRoomId": "123@chatroom"
+  //     })
+  //     headers = {
+  //         'Content-Type': 'application/json'
+  //     }
+  //     response = requests.request("POST", url, headers=headers, data=payload)
+  //     print(response.text)
+  getMemberFromChatRoom = (chatRoomId: string) => {
+    return this.post('/api/getMemberFromChatRoom', { chatRoomId })
+  }
+
+  // def topMsg():
+  //     print("modify msgId  ")
+  //     raise RuntimeError("modify msgId then deleted me")
+  //     url = host + "/api/topMsg"
+  //     payload = json.dumps({
+  //         "msgId": 1222222
+  //     })
+  //     headers = {
+  //         'Content-Type': 'application/json'
+  //     }
+  //     response = requests.request("POST", url, headers=headers, data=payload)
+  //     print(response.text)
+  topMsg = (msgId: number) => {
+    return this.post('/api/topMsg', { msgId })
+  }
+
+  // def removeTopMsg():
+  //     print("modify msgId chatRoomId ")
+  //     raise RuntimeError("modify msgId chatRoomId then deleted me")
+
+  //     url = host + "/api/removeTopMsg"
+
+  //     payload = json.dumps({
+  //         "chatRoomId": "123@chatroom",
+  //         "msgId": 123
+  //     })
+  //     headers = {
+  //         'Content-Type': 'application/json'
+  //     }
+  //     response = requests.request("POST", url, headers=headers, data=payload)
+  //     print(response.text)
+  removeTopMsg = (chatRoomId: string, msgId: number) => {
+    return this.post('/api/removeTopMsg', { chatRoomId, msgId })
+  }
+
+  // def InviteMemberToChatRoom():
+  //     print("modify memberIds chatRoomId ")
+  //     raise RuntimeError("modify memberIds chatRoomId then deleted me")
+
+  //     url = host + "/api/InviteMemberToChatRoom"
+
+  //     payload = json.dumps({
+  //         "chatRoomId": "123@chatroom",
+  //         "memberIds": "wxid_123"
+  //     })
+  //     headers = {
+  //         'Content-Type': 'application/json'
+  //     }
+  //     response = requests.request("POST", url, headers=headers, data=payload)
+  //     print(response.text)
+  InviteMemberToChatRoom = (chatRoomId: string, memberIds: string) => {
+    return this.post('/api/InviteMemberToChatRoom', { chatRoomId, memberIds })
+  }
+
+  // def hookLog():
+  //     url = host + "/api/hookLog"
+  //     payload = {}
+  //     headers = {}
+  //     response = requests.request("POST", url, headers=headers, data=payload)
+  //     print(response.text)
+  hookLog = () => {
+    return this.post('/api/hookLog')
+  }
+
+  // def unhookLog():
+  //     url = host + "/api/unhookLog"
+  //     payload = {}
+  //     headers = {}
+  //     response = requests.request("POST", url, headers=headers, data=payload)
+  //     print(response.text)
+  unhookLog = () => {
+    return this.post('/api/unhookLog')
+  }
+
+  // def createChatRoom():
+  //     print("modify memberIds  ")
+  //     raise RuntimeError("modify memberIds then deleted me")
+  //     url = host + "/api/createChatRoom"
+
+  //     payload = json.dumps({
+  //         "memberIds": "wxid_8yn4k908tdqp22,wxid_oyb662qhop4422"
+  //     })
+  //     headers = {
+  //         'Content-Type': 'application/json'
+  //     }
+  //     response = requests.request("POST", url, headers=headers, data=payload)
+  //     print(response.text)
+  createChatRoom = (memberIds: string) => {
+    return this.post('/api/createChatRoom', { memberIds })
+  }
+
+  // def quitChatRoom():
+  //     print("modify chatRoomId  ")
+  //     raise RuntimeError("modify chatRoomId then deleted me")
+  //     url = host + "/api/quitChatRoom"
+
+  //     payload = json.dumps({
+  //     "chatRoomId": "123@chatroom"
+  //     })
+  //     headers = {
+  //     'Content-Type': 'application/json'
+  //     }
+
+  //     response = requests.request("POST", url, headers=headers, data=payload)
+  //     print(response.text)
+  quitChatRoom = (chatRoomId: string) => {
+    return this.post('/api/quitChatRoom', { chatRoomId })
+  }
+
+  // def forwardMsg():
+  //     print("modify msgId  ")
+  //     raise RuntimeError("modify msgId then deleted me")
+  //     url = host + "/api/forwardMsg"
+
+  //     payload = json.dumps({
+  //     "wxid": "filehelper",
+  //     "msgId": "12331"
+  //     })
+  //     headers = {
+  //     'Content-Type': 'application/json'
+  //     }
+  //     response = requests.request("POST", url, headers=headers, data=payload)
+  //     print(response.text)
+  forwardMsg = (wxid: string, msgId: string) => {
+    return this.post('/api/forwardMsg', { wxid, msgId })
+  }
+
+  // def getSNSFirstPage():
+  //     url = host + "/api/getSNSFirstPage"
+
+  //     payload = {}
+  //     headers = {}
+  //     response = requests.request("POST", url, headers=headers, data=payload)
+  //     print(response.text)
+  getSNSFirstPage = () => {
+    return this.post('/api/getSNSFirstPage')
+  }
+
+  // def getSNSNextPage():
+  //     print("modify snsId  ")
+  //     raise RuntimeError("modify snsId then deleted me")
+  //     url = host + "/api/getSNSNextPage"
+
+  //     payload = json.dumps({
+  //     "snsId": ""
+  //     })
+  //     headers = {
+  //     'Content-Type': 'application/json'
+  //     }
+
+  //     response = requests.request("POST", url, headers=headers, data=payload)
+
+  //     print(response.text)
+  getSNSNextPage = (snsId: string) => {
+    return this.post('/api/getSNSNextPage', { snsId })
+  }
+
+  // def addFavFromMsg():
+  //     print("modify msgId  ")
+  //     raise RuntimeError("modify msgId then deleted me")
+  //     url = host + "/api/addFavFromMsg"
+
+  //     payload = json.dumps({
+  //     "msgId": "1222222"
+  //     })
+  //     headers = {
+  //     'Content-Type': 'application/json'
+  //     }
+
+  //     response = requests.request("POST", url, headers=headers, data=payload)
+
+  //     print(response.text)
+  addFavFromMsg = (msgId: string) => {
+    return this.post('/api/addFavFromMsg', { msgId })
+  }
+
+  // def addFavFromImage():
+  //     print("modify wxid imagePath ")
+  //     raise RuntimeError("modify wxid  imagePath then deleted me")
+  //     url = host + "/api/addFavFromImage"
+
+  //     payload = json.dumps({
+  //     "wxid": "",
+  //     "imagePath": ""
+  //     })
+  //     headers = {
+  //     'Content-Type': 'application/json'
+  //     }
+
+  //     response = requests.request("POST", url, headers=headers, data=payload)
+
+  //     print(response.text)
+  addFavFromImage = (wxid: string, imagePath: string) => {
+    return this.post('/api/addFavFromImage', { wxid, imagePath })
+  }
+
+  // def getContactProfile():
+  //     print("modify wxid  ")
+  //     raise RuntimeError("modify wxid   then deleted me")
+  //     url = host + "/api/getContactProfile"
+
+  //     payload = json.dumps({
+  //     "wxid": ""
+  //     })
+  //     headers = {
+  //     'Content-Type': 'application/json'
+  //     }
+
+  //     response = requests.request("POST", url, headers=headers, data=payload)
+  //     print(response.text)
+  getContactProfile = (wxid: string) => {
+    return this.post('/api/getContactProfile', { wxid })
+  }
+
+  // def sendAtText():
+  //     print("modify wxids  chatRoomId")
+  //     raise RuntimeError("modify wxids   chatRoomId then deleted me")
+  //     url = host + "/api/sendAtText"
+
+  //     payload = json.dumps({
+  //     "wxids": "notify@all",
+  //     "chatRoomId": "123@chatroom",
+  //     "msg": "你好啊"
+  //     })
+  //     headers = {
+  //     'Content-Type': 'application/json'
+  //     }
+
+  //     response = requests.request("POST", url, headers=headers, data=payload)
+
+  //     print(response.text)
+  sendAtText = (wxids: string, chatRoomId: string, msg: string) => {
+    return this.post('/api/sendAtText', { wxids, chatRoomId, msg })
+  }
+
+  // def forwardPublicMsg():
+  //     print("modify param ")
+  //     raise RuntimeError("modify param then deleted me")
+  //     url = host + "/api/forwardPublicMsg"
+
+  //     payload = json.dumps({
+  //     "appName": "",
+  //     "userName": "",
+  //     "title": "",
+  //     "url": "",
+  //     "thumbUrl": "",
+  //     "digest": "",
+  //     "wxid": "filehelper"
+  //     })
+  //     headers = {
+  //     'Content-Type': 'application/json'
+  //     }
+
+  //     response = requests.request("POST", url, headers=headers, data=payload)
+
+  //     print(response.text)
+  forwardPublicMsg = (param: {
+    appName: string;
+    userName: string;
+    title: string;
+    url: string;
+    thumbUrl: string;
+    digest: string;
+    wxid: string
+  }) => {
+    return this.post('/api/forwardPublicMsg', param)
+  }
+
+  // def forwardPublicMsgByMsgId():
+  //     print("modify param ")
+  //     raise RuntimeError("modify param then deleted me")
+  //     url = host + "/api/forwardPublicMsgByMsgId"
+
+  //     payload = json.dumps({
+  //     "msgId": 123,
+  //     "wxid": "filehelper"
+  //     })
+  //     headers = {
+  //     'Content-Type': 'application/json'
+  //     }
+
+  //     response = requests.request("POST", url, headers=headers, data=payload)
+
+  //     print(response.text)
+  forwardPublicMsgByMsgId = (msgId: number, wxid: string) => {
+    return this.post('/api/forwardPublicMsgByMsgId', { msgId, wxid })
+  }
+
+  // def downloadAttach():
+  //     print("modify param ")
+  //     raise RuntimeError("modify param then deleted me")
+  //     url = host + "/api/downloadAttach"
+
+  //     payload = json.dumps({
+  //     "msgId": 123
+  //     })
+  //     headers = {
+  //     'Content-Type': 'application/json'
+  //     }
+
+  //     response = requests.request("POST", url, headers=headers, data=payload)
+
+  //     print(response.text)
+  downloadAttach = (msgId: number) => {
+    return this.post('/api/downloadAttach', { msgId })
+  }
+
+  // def decodeImage():
+  //     print("modify param ")
+  //     raise RuntimeError("modify param then deleted me")
+  //     url = host + "/api/decodeImage"
+
+  //     payload = json.dumps({
+  //     "filePath": "C:\\66664816980131.dat",
+  //     "storeDir": "C:\\test"
+  //     })
+  //     headers = {
+  //     'Content-Type': 'application/json'
+  //     }
+
+  //     response = requests.request("POST", url, headers=headers, data=payload)
+
+  //     print(response.text)
+  decodeImage = (filePath: string, storeDir: string) => {
+    return this.post('/api/decodeImage', { filePath, storeDir })
+  }
+
+  // def getVoiceByMsgId():
+  //     print("modify param ")
+  //     raise RuntimeError("modify param then deleted me")
+  //     url = host + "/api/getVoiceByMsgId"
+
+  //     payload = json.dumps({
+  //     "msgId": 7880439644200,
+  //     "storeDir": "c:\\test"
+  //     })
+  //     headers = {
+  //     'Content-Type': 'application/json'
+  //     }
+
+  //     response = requests.request("POST", url, headers=headers, data=payload)
+
+  //     print(response.text)
+  getVoiceByMsgId = (msgId: number, storeDir: string) => {
+    return this.post('/api/getVoiceByMsgId', { msgId, storeDir })
+  }
+
+  // /api/sendApplet
+  sendApplet = (param: {
+    wxid: string
+    waidConcat: string
+    appletWxid: string
+    jsonParam: string
+    headImgUrl: string
+    mainImg: string
+    indexPage: string
+  }) => {
+    return this.post('/api/sendApplet', param)
+  }
+
+  // /api/sendPatMsg
+  sendPatMsg = (receiver: string,
+    wxid: string) => {
+    return this.post('/api/sendPatMsg', { wxid, receiver })
+  }
+
+  // /api/ocr
+  ocr = (
+    imagePath: string,
+  ) => {
+    return this.post('/api/ocr', { imagePath })
+  }
+
 }
