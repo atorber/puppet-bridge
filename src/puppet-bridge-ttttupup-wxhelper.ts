@@ -578,7 +578,7 @@ class PuppetBridge extends PUPPET.Puppet {
     let contact = this.contactStore[contactId]
     log.info('getMemberDetail contactId:', JSON.stringify(contact, undefined, 2))
     if (!contact || !contact.name) {
-      log.info('缓存中没有找到联系人信息，开始请求:', contactId)
+      log.verbose('缓存中没有找到联系人信息，开始请求:', contactId)
       const contactInfoRes = await this.bridge.wxhelper.getContactProfile(contactId)
       log.info('请求联系人结果contactInfoRes:', JSON.stringify(contactInfoRes.data))
       if (contactInfoRes.data && contactInfoRes.data.data !== null) {
@@ -596,16 +596,16 @@ class PuppetBridge extends PUPPET.Puppet {
         }
         this.contactStore[contactId] = contact
       } else {
-        log.info('请求联系人信息失败:', JSON.stringify(contactInfoRes.data))
+        log.error('请求联系人信息失败:', JSON.stringify(contactInfoRes.data))
       }
     } else {
-      log.info('缓存中找到联系人信息:', contactId)
+      log.verbose('缓存中找到联系人信息:', contactId)
     }
     return contact
   }
 
   async updateMembers (roomId: string): Promise<void> {
-    log.info('updateMembers roomId:', roomId)
+    log.verbose('updateMembers roomId:', roomId)
     const rooms = this.roomStore
     // 本地缓存的群信息
     const roomStore = rooms[roomId] as PUPPET.payloads.Room
