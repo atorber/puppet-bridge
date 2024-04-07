@@ -288,6 +288,10 @@ class PuppetBridge extends PUPPET.Puppet {
       listenerId  = messageRaw.toUser
     }
 
+    log.info('talkerId:', talkerId)
+    log.info('listenerId:', listenerId)
+    log.info('roomId:', roomId)
+
     if (talkerId) {
       try {
         log.info('get talkerInfo:', talkerId)
@@ -593,11 +597,12 @@ class PuppetBridge extends PUPPET.Puppet {
           friend: false,
           gender: PUPPET.types.ContactGender.Unknown,
           id: contactId,
-          name: contactInfo.nickname,
+          name: contactInfo.nickname || '',
           phone: [],
           type: PUPPET.types.Contact.Individual,
         }
-        this.contactStore[contactId] = contact
+        if (contact.id && contact.name) this.contactStore[contactId] = contact
+        await this.contactPayloadDirty(contactId)
       } else {
         log.error('请求联系人信息失败:', JSON.stringify(contactInfoRes.data))
       }
