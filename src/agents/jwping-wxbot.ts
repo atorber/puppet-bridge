@@ -9,8 +9,8 @@ import * as fs from 'fs'
 import path, { join } from 'path'
 import sudo from 'sudo-prompt'
 
-const __dirname = path.resolve(path.dirname(''))
-log.info('当前文件的目录路径:', __dirname)
+const dirname = path.resolve(path.dirname(''))
+log.info('当前文件的目录路径:', dirname)
 
 const HEART_BEAT = 5005 // 心跳
 const RECV_TXT_MSG = 1 // 文本消息
@@ -564,7 +564,7 @@ class Bridge extends EventEmitter {
         const execOptions = {
           name: 'Wechaty Puppet Bridge',
         }
-        const execString = join(__dirname, 'src', 'assets', 'wxbot-sidecar-3.9.8.25.exe')
+        const execString = join(dirname, 'src', 'assets', 'wxbot-sidecar-3.9.8.25.exe')
         log.info('execString:', execString)
         // 在Windows上，使用cmd /k 执行exe并在执行完毕后保留窗口
         const command = `cmd /c "${execString} & pause"`
