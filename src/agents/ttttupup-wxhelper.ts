@@ -23,7 +23,7 @@ export {
 }
 
 const dirname = path.resolve(path.dirname(''))
-log.info('当前文件的目录路径:', dirname)
+log.verbose('当前文件的目录路径:', dirname)
 
 // 设置axios请求超时时间
 axios.defaults.timeout = 5000

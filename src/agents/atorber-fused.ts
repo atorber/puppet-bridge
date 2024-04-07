@@ -19,7 +19,7 @@ import {
 import sudo from 'sudo-prompt'
 
 const dirname = path.resolve(path.dirname(''))
-log.info('当前文件的目录路径:', dirname)
+log.verbose('当前文件的目录路径:', dirname)
 
 // 设置axios请求超时时间
 axios.defaults.timeout = 5000
@@ -201,7 +201,7 @@ class Bridge extends EventEmitter {
           data = data.toString()
           const dataJson = JSON.parse(data)
 
-          log.info('原始dataJson:\n', JSON.stringify(dataJson, undefined, 2))
+          // log.info('原始dataJson:\n', JSON.stringify(dataJson, undefined, 2))
 
           // 缓存消息
           messageStore = writeMsgStore(messageStore, dataJson)
@@ -302,7 +302,7 @@ class Bridge extends EventEmitter {
         } else {
           if (this.isLoggedIn) {
             this.isLoggedIn = false
-            this.emit('logout', 'logout')
+            // this.emit('logout', 'logout')
           } else {
             throw new Error('启动失败，请检查微信是否已经处于登录状态')
           }

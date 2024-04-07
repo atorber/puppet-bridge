@@ -9,7 +9,7 @@ import { exec } from 'child_process'
 import path, { join } from 'path'
 
 const dirname = path.resolve(path.dirname(''))
-log.info('当前文件的目录路径:', dirname)
+log.verbose('当前文件的目录路径:', dirname)
 
 // 获取当前文件夹的绝对路径，不使用fileURLToPath(import.meta.url)方法
 

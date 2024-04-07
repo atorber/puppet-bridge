@@ -641,10 +641,10 @@ export class Wxhelper {
     }
     // log.info('query:', JSON.stringify(query))
     const queryRes = await this.execSql(query)
-    log.info('chatRoomRes:', JSON.stringify(queryRes.data))
+    log.verbose('chatRoomRes:', JSON.stringify(queryRes.data))
     if (queryRes.data && queryRes.data.data && queryRes.data.data.length > 0) {
       const chatRoomInfo = this.formatDBDataOne(queryRes.data.data)
-      log.info('chatRoomInfo:', JSON.stringify(chatRoomInfo, null, 2))
+      // log.info('chatRoomInfo:', JSON.stringify(chatRoomInfo, null, 2))
       return {
         data:{
           code:1,

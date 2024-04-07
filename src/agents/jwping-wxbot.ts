@@ -10,7 +10,7 @@ import path, { join } from 'path'
 import sudo from 'sudo-prompt'
 
 const dirname = path.resolve(path.dirname(''))
-log.info('当前文件的目录路径:', dirname)
+log.verbose('当前文件的目录路径:', dirname)
 
 const HEART_BEAT = 5005 // 心跳
 const RECV_TXT_MSG = 1 // 文本消息
