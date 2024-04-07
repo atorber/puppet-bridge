@@ -22,8 +22,8 @@ export {
   AccountInfo,
 }
 
-const __dirname = path.resolve(path.dirname(''))
-log.info('当前文件的目录路径:', __dirname)
+const dirname = path.resolve(path.dirname(''))
+log.info('当前文件的目录路径:', dirname)
 
 // 设置axios请求超时时间
 axios.defaults.timeout = 5000
@@ -109,8 +109,8 @@ class Bridge extends EventEmitter {
               log.error('获取微信进程号出错: 未找到微信进程号')
               throw new Error('获取微信进程号出错: 未找到微信进程号,请检查微信是否已经启动')
             } else {
-              const injectorPath = join(__dirname, 'src', 'assets', 'Injector.exe')
-              const dllPath = join(__dirname, 'src', 'assets', 'wxhelper-3.9.5.81-v11.dll')
+              const injectorPath = join(dirname, 'src', 'assets', 'Injector.exe')
+              const dllPath = join(dirname, 'src', 'assets', 'wxhelper-3.9.5.81-v11.dll')
               // const execString = `${injectorPath} --process-name WeChat.exe --inject ${dllPath}`
               const execString = `${injectorPath} -p ${pid} --inject ${dllPath}`
 

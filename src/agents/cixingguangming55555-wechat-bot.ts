@@ -8,8 +8,8 @@ import * as fs from 'fs'
 import { exec } from 'child_process'
 import path, { join } from 'path'
 
-const __dirname = path.resolve(path.dirname(''))
-log.info('当前文件的目录路径:', __dirname)
+const dirname = path.resolve(path.dirname(''))
+log.info('当前文件的目录路径:', dirname)
 
 // 获取当前文件夹的绝对路径，不使用fileURLToPath(import.meta.url)方法
 
@@ -128,7 +128,7 @@ class Bridge extends EventEmitter {
           if (!res && !options?.httpUrl) {
             log.info('http server未启动，自动注入dll...')
             // this.checkWechatVersion()
-            const execString = join(__dirname, 'src', 'assets', 'funtool_wx_3.9.2.23.exe')
+            const execString = join(dirname, 'src', 'assets', 'funtool_wx_3.9.2.23.exe')
             log.info('execString:', execString)
 
             // 检查funtool_wx_3.9.2.23.exe是否已经在运行，如果已经在运行则结束进程
