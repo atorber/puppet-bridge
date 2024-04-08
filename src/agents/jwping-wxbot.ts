@@ -9,7 +9,7 @@ import * as fs from 'fs'
 import path, { join } from 'path'
 import sudo from 'sudo-prompt'
 
-const dirname = path.resolve(path.dirname(''))
+let dirname = path.resolve(path.dirname(''))
 log.verbose('当前文件的目录路径:', dirname)
 
 const HEART_BEAT = 5005 // 心跳
@@ -564,10 +564,23 @@ class Bridge extends EventEmitter {
         const execOptions = {
           name: 'Wechaty Puppet Bridge',
         }
-        const execString = join(dirname, 'src', 'assets', 'wxbot-sidecar-3.9.8.25.exe')
-        log.info('execString:', execString)
+        let injectorPath = join(dirname, 'src', 'assets', 'wxbot-sidecar-3.9.8.25.exe')
+        // 检测injectorPath所指路径文件是否存在，如果不存在则更新dirname为当前文件夹拼接\node_modules\wechaty-puppet-bridge
+        if (!fs.existsSync(injectorPath)) {
+          log.info('injectorPath所指路径文件不存在，更新dirname为当前文件夹拼接\\node_modules\\wechaty-puppet-bridge...')
+          dirname = path.resolve(dirname, 'node_modules', 'wechaty-puppet-bridge')
+          const newInjectorPath = join(dirname, 'src', 'assets', 'Injector.exe')
+          if (fs.existsSync(newInjectorPath)) {
+            log.info('newInjectorPath文件存在，更新injectorPath为newInjectorPath...')
+            injectorPath = newInjectorPath
+          } else {
+            log.error('newInjectorPath文件不存在，无法更新injectorPath...')
+            throw new Error('newInjectorPath文件不存在，无法更新injectorPath...')
+          }
+        }
+        log.info('execString:', injectorPath)
         // 在Windows上，使用cmd /k 执行exe并在执行完毕后保留窗口
-        const command = `cmd /c "${execString} & pause"`
+        const command = `cmd /c "${injectorPath} & pause"`
         log.info('command', command)
         sudo.exec(command, execOptions, (error: any, stdout: any, stderr: any) => {
           if (error) {

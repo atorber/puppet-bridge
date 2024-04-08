@@ -6,6 +6,7 @@ import { EventEmitter } from 'events'
 import { log } from 'wechaty-puppet'
 import { exec } from 'child_process'
 import path, { join } from 'path'
+import fs from 'fs'
 import {
   readMsgStore,
   writeMsgStore,
@@ -18,7 +19,7 @@ import {
 
 import sudo from 'sudo-prompt'
 
-const dirname = path.resolve(path.dirname(''))
+let dirname = path.resolve(path.dirname(''))
 log.verbose('当前文件的目录路径:', dirname)
 
 // 设置axios请求超时时间
@@ -105,7 +106,22 @@ class Bridge extends EventEmitter {
               log.error('获取微信进程号出错: 未找到微信进程号')
               throw new Error('获取微信进程号出错: 未找到微信进程号,请检查微信是否已经启动')
             } else {
-              const injectorPath = join(dirname, 'src', 'assets', 'Injector.exe')
+              let injectorPath = join(dirname, 'src', 'assets', 'Injector.exe')
+              // 检测injectorPath所指路径文件是否存在，如果不存在则更新dirname为当前文件夹拼接\node_modules\wechaty-puppet-bridge
+              if (!fs.existsSync(injectorPath)) {
+                log.info('injectorPath所指路径文件不存在，更新dirname为当前文件夹拼接\\node_modules\\wechaty-puppet-bridge...')
+                dirname = path.resolve(dirname, 'node_modules', 'wechaty-puppet-bridge')
+                const newInjectorPath = join(dirname, 'src', 'assets', 'Injector.exe')
+                if (fs.existsSync(newInjectorPath)) {
+                  log.info('newInjectorPath文件存在，更新injectorPath为newInjectorPath...')
+                  injectorPath = newInjectorPath
+                } else {
+                  log.error('newInjectorPath文件不存在，无法更新injectorPath...')
+                  throw new Error('newInjectorPath文件不存在，无法更新injectorPath...')
+                }
+              }
+
+              // C:\Users\tyutl\Documents\GitHub\chatflow\node_modules\wechaty-puppet-bridge\src\assets\funtool_wx_3.9.2.23.exe
               const dllPath = join(dirname, 'src', 'assets', 'wxhelper-3.9.8.25-v2.dll')
               // const execString = `${injectorPath} --process-name WeChat.exe --inject ${dllPath}`
               const execString = `${injectorPath} -p ${pid} --inject ${dllPath}`
