@@ -8,7 +8,7 @@ import * as fs from 'fs'
 import { exec } from 'child_process'
 import path, { join } from 'path'
 
-const dirname = path.resolve(path.dirname(''))
+let dirname = path.resolve(path.dirname(''))
 log.verbose('当前文件的目录路径:', dirname)
 
 // 获取当前文件夹的绝对路径，不使用fileURLToPath(import.meta.url)方法
@@ -128,9 +128,21 @@ class Bridge extends EventEmitter {
           if (!res && !options?.httpUrl) {
             log.info('http server未启动，自动注入dll...')
             // this.checkWechatVersion()
-            const execString = join(dirname, 'src', 'assets', 'funtool_wx_3.9.2.23.exe')
-            log.info('execString:', execString)
-
+            let injectorPath = join(dirname, 'src', 'assets', 'funtool_wx_3.9.2.23.exe')
+            log.info('execString:', injectorPath)
+            // 检测injectorPath所指路径文件是否存在，如果不存在则更新dirname为当前文件夹拼接\node_modules\wechaty-puppet-bridge
+            if (!fs.existsSync(injectorPath)) {
+              log.info('injectorPath所指路径文件不存在，更新dirname为当前文件夹拼接\\node_modules\\wechaty-puppet-bridge...')
+              dirname = path.resolve(dirname, 'node_modules', 'wechaty-puppet-bridge')
+              const newInjectorPath = join(dirname, 'src', 'assets', 'Injector.exe')
+              if (fs.existsSync(newInjectorPath)) {
+                log.info('newInjectorPath文件存在，更新injectorPath为newInjectorPath...')
+                injectorPath = newInjectorPath
+              } else {
+                log.error('newInjectorPath文件不存在，无法更新injectorPath...')
+                throw new Error('newInjectorPath文件不存在，无法更新injectorPath...')
+              }
+            }
             // 检查funtool_wx_3.9.2.23.exe是否已经在运行，如果已经在运行则结束进程
             exec('tasklist', (error: any, stdout: any, _stderr: any) => {
               if (error) {
@@ -148,7 +160,7 @@ class Bridge extends EventEmitter {
                   // log.info(`stdout: ${stdout}`)
                   // log.error(`stderr: ${stderr}`)
                   // 使用命令行自动运行 \assets\funtool_wx=3.9.2.23.exe，先检查execString是否已经在运行，如果没有运行，则自动运行
-                  exec(execString, (error: any, _stdout: any, stderr: any) => {
+                  exec(injectorPath, (error: any, _stdout: any, stderr: any) => {
                     if (error) {
                       log.error(`执行出错: ${error}`)
                       log.error(`stderr: ${stderr}`)
@@ -162,7 +174,7 @@ class Bridge extends EventEmitter {
               } else {
                 log.info('funtool_wx_3.9.2.23.exe未运行，启动程序')
                 // 使用命令行自动运行 \assets\funtool_wx=3.9.2.23.exe，先检查execString是否已经在运行，如果没有运行，则自动运行
-                exec(execString, (error: any, stdout: any, stderr: any) => {
+                exec(injectorPath, (error: any, stdout: any, stderr: any) => {
                   if (error) {
                     log.error(`执行出错: ${error}`)
                     log.error(`stderr: ${stderr}`)

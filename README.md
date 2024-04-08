@@ -206,6 +206,8 @@ import {
 
 - 运行在[ttttupup/wxhelper](https://github.com/ttttupup/wxhelper)上的v3.9.8.25
 
+> 需要【以管理员身份运行】WeChat客户端
+
 ```javascript
 import {
     WechatyBuilder,
@@ -258,6 +260,8 @@ import {
 
 - 运行在[ttttupup/wxhelper](https://github.com/ttttupup/wxhelper)上的v3.9.5.81
 
+> 需要【以管理员身份运行】WeChat客户端
+
 ```javascript
 import {
     WechatyBuilder,
@@ -309,6 +313,10 @@ import {
 ```
 
 ## 更新日志
+
+### v0.9.0
+
+- 修复npm包无法找到注入工具的问题
 
 ### v0.8.10
 
