@@ -314,6 +314,11 @@ import {
 
 ## 更新日志
 
+### v0.10.0
+
+- PuppetBridgeAtorberFusedV3090825支持[@all](https://www.yuque.com/atorber/chatflow/dnq7miho2gkfnmvk#l5ukp),使用方法room.say('Hi~', ...[SelfContact])
+- PuppetBridgeAtorberFusedV3090825支持[发送多个不同的@消息](https://www.yuque.com/atorber/chatflow/dnq7miho2gkfnmvk#keK3C)，使用方法room.say('{"chatRoomId":"xxxx","at":[{"wxid":"wxid_xxx","msg":"@xxx"}]}')
+
 ### v0.9.0
 
 - 修复npm包无法找到注入工具的问题
