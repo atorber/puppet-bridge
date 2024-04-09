@@ -1039,8 +1039,32 @@ class PuppetBridge extends PUPPET.Puppet {
     text: string,
     mentionIdList?: string[],
   ): Promise<void> {
-    if (conversationId.split('@').length === 2 && mentionIdList && mentionIdList[0]) {
-      const mentionIdListString = mentionIdList.join(',')
+    try {
+      // {
+      //   "chatRoomId":"xxxx",
+      //   "at":[
+      //     {
+      //       "wxid":"wxid_xxx",
+      //       "msg":"@xxx"
+      //     }
+      //   ],
+      // }
+      const payload = JSON.parse(text)
+      if (payload.chatRoomId) {
+        await this.bridge.wxhelper.sendMultiAtText(payload.chatRoomId, payload.at)
+        return
+      }
+    } catch (err) {
+      log.error('messageSendText fail:', err)
+    }
+    if (conversationId.split('@').length === 2 && mentionIdList) {
+      let mentionIdListString = mentionIdList.join(',')
+
+      // 如果mentionIdListString中只包含自己的id，则替换为@all
+      if (mentionIdListString === this.selfInfo) {
+        mentionIdListString = 'notify@all'
+      }
+
       await this.bridge.wxhelper.sendAtText(mentionIdListString, conversationId, text)
     } else {
       await this.bridge.wxhelper.sendTextMsg(conversationId, text)
