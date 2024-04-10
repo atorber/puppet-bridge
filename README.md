@@ -314,6 +314,10 @@ import {
 
 ## 更新日志
 
+### v0.10.1
+
+- 支持接收图片（注意当前的实现方式可能存在并发接收图片消息时接收不到或图片与消息不匹配的情况）
+
 ### v0.10.0
 
 - PuppetBridgeAtorberFusedV3090825支持[@all](https://www.yuque.com/atorber/chatflow/dnq7miho2gkfnmvk#l5ukp),使用方法room.say('Hi~', ...[SelfContact])

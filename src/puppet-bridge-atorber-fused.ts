@@ -48,6 +48,7 @@ export type PuppetBridgeOptions = PUPPET.PuppetOptions & {
   sidecarName?: string
   wsUrl?: string
   httpUrl?: string
+  weChatFilesPath?: string
 }
 
 class PuppetBridge extends PUPPET.Puppet {
@@ -68,6 +69,8 @@ class PuppetBridge extends PUPPET.Puppet {
 
   private isReady = false
 
+  private weChatFilesPath = rootPath
+
   constructor (
     public override options: PuppetBridgeOptions = {
       sidecarName: 'atorber-fused',
@@ -77,7 +80,9 @@ class PuppetBridge extends PUPPET.Puppet {
     log.info('options...', JSON.stringify(options))
     super(options)
     log.verbose('PuppetBridge', 'constructor(%s)', JSON.stringify(options))
-
+    if (options.weChatFilesPath) {
+      this.weChatFilesPath = options.weChatFilesPath
+    }
     this.bridge = new Bridge({
       httpUrl: options.httpUrl,
       wsUrl: options.wsUrl,
@@ -881,25 +886,48 @@ class PuppetBridge extends PUPPET.Puppet {
     let fileName = ''
     let imagePath = ''
     let file: FileBoxInterface
-
+    let messagePath = ''
+    const msgAttachPath = path.join(this.weChatFilesPath, this.selfInfo.id, 'FileStorage', 'MsgAttach')
+    log.info('messageImage：注意当前的实现方式可能存在并发接收图片消息时接收不到或图片与消息不匹配的情况！！！！')
     try {
-      if (message?.text) {
-        const picData = JSON.parse(message.text)
-        const filePath = picData[imageType]
-        const dataPath = rootPath + filePath    // 要解密的文件路径
-        // log.info('图片原始文件路径：', dataPath, true)
-
-        //  检测图片原始文件是否存在，如果存在则继续，如果不存在则每隔0.5秒后检测一次，直到10s后还不存在则继续
-        let fileExist = fs.existsSync(dataPath)
+      // 检测图片文件，获得图片文件路径
+    // \wxid_0o1t51l3f57221\FileStorage\MsgAttach\22345360df09c59f1e7d69cdac380eb4\Thumb\2024-04\9a7b66d87889dc47ad0b066063f73ebf_t.dat
+      // 遍历messagePath路径下的所有文夹，取第一个文件夹作为图片文件夹
+      messagePath = msgAttachPath
+      const dirs1 = fs.readdirSync(messagePath)
+      // log.info('dirs:', dirs1)
+      if (dirs1.length !== 0) {
+        const curMon = new Date().getMonth() + 1
+        const curYear = new Date().getFullYear()
+        messagePath = path.join(messagePath, dirs1[0] as string, 'Thumb', `${curYear}-${curMon < 10 ? ('0' + curMon) : curMon}`)
+        await wait(1000)
+        let dirs2 = fs.readdirSync(messagePath)
         let count = 0
-        while (!fileExist) {
-          await wait(500)
-          fileExist = fs.existsSync(dataPath)
-          if (count > 20) {
+        while (!dirs2.length) {
+          await wait(200)
+          dirs2 = fs.readdirSync(messagePath)
+          if (count > 10) {
             break
           }
           count++
         }
+        // log.info('dirs2:', dirs2)
+        if (dirs2.length !== 0) {
+          messagePath = path.join(messagePath, dirs2[0] as string)
+        }
+      }
+      log.info('messagePath:', messagePath)
+    } catch (err) {
+      log.error('messageImage fail:', err)
+      messagePath = ''
+    }
+
+    try {
+      if (messagePath && message?.text) {
+        const picData = [ messagePath, messagePath, messagePath ]
+        const filePath = picData[imageType]
+        const dataPath = filePath as string    // 要解密的文件路径
+        // log.info('图片原始文件路径：', dataPath, true)
         await fsPromise.access(dataPath)
         // log.info('图片解密文件路径：', dataPath, true)
         const imageInfo = ImageDecrypt(dataPath, messageId)
@@ -917,6 +945,19 @@ class PuppetBridge extends PUPPET.Puppet {
         imagePath = paths.join('\\')
         log.verbose('图片解密后文件路径：', imagePath, true)
         await file.toFile(imagePath)
+
+        try {
+          // 删除msgAttachPath下的所有文件夹
+          const dirs = fs.readdirSync(msgAttachPath)
+          dirs.forEach((dir) => {
+            const curPath = path.join(msgAttachPath, dir)
+            if (fs.statSync(curPath).isDirectory()) {
+              fs.rmdirSync(curPath, { recursive: true })
+            }
+          })
+        } catch (err) {
+          log.error('删除文件夹失败:', err)
+        }
       }
     } catch (err) {
       log.error('messageImage fail:', err)
@@ -964,7 +1005,7 @@ class PuppetBridge extends PUPPET.Puppet {
         }
         fileName = '\\' + messageJson.msg.appmsg[0].title[0]
         const filePath = `${this.selfInfo.id}\\FileStorage\\File\\${year}-${month}`
-        dataPath = rootPath + filePath + fileName  // 要解密的文件路径
+        dataPath = this.weChatFilesPath + filePath + fileName  // 要解密的文件路径
         log.info('保存文件路径：', dataPath)
         return FileBox.fromFile(
           dataPath,

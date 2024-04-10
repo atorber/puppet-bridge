@@ -396,7 +396,7 @@ export class Wxhelper {
 
   initDBInfo = async () => {
     const res = await this.getDBInfo()
-    // log.info('initDBInfo:', JSON.stringify(res.data))
+    log.info('initDBInfo:', JSON.stringify(res.data))
     this.dbInfo = res.data.data
     this.dbInfo.forEach((item, _index) => {
       this.dbInfoMap[item.databaseName] = item.handle
