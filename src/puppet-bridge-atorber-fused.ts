@@ -945,23 +945,24 @@ class PuppetBridge extends PUPPET.Puppet {
         imagePath = paths.join('\\')
         log.verbose('图片解密后文件路径：', imagePath, true)
         await file.toFile(imagePath)
-
-        try {
-          // 删除msgAttachPath下的所有文件夹
-          const dirs = fs.readdirSync(msgAttachPath)
-          dirs.forEach((dir) => {
-            const curPath = path.join(msgAttachPath, dir)
-            if (fs.statSync(curPath).isDirectory()) {
-              fs.rmdirSync(curPath, { recursive: true })
-            }
-          })
-        } catch (err) {
-          log.error('删除文件夹失败:', err)
-        }
       }
     } catch (err) {
       log.error('messageImage fail:', err)
     }
+
+    try {
+      // 删除msgAttachPath下的所有文件夹
+      const dirs = fs.readdirSync(msgAttachPath)
+      dirs.forEach((dir) => {
+        const curPath = path.join(msgAttachPath, dir)
+        if (fs.statSync(curPath).isDirectory()) {
+          fs.rmdirSync(curPath, { recursive: true })
+        }
+      })
+    } catch (err) {
+      log.error('删除文件夹失败:', err)
+    }
+
     return FileBox.fromBase64(
       base64,
       fileName,
