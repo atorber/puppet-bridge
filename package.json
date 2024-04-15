@@ -1,6 +1,6 @@
 {
   "name": "wechaty-puppet-bridge",
-  "version": "0.10.2",
+  "version": "0.10.3",
   "description": "Puppet Bridge for Wechaty",
   "type": "module",
   "exports": {
@@ -49,7 +49,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wechaty/puppet-bridge.git"
+    "url": "git+https://github.com/atorber/puppet-bridge.git"
   },
   "keywords": [
     "chatie",
@@ -64,9 +64,9 @@
   "author": "Chao Lu <atorber@163.com>",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/wechaty/puppet-bridge/issues"
+    "url": "https://github.com/atorber/puppet-bridge/issues"
   },
-  "homepage": "https://github.com/wechaty/puppet-bridge#readme",
+  "homepage": "https://github.com/atorber/puppet-bridge#readme",
   "devDependencies": {
     "@chatie/eslint-config": "^1.0.4",
     "@chatie/git-scripts": "^0.7.7",
