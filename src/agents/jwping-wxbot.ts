@@ -570,7 +570,7 @@ class Bridge extends EventEmitter {
         if (!fs.existsSync(injectorPath)) {
           log.info('injectorPath所指路径文件不存在，更新dirname为当前文件夹拼接\\node_modules\\wechaty-puppet-bridge...')
           dirname = path.resolve(dirname, 'node_modules', 'wechaty-puppet-bridge')
-          const newInjectorPath = join(dirname, 'src', 'assets', 'Injector.exe')
+          const newInjectorPath = join(dirname, 'src', 'assets', 'wxbot-sidecar-3.9.8.25.exe')
           if (fs.existsSync(newInjectorPath)) {
             log.info('newInjectorPath文件存在，更新injectorPath为newInjectorPath...')
             injectorPath = newInjectorPath
