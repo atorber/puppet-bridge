@@ -1079,6 +1079,14 @@ class PuppetBridge extends PUPPET.Puppet {
         fs.unlinkSync(filePath)
       }
 
+    } else if (filePath.indexOf('png') || filePath.indexOf('jpg')) {
+      try {
+        await this.bridge.messageSendPicture(conversationId, filePath)
+        // fs.unlinkSync(filePath)
+      } catch (err) {
+        PUPPET.throwUnsupportedError(conversationId, file)
+        // fs.unlinkSync(filePath)
+      }
     } else {
       // filePath = 'C:\\Users\\wechaty\\Documents\\GitHub\\wechat-openai-qa-bot\\data1652169999200.xls'
       try {
