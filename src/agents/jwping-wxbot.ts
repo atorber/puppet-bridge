@@ -7,8 +7,7 @@ import { log } from 'wechaty-puppet'
 import * as fs from 'fs'
 // import { exec } from 'child_process'
 import path, { join } from 'path'
-// import sudo from 'sudo-prompt'
-import { exec } from 'child_process'
+import sudo from 'sudo-prompt'
 
 let dirname = path.resolve(path.dirname(''))
 log.verbose('当前文件的目录路径:', dirname)
@@ -562,9 +561,9 @@ class Bridge extends EventEmitter {
       if (!res && !options?.httpUrl) {
         log.info('http server未启动，自动注入...')
         // this.checkWechatVersion()
-        // const execOptions = {
-        //   name: 'Wechaty Puppet Bridge',
-        // }
+        const execOptions = {
+          name: 'Wechaty Puppet Bridge',
+        }
         let injectorPath = join(dirname, 'src', 'assets', 'wxbot-sidecar-3.9.8.25.exe')
         // 检测injectorPath所指路径文件是否存在，如果不存在则更新dirname为当前文件夹拼接\node_modules\wechaty-puppet-bridge
         if (!fs.existsSync(injectorPath)) {
@@ -583,7 +582,7 @@ class Bridge extends EventEmitter {
         // 在Windows上，使用cmd /k 执行exe并在执行完毕后保留窗口
         const command = `cmd /c "${injectorPath} & pause"`
         log.info('command', command)
-        exec(command, (error: any, stdout: any, stderr: any) => {
+        sudo.exec(command, execOptions, (error: any, stdout: any, stderr: any) => {
           if (error) {
             log.error('执行出错:', error)
             return
