@@ -350,6 +350,7 @@ class PuppetBridge extends PUPPET.Puppet {
         type = PUPPET.types.Message.Audio
         break
       case 37:
+        type = PUPPET.types.Message.Contact
         break
       case 40:
         break
@@ -551,7 +552,12 @@ class PuppetBridge extends PUPPET.Puppet {
         } else {
           this.messageStore[payload.id] = payload
           if (this.isReady) {
-            this.emit('message', { messageId: payload.id })
+            if (code === 37) {
+              this.emit('friendship', { friendshipId: payload.id })
+            } else {
+              this.emit('message', { messageId: payload.id })
+            }
+
           } else {
             log.info('isReady is false, wait for ready...')
           }
@@ -1414,10 +1420,13 @@ class PuppetBridge extends PUPPET.Puppet {
  *
  */
   override async friendshipRawPayload (id: string): Promise<any> {
-    return { id } as any
+    return this.messageStore[id]
   }
 
   override async friendshipRawPayloadParser (rawPayload: any): Promise<PUPPET.payloads.Friendship> {
+    rawPayload.contactId = rawPayload.text.match(/fromusername="([^"]*)"/)[1]
+    rawPayload.type = 2
+    rawPayload.hello = rawPayload.text.match(/content="([^"]*)"/)[1]
     return rawPayload
   }
 
