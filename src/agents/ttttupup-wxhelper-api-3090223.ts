@@ -355,11 +355,11 @@ export class Wxhelper {
   }
 
   getDBInfo = () => {
-    return this.post('/api/getDBInfo')
+    return this.post('/api/?type=32')
   }
 
   execSql = (data:{dbHandle: number; sql: string}) => {
-    return this.post('/api/execSql', data)
+    return this.post('/api/?type=34', data)
   }
 
   // DB数据格式化,单条数据
@@ -459,95 +459,26 @@ export class Wxhelper {
     }
   }
 
-  // def checkLogin():
-  //     url = "127.0.0.1:19088/api/checkLogin"
-  //     payload = {}
-  //     headers = {}
-  //     response = requests.request("POST", url, headers=headers, data=payload)
-  //     print(response.text)
   checkLogin = () => {
-    return this.post('/api/checkLogin')
+    return this.post('/api/?type=0')
   }
 
-  // def userInfo():
-  // url = "127.0.0.1:19088/api/userInfo"
-  // payload = {}
-  // headers = {}
-  // response = requests.request("POST", url, headers=headers, data=payload)
-  // print(response.text)
   userInfo = () => {
-    return this.post('/api/userInfo')
+    return this.post('/api/?type=1')
   }
 
-  // def sendTextMsg():
-  //     url = "127.0.0.1:19088/api/sendTextMsg"
-  //     payload = json.dumps({
-  //         "wxid": "filehelper",
-  //         "msg": "12www"
-  //     })
-  //     headers = {
-  //         'Content-Type': 'application/json'
-  //     }
-  //     response = requests.request("POST", url, headers=headers, data=payload)
-  //     print(response.text)
   sendTextMsg = (wxid: string, msg: string) => {
-    return this.post('/api/sendTextMsg', { wxid, msg })
+    return this.post('/api/?type=2', { wxid, msg })
   }
-
-  // def sendImagesMsg():
-  //     url = "127.0.0.1:19088/api/sendImagesMsg"
-  //     print("modify imagePath")
-  //     raise RuntimeError("modify imagePath then deleted me")
-  //     payload = json.dumps({
-  //         "wxid": "filehelper",
-  //         "imagePath": "C:\\pic.png"
-  //     })
-  //     headers = {
-  //         'Content-Type': 'application/json'
-  //     }
-
-  //     response = requests.request("POST", url, headers=headers, data=payload)
-
-  //     print(response.text)
 
   sendImagesMsg = (wxid: string, imagePath: string) => {
-    return this.post('/api/sendImagesMsg', { wxid, imagePath })
+    return this.post('/api/?type=5', { wxid, imagePath })
   }
-
-  // def sendFileMsg():
-  //     url = "127.0.0.1:19088/api/sendFileMsg"
-  //     print("modify filePath")
-  //     raise RuntimeError("modify filePath then deleted me")
-  //     payload = json.dumps({
-  //         "wxid": "filehelper",
-  //         "filePath": "C:\\test.zip"
-  //     })
-  //     headers = {
-  //         'Content-Type': 'application/json'
-  //     }
-  //     response = requests.request("POST", url, headers=headers, data=payload)
-  //     print(response.text)
 
   sendFileMsg = (wxid: string, filePath: string) => {
-    return this.post('/api/sendFileMsg', { wxid, filePath })
+    return this.post('/api/?type=6', { wxid, filePath })
   }
 
-  // def hookSyncMsg():
-  //     url = "127.0.0.1:19088/api/hookSyncMsg"
-  //     print("modify ip port url ")
-  //     raise RuntimeError("modify ip port url then deleted me")
-  //     payload = json.dumps({
-  //         "port": "19099",
-  //         "ip": "127.0.0.1",
-  //         "url": "http://localhost:8080",
-  //         "timeout": "3000",
-  //         "enableHttp": "0"
-  //     })
-  //     headers = {
-  //         'Content-Type': 'application/json'
-  //     }
-  //     response = requests.request("POST", url, headers=headers, data=payload)
-  //     print(response.text)
   hookSyncMsg = (parm: {
     port: string
     ip: string
@@ -555,371 +486,93 @@ export class Wxhelper {
     timeout: string
     enableHttp: string
   }) => {
-    return this.post('/api/hookSyncMsg', parm)
+    return this.post('/api/?type=9', parm)
   }
 
-  // def unhookSyncMsg():
-  //     url = host + "/api/unhookSyncMsg"
-  //     payload = {}
-  //     headers = {}
-  //     response = requests.request("POST", url, headers=headers, data=payload)
-  //     print(response.text)
   unhookSyncMsg = () => {
-    return this.post('/api/unhookSyncMsg')
+    return this.post('/api/?type=10')
   }
 
-  // def getContactList():
-  //     url = host + "/api/getContactList"
-  //     payload = {}
-  //     headers = {}
-  //     response = requests.request("POST", url, headers=headers, data=payload)
-  //     print(response.text)
   getContactList = () => {
-    return this.post('/api/getContactList')
+    return this.post('/api/?type=46')
   }
 
-  // def getChatRoomDetailInfo():
-  //     url = host + "/api/getChatRoomDetailInfo"
-  //     print("modify chatRoomId ")
-  //     raise RuntimeError("modify chatRoomId then deleted me")
-  //     payload = json.dumps({
-  //         "chatRoomId": "123333@chatroom"
-  //     })
-  //     headers = {
-  //         'Content-Type': 'application/json'
-  //     }
-  //     response = requests.request("POST", url, headers=headers, data=payload)
-  //     print(response.text)
   getChatRoomDetailInfo = (chatRoomId: string) => {
-    return this.post('/api/getChatRoomDetailInfo', { chatRoomId })
+    return this.post('/api/?type=47', { chatRoomId })
   }
 
-  // def addMemberToChatRoom():
-  //     url = host + "/api/addMemberToChatRoom"
-  //     print("modify chatRoomId  memberIds ")
-  //     raise RuntimeError("modify chatRoomId memberIds then deleted me")
-  //     payload = json.dumps({
-  //         "chatRoomId": "123@chatroom",
-  //         "memberIds": "wxid_123"
-  //     })
-  //     headers = {
-  //         'Content-Type': 'application/json'
-  //     }
-
-  //     response = requests.request("POST", url, headers=headers, data=payload)
-
-  //     print(response.text)
   addMemberToChatRoom = (chatRoomId: string, memberIds: string) => {
-    return this.post('/api/addMemberToChatRoom', { chatRoomId, memberIds })
+    return this.post('/api/?type=48', { chatRoomId, memberIds })
   }
 
-  // def delMemberFromChatRoom():
-  //     url = host + "/api/delMemberFromChatRoom"
-  //     print("modify chatRoomId  memberIds ")
-  //     raise RuntimeError("modify chatRoomId memberIds then deleted me")
-  //     payload = json.dumps({
-  //         "chatRoomId": "21363231004@chatroom",
-  //         "memberIds": "wxid_123"
-  //     })
-  //     headers = {
-  //         'Content-Type': 'application/json'
-  //     }
-  //     response = requests.request("POST", url, headers=headers, data=payload)
-  //     print(response.text)
   delMemberFromChatRoom = (chatRoomId: string, memberIds: string) => {
-    return this.post('/api/delMemberFromChatRoom', { chatRoomId, memberIds })
+    return this.post('/api/?type=27', { chatRoomId, memberIds })
   }
 
-  // def modifyNickname():
-  //     url = host + "/api/modifyNickname"
-  //     print("modify chatRoomId  wxid  nickName")
-  //     raise RuntimeError("modify chatRoomId  wxid  nickName then deleted me")
-  //     payload = json.dumps({
-  //         "chatRoomId": "123@chatroom",
-  //         "wxid": "wxid_123",
-  //         "nickName": "test"
-  //     })
-  //     headers = {
-  //         'Content-Type': 'application/json'
-  //     }
-  //     response = requests.request("POST", url, headers=headers, data=payload)
-  //     print(response.text)
   modifyNickname = (chatRoomId: string, wxid: string, nickName: string) => {
-    return this.post('/api/modifyNickname', { chatRoomId, wxid, nickName })
+    return this.post('/api/?type=31', { chatRoomId, wxid, nickName })
   }
 
-  // def getMemberFromChatRoom():
-  //     print("modify chatRoomId  ")
-  //     raise RuntimeError("modify chatRoomId then deleted me")
-  //     url = host + "/api/getMemberFromChatRoom"
-  //     payload = json.dumps({
-  //         "chatRoomId": "123@chatroom"
-  //     })
-  //     headers = {
-  //         'Content-Type': 'application/json'
-  //     }
-  //     response = requests.request("POST", url, headers=headers, data=payload)
-  //     print(response.text)
   getMemberFromChatRoom = (chatRoomId: string) => {
-    return this.post('/api/getMemberFromChatRoom', { chatRoomId })
+    return this.post('/api/?type=25', { chatRoomId })
   }
 
-  // def topMsg():
-  //     print("modify msgId  ")
-  //     raise RuntimeError("modify msgId then deleted me")
-  //     url = host + "/api/topMsg"
-  //     payload = json.dumps({
-  //         "msgId": 1222222
-  //     })
-  //     headers = {
-  //         'Content-Type': 'application/json'
-  //     }
-  //     response = requests.request("POST", url, headers=headers, data=payload)
-  //     print(response.text)
   topMsg = (msgId: number) => {
-    return this.post('/api/topMsg', { msgId })
+    return this.post('/api/?type=51', { msgId })
   }
 
-  // def removeTopMsg():
-  //     print("modify msgId chatRoomId ")
-  //     raise RuntimeError("modify msgId chatRoomId then deleted me")
-
-  //     url = host + "/api/removeTopMsg"
-
-  //     payload = json.dumps({
-  //         "chatRoomId": "123@chatroom",
-  //         "msgId": 123
-  //     })
-  //     headers = {
-  //         'Content-Type': 'application/json'
-  //     }
-  //     response = requests.request("POST", url, headers=headers, data=payload)
-  //     print(response.text)
   removeTopMsg = (chatRoomId: string, msgId: number) => {
-    return this.post('/api/removeTopMsg', { chatRoomId, msgId })
+    return this.post('/api/?type=52', { chatRoomId, msgId })
   }
 
-  // def InviteMemberToChatRoom():
-  //     print("modify memberIds chatRoomId ")
-  //     raise RuntimeError("modify memberIds chatRoomId then deleted me")
-
-  //     url = host + "/api/InviteMemberToChatRoom"
-
-  //     payload = json.dumps({
-  //         "chatRoomId": "123@chatroom",
-  //         "memberIds": "wxid_123"
-  //     })
-  //     headers = {
-  //         'Content-Type': 'application/json'
-  //     }
-  //     response = requests.request("POST", url, headers=headers, data=payload)
-  //     print(response.text)
   InviteMemberToChatRoom = (chatRoomId: string, memberIds: string) => {
     return this.post('/api/InviteMemberToChatRoom', { chatRoomId, memberIds })
   }
 
-  // def hookLog():
-  //     url = host + "/api/hookLog"
-  //     payload = {}
-  //     headers = {}
-  //     response = requests.request("POST", url, headers=headers, data=payload)
-  //     print(response.text)
   hookLog = () => {
-    return this.post('/api/hookLog')
+    return this.post('/api/?type=35')
   }
 
-  // def unhookLog():
-  //     url = host + "/api/unhookLog"
-  //     payload = {}
-  //     headers = {}
-  //     response = requests.request("POST", url, headers=headers, data=payload)
-  //     print(response.text)
   unhookLog = () => {
-    return this.post('/api/unhookLog')
+    return this.post('/api/?type=36')
   }
 
-  // def createChatRoom():
-  //     print("modify memberIds  ")
-  //     raise RuntimeError("modify memberIds then deleted me")
-  //     url = host + "/api/createChatRoom"
-
-  //     payload = json.dumps({
-  //         "memberIds": "wxid_8yn4k908tdqp22,wxid_oyb662qhop4422"
-  //     })
-  //     headers = {
-  //         'Content-Type': 'application/json'
-  //     }
-  //     response = requests.request("POST", url, headers=headers, data=payload)
-  //     print(response.text)
   createChatRoom = (memberIds: string) => {
     return this.post('/api/createChatRoom', { memberIds })
   }
 
-  // def quitChatRoom():
-  //     print("modify chatRoomId  ")
-  //     raise RuntimeError("modify chatRoomId then deleted me")
-  //     url = host + "/api/quitChatRoom"
-
-  //     payload = json.dumps({
-  //     "chatRoomId": "123@chatroom"
-  //     })
-  //     headers = {
-  //     'Content-Type': 'application/json'
-  //     }
-
-  //     response = requests.request("POST", url, headers=headers, data=payload)
-  //     print(response.text)
   quitChatRoom = (chatRoomId: string) => {
     return this.post('/api/quitChatRoom', { chatRoomId })
   }
 
-  // def forwardMsg():
-  //     print("modify msgId  ")
-  //     raise RuntimeError("modify msgId then deleted me")
-  //     url = host + "/api/forwardMsg"
-
-  //     payload = json.dumps({
-  //     "wxid": "filehelper",
-  //     "msgId": "12331"
-  //     })
-  //     headers = {
-  //     'Content-Type': 'application/json'
-  //     }
-  //     response = requests.request("POST", url, headers=headers, data=payload)
-  //     print(response.text)
   forwardMsg = (wxid: string, msgId: string) => {
-    return this.post('/api/forwardMsg', { wxid, msgId })
+    return this.post('/api/?type=40', { wxid, msgId })
   }
 
-  // def getSNSFirstPage():
-  //     url = host + "/api/getSNSFirstPage"
-
-  //     payload = {}
-  //     headers = {}
-  //     response = requests.request("POST", url, headers=headers, data=payload)
-  //     print(response.text)
   getSNSFirstPage = () => {
-    return this.post('/api/getSNSFirstPage')
+    return this.post('/api/?type=53')
   }
 
-  // def getSNSNextPage():
-  //     print("modify snsId  ")
-  //     raise RuntimeError("modify snsId then deleted me")
-  //     url = host + "/api/getSNSNextPage"
-
-  //     payload = json.dumps({
-  //     "snsId": ""
-  //     })
-  //     headers = {
-  //     'Content-Type': 'application/json'
-  //     }
-
-  //     response = requests.request("POST", url, headers=headers, data=payload)
-
-  //     print(response.text)
   getSNSNextPage = (snsId: string) => {
-    return this.post('/api/getSNSNextPage', { snsId })
+    return this.post('/api/?type=54', { snsId })
   }
 
-  // def addFavFromMsg():
-  //     print("modify msgId  ")
-  //     raise RuntimeError("modify msgId then deleted me")
-  //     url = host + "/api/addFavFromMsg"
-
-  //     payload = json.dumps({
-  //     "msgId": "1222222"
-  //     })
-  //     headers = {
-  //     'Content-Type': 'application/json'
-  //     }
-
-  //     response = requests.request("POST", url, headers=headers, data=payload)
-
-  //     print(response.text)
   addFavFromMsg = (msgId: string) => {
     return this.post('/api/addFavFromMsg', { msgId })
   }
 
-  // def addFavFromImage():
-  //     print("modify wxid imagePath ")
-  //     raise RuntimeError("modify wxid  imagePath then deleted me")
-  //     url = host + "/api/addFavFromImage"
-
-  //     payload = json.dumps({
-  //     "wxid": "",
-  //     "imagePath": ""
-  //     })
-  //     headers = {
-  //     'Content-Type': 'application/json'
-  //     }
-
-  //     response = requests.request("POST", url, headers=headers, data=payload)
-
-  //     print(response.text)
   addFavFromImage = (wxid: string, imagePath: string) => {
     return this.post('/api/addFavFromImage', { wxid, imagePath })
   }
 
-  // def getContactProfile():
-  //     print("modify wxid  ")
-  //     raise RuntimeError("modify wxid   then deleted me")
-  //     url = host + "/api/getContactProfile"
-
-  //     payload = json.dumps({
-  //     "wxid": ""
-  //     })
-  //     headers = {
-  //     'Content-Type': 'application/json'
-  //     }
-
-  //     response = requests.request("POST", url, headers=headers, data=payload)
-  //     print(response.text)
   getContactProfile = (wxid: string) => {
-    return this.post('/api/getContactProfile', { wxid })
+    return this.post('/api/?type=55', { wxid })
   }
 
-  // def sendAtText():
-  //     print("modify wxids  chatRoomId")
-  //     raise RuntimeError("modify wxids   chatRoomId then deleted me")
-  //     url = host + "/api/sendAtText"
-
-  //     payload = json.dumps({
-  //     "wxids": "notify@all",
-  //     "chatRoomId": "123@chatroom",
-  //     "msg": "你好啊"
-  //     })
-  //     headers = {
-  //     'Content-Type': 'application/json'
-  //     }
-
-  //     response = requests.request("POST", url, headers=headers, data=payload)
-
-  //     print(response.text)
   sendAtText = (wxids: string, chatRoomId: string, msg: string) => {
-    return this.post('/api/sendAtText', { wxids, chatRoomId, msg })
+    return this.post('/api/?type=3', { wxids, chatRoomId, msg })
   }
 
-  // def forwardPublicMsg():
-  //     print("modify param ")
-  //     raise RuntimeError("modify param then deleted me")
-  //     url = host + "/api/forwardPublicMsg"
-
-  //     payload = json.dumps({
-  //     "appName": "",
-  //     "userName": "",
-  //     "title": "",
-  //     "url": "",
-  //     "thumbUrl": "",
-  //     "digest": "",
-  //     "wxid": "filehelper"
-  //     })
-  //     headers = {
-  //     'Content-Type': 'application/json'
-  //     }
-
-  //     response = requests.request("POST", url, headers=headers, data=payload)
-
-  //     print(response.text)
   forwardPublicMsg = (param: {
     appName: string;
     userName: string;
@@ -932,86 +585,22 @@ export class Wxhelper {
     return this.post('/api/forwardPublicMsg', param)
   }
 
-  // def forwardPublicMsgByMsgId():
-  //     print("modify param ")
-  //     raise RuntimeError("modify param then deleted me")
-  //     url = host + "/api/forwardPublicMsgByMsgId"
-
-  //     payload = json.dumps({
-  //     "msgId": 123,
-  //     "wxid": "filehelper"
-  //     })
-  //     headers = {
-  //     'Content-Type': 'application/json'
-  //     }
-
-  //     response = requests.request("POST", url, headers=headers, data=payload)
-
-  //     print(response.text)
   forwardPublicMsgByMsgId = (msgId: number, wxid: string) => {
     return this.post('/api/forwardPublicMsgByMsgId', { msgId, wxid })
   }
 
-  // def downloadAttach():
-  //     print("modify param ")
-  //     raise RuntimeError("modify param then deleted me")
-  //     url = host + "/api/downloadAttach"
-
-  //     payload = json.dumps({
-  //     "msgId": 123
-  //     })
-  //     headers = {
-  //     'Content-Type': 'application/json'
-  //     }
-
-  //     response = requests.request("POST", url, headers=headers, data=payload)
-
-  //     print(response.text)
   downloadAttach = (msgId: number) => {
-    return this.post('/api/downloadAttach', { msgId })
+    return this.post('/api/?type=56', { msgId })
   }
 
-  // def decodeImage():
-  //     print("modify param ")
-  //     raise RuntimeError("modify param then deleted me")
-  //     url = host + "/api/decodeImage"
-
-  //     payload = json.dumps({
-  //     "filePath": "C:\\66664816980131.dat",
-  //     "storeDir": "C:\\test"
-  //     })
-  //     headers = {
-  //     'Content-Type': 'application/json'
-  //     }
-
-  //     response = requests.request("POST", url, headers=headers, data=payload)
-
-  //     print(response.text)
   decodeImage = (filePath: string, storeDir: string) => {
-    return this.post('/api/decodeImage', { filePath, storeDir })
+    return this.post('/api/?type=48', { filePath, storeDir })
   }
 
-  // def getVoiceByMsgId():
-  //     print("modify param ")
-  //     raise RuntimeError("modify param then deleted me")
-  //     url = host + "/api/getVoiceByMsgId"
-
-  //     payload = json.dumps({
-  //     "msgId": 7880439644200,
-  //     "storeDir": "c:\\test"
-  //     })
-  //     headers = {
-  //     'Content-Type': 'application/json'
-  //     }
-
-  //     response = requests.request("POST", url, headers=headers, data=payload)
-
-  //     print(response.text)
-  getVoiceByMsgId = (msgId: number, storeDir: string) => {
-    return this.post('/api/getVoiceByMsgId', { msgId, storeDir })
+  getVoiceByMsgId = (msgId: number, voiceDir: string) => {
+    return this.post('/api/?type=57', { msgId, voiceDir })
   }
 
-  // /api/sendApplet
   sendApplet = (param: {
     wxid: string
     waidConcat: string
@@ -1024,17 +613,15 @@ export class Wxhelper {
     return this.post('/api/sendApplet', param)
   }
 
-  // /api/sendPatMsg
-  sendPatMsg = (receiver: string,
+  sendPatMsg = (chatRoomId: string,
     wxid: string) => {
-    return this.post('/api/sendPatMsg', { wxid, receiver })
+    return this.post('/api/?type=50', { wxid, chatRoomId })
   }
 
-  // /api/ocr
   ocr = (
     imagePath: string,
   ) => {
-    return this.post('/api/ocr', { imagePath })
+    return this.post('/api/?type=49', { imagePath })
   }
 
 }
