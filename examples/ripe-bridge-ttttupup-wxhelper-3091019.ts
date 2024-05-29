@@ -8,7 +8,7 @@ import {
 } from 'wechaty'
 import { FileBox } from 'file-box'
 
-import { PuppetBridgeTtttupupWxhelperV3090581 as PuppetBridge } from '../src/mod.js'
+import { PuppetBridgeTtttupupWxhelperV3091019 as PuppetBridge } from '../src/mod.js'
 import qrcodeTerminal from 'qrcode-terminal'
 import * as fs from 'fs'
 
@@ -39,7 +39,7 @@ function onScan (qrcode: string, status: ScanStatus) {
 }
 
 async function onLogin (user: Contact) {
-  log.info('onLogin', JSON.stringify(user, null, 2))
+  log.info('ripe onLogin event:', JSON.stringify(user))
 }
 
 function onLogout (user: Contact) {
@@ -162,15 +162,7 @@ async function onMessage (msg: Message) {
 
 }
 
-const puppet = new PuppetBridge()
-const bot = WechatyBuilder.build({
-  name: 'ding-dong-bot',
-  puppet,
-})
-
-bot.on('scan', onScan)
-bot.on('login', onLogin)
-bot.on('ready', async () => {
+const onReady = async () => {
   log.info('bot已经准备好了')
   // const roomList = await bot.Room.findAll()
   // writeLog('群信息：' + JSON.stringify(roomList))
@@ -187,11 +179,24 @@ bot.on('ready', async () => {
   const contact = await bot.Contact.find({ name:'luyuchao' })
   log.info('contact', contact)
 
-  if (room && contact) {
-    const contacts:Contact[] = [ contact ]
-    await room.say(new Date().toLocaleString() + '：瓦力上线了！', ...contacts)
-  }
+  // if (room && contact) {
+  //   const contacts:Contact[] = [ contact ]
+  //   const msg = `${new Date().toLocaleString()}${bot.currentUser.name()}上线了！`
+  //   await contact.say(msg)
+  //   await room.say(msg, ...contacts)
+  // }
+
+}
+
+const puppet = new PuppetBridge()
+const bot = WechatyBuilder.build({
+  name: 'ding-dong-bot',
+  puppet,
 })
+
+bot.on('scan', onScan)
+bot.on('login', onLogin)
+bot.on('ready', onReady)
 bot.on('logout', onLogout)
 bot.on('message', onMessage)
 bot.on('room-join', async (room, inviteeList, inviter) => {

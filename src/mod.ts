@@ -5,6 +5,7 @@ import { PuppetBridge as PuppetBridgeCixingguangming55555WechatBotV3090223 } fro
 import { PuppetBridge as PuppetBridgeTtttupupWxhelperV3090581 } from './puppet-bridge-ttttupup-wxhelper.js'
 import { PuppetBridge as PuppetBridgeTtttupupWxhelperV3090223 } from './puppet-bridge-ttttupup-wxhelper-3090223.js'
 import { PuppetBridge as PuppetBridgeAtorberFusedV3090825 } from './puppet-bridge-atorber-fused.js'
+import { PuppetBridge as PuppetBridgeTtttupupWxhelperV3091019 } from './puppet-bridge-ttttupup-wxhelper-3091019.js'
 
 export {
   VERSION,
@@ -14,5 +15,6 @@ export {
   PuppetBridgeTtttupupWxhelperV3090581,
   PuppetBridgeAtorberFusedV3090825,
   PuppetBridgeTtttupupWxhelperV3090223,
+  PuppetBridgeTtttupupWxhelperV3091019,
 }
 export default PuppetBridge
