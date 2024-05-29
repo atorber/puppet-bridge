@@ -12,16 +12,12 @@ import {
   writeMsgStore,
   // getTimeLocaleString,
 } from '../utils/messageStore.js'
-import { Wxhelper, MessageRaw } from './ttttupup-wxhelper-3090223-api.js'
+import {
+  Wxhelper,
+  MessageRaw,
+} from './atorber-fused-api.js'
 
 import sudo from 'sudo-prompt'
-import type {
-  AccountInfo,
-} from './ttttupup-wxhelper-3090223-api.js'
-
-export {
-  AccountInfo,
-}
 
 let dirname = path.resolve(path.dirname(''))
 log.verbose('当前文件的目录路径:', dirname)
@@ -124,7 +120,9 @@ class Bridge extends EventEmitter {
                   throw new Error('newInjectorPath文件不存在，无法更新injectorPath...')
                 }
               }
-              const dllPath = join(dirname, 'src', 'assets', 'wxhelper-3.9.2.23-v9.dll')
+
+              // C:\Users\tyutl\Documents\GitHub\chatflow\node_modules\wechaty-puppet-bridge\src\assets\funtool_wx_3.9.2.23.exe
+              const dllPath = join(dirname, 'src', 'assets', 'wxhelper-3.9.10.19-v1.dll')
               // const execString = `${injectorPath} --process-name WeChat.exe --inject ${dllPath}`
               const execString = `${injectorPath} -p ${pid} --inject ${dllPath}`
 
@@ -219,7 +217,7 @@ class Bridge extends EventEmitter {
           data = data.toString()
           const dataJson = JSON.parse(data)
 
-          log.info('原始dataJson:\n', JSON.stringify(dataJson, undefined, 2))
+          // log.info('原始dataJson:\n', JSON.stringify(dataJson, undefined, 2))
 
           // 缓存消息
           messageStore = writeMsgStore(messageStore, dataJson)
@@ -301,14 +299,14 @@ class Bridge extends EventEmitter {
       ip,
       url: '',
       timeout: '3000',
-      enableHttp: '0',
+      enableHttp: false,
     })
       .then(async (res) => {
         log.info('hookSyncMsg success:', JSON.stringify(res.data))
         const checkLoginRes = await this.wxhelper.checkLogin()
         log.info('checkLogin success:', JSON.stringify(checkLoginRes.data))
 
-        if (checkLoginRes.data && checkLoginRes.data.code === 1 && checkLoginRes.data.msg === 'success') {
+        if (checkLoginRes.data && checkLoginRes.data.code > 0 && checkLoginRes.data.msg === 'success') {
           log.info('agent login success')
           // 如果非首次登录，且当前状态为未登录，则触发登录事件
           if (!this.isLoggedIn) {
@@ -320,7 +318,7 @@ class Bridge extends EventEmitter {
         } else {
           if (this.isLoggedIn) {
             this.isLoggedIn = false
-            this.emit('logout', 'logout')
+            // this.emit('logout', 'logout')
           } else {
             throw new Error('启动失败，请检查微信是否已经处于登录状态')
           }
@@ -386,8 +384,31 @@ class Bridge extends EventEmitter {
           this.isLoggedIn = true
           this.emit('login', 'login')
         } else {
-          log.info('agent not login...')
-          this.isLoggedIn = false
+          this.wxhelper.clickEnterWeChat()
+            .then((res) => {
+              log.info('clickEnterWeChat success:', JSON.stringify(res.data))
+              const clickEnterWeChatRes = res.data
+              if (clickEnterWeChatRes.code > 0) {
+                this.isLoggedIn = true
+                this.emit('login', 'login')
+              } else {
+                log.info('clickEnterWeChat success, but not login, getLoginUrl...')
+                this.isLoggedIn = false
+                this.wxhelper.getLoginUrl().then((res) => {
+                  log.info('getLoginUrl_res:', JSON.stringify(res.data))
+                  if (res.data && res.data.code > 0) {
+                    this.emit('getLoginUrl', res.data)
+                  }
+                  return res
+                }).catch((e) => {
+                  log.error('getLoginUrl error:', e)
+                })
+              }
+              return res
+            })
+            .catch((e) => {
+              log.error('clickEnterWeChat error:', e)
+            })
         }
         return res
       })

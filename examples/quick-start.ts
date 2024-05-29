@@ -1,8 +1,4 @@
 /* eslint-disable sort-keys */
-/**
- * Wechaty - Conversational RPA SDK for Chatbot Makers.
- *  - https://github.com/wechaty/wechaty
- */
 import {
   Contact,
   Message,
