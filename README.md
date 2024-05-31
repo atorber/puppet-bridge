@@ -42,30 +42,6 @@ wechaty-puppet-bridge 是一个全新的wechaty-puppet，它可以连接所有�
 
 ## 快速开始
 
-### 使用[cixingguangming55555/wechat-bot](https://github.com/cixingguangming55555/wechat-bot)
-
-1. 在您的Windows电脑上安装客户端（需要版本v3.9.2.23,下载[v3.9.2.23](https://github.com/tom-snow/wechat-windows-versions/releases/tag/v3.9.2.23)）
-
-2. 在电脑上登录客户端
-
-3. 运行以下指令启动程序,程序启动时会自动打开注入程序，运行程序并点击【Start】开启功能。
-
-  ```sh
-  git clone https://github.com/atorber/puppet-bridg
-  cd puppet-bridge
-
-  # 安装依赖
-  npm install
-
-  # 启动程序
-  npm start
-  #
-  # Do not forget to install WeChat with requried version and login.
-  #
-  ```
-
-   ![image](https://github.com/atorber/puppet-bridge/assets/19552906/c2c86ff8-8a48-439f-a48a-6830883693d2)
-
 ### 使用[jwping/wxbot](https://github.com/jwping/wxbot)
 
 1. 在您的Windows电脑上安装客户端（需要版本v3.9.8.25,下载[v3.9.8.25](https://github.com/tom-snow/wechat-windows-versions/releases/tag/v3.9.8.25)）
@@ -100,7 +76,6 @@ npm i wechaty-puppet-bridge
 
 |源|版本|使用|
 |--|--|--|
-|[cixingguangming55555/wechat-bot](https://github.com/cixingguangming55555/wechat-bot)|v3.9.2.23|[示例代码](./examples/ripe-wechaty-3090223.ts)|
 |[jwping/wxbot](https://github.com/jwping/wxbot)|v3.9.8.25|[示例代码](./examples/ripe-wechaty-jwping-wxbot-3090825.ts)|
 |[ttttupup/wxhelper](https://github.com/ttttupup/wxhelper/tree/dev-3.9.2.23)|v3.9.2.23|[示例代码](./examples/ripe-wechaty-ttttupup-wxhelper-3090223.ts) (需要【以管理员身份运行】WeChat客户端)|
 |[ttttupup/wxhelper](https://github.com/ttttupup/wxhelper/tree/dev-3.9.5.81)|v3.9.5.81|[示例代码](./examples/ripe-wechaty-ttttupup-wxhelper-3090581.ts) (需要【以管理员身份运行】WeChat客户端)|
