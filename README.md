@@ -98,19 +98,33 @@ npm i wechaty-puppet-bridge
 
 ## 更多示例代码
 
-- 运行在[cixingguangming55555/wechat-bot](https://github.com/cixingguangming55555/wechat-bot)上的v3.9.2.23 [示例代码](./examples/ripe-wechaty-3090223.ts)
+|源|版本|使用|
+|--|--|--|
+|[cixingguangming55555/wechat-bot](https://github.com/cixingguangming55555/wechat-bot)|v3.9.2.23|[示例代码](./examples/ripe-wechaty-3090223.ts)|
+|[jwping/wxbot](https://github.com/jwping/wxbot)|v3.9.8.25|[示例代码](./examples/ripe-wechaty-jwping-wxbot-3090825.ts)|
+|[ttttupup/wxhelper](https://github.com/ttttupup/wxhelper/tree/dev-3.9.2.23)|v3.9.2.23|[示例代码](./examples/ripe-wechaty-ttttupup-wxhelper-3090223.ts) (需要【以管理员身份运行】WeChat客户端)|
+|[ttttupup/wxhelper](https://github.com/ttttupup/wxhelper/tree/dev-3.9.5.81)|v3.9.5.81|[示例代码](./examples/ripe-wechaty-ttttupup-wxhelper-3090581.ts) (需要【以管理员身份运行】WeChat客户端)|
+|[ttttupup/wxhelper](https://github.com/ttttupup/wxhelper/tree/dev-3.9.8.25)|v3.9.8.25|[示例代码](./examples/ripe-wechaty-atorber-fused-3090825.ts) (需要【以管理员身份运行】WeChat客户端)|
+|[ttttupup/wxhelper](https://github.com/ttttupup/wxhelper/tree/dev-3.9.10.19)|v3.9.10.19|[示例代码](./examples/ripe-bridge-ttttupup-wxhelper-3091019.ts) (需要【以管理员身份运行】WeChat客户端)|
 
-- 运行在[jwping/wxbot](https://github.com/jwping/wxbot)上的v3.9.8.25 [示例代码](./examples/ripe-wechaty-jwping-wxbot-3090825.ts)
+## API接口
 
-- 运行在[ttttupup/wxhelper](https://github.com/ttttupup/wxhelper/tree/dev-3.9.2.23)上的v3.9.2.23 [示例代码](./examples/ripe-wechaty-ttttupup-wxhelper-3090223.ts) (需要【以管理员身份运行】WeChat客户端)
+Puppet Bridge是对开源bot项目的API封装，并不会对原生的API进行修改，因此你依然可以使用底层bot的原生API进行开发，以下主要对wxhelper原生API进行说明
 
-- 运行在[ttttupup/wxhelper](https://github.com/ttttupup/wxhelper/tree/dev-3.9.8.25)上的v3.9.8.25 [示例代码](./examples/ripe-wechaty-atorber-fused-3090825.ts) (需要【以管理员身份运行】WeChat客户端)
+### HTTP API
 
-- 运行在[ttttupup/wxhelper](https://github.com/ttttupup/wxhelper/tree/dev-3.9.5.81)上的v3.9.5.81 [示例代码](./examples/ripe-wechaty-ttttupup-wxhelper-3090581.ts) (需要【以管理员身份运行】WeChat客户端)
+[3.9.9.43版本接口](https://github.com/ttttupup/wxhelper/blob/dev-3.9.10.19/doc/3.9.9.43.md)兼容3.9.10.19
 
-- 运行在[ttttupup/wxhelper](https://github.com/ttttupup/wxhelper/tree/dev-3.9.10.19)上的v3.9.10.19 [示例代码](./examples/ripe-bridge-ttttupup-wxhelper-3091019.ts) (需要【以管理员身份运行】WeChat客户端)
+### WEB HOOK
+
+wxhelper要求用户启动一个websoket服务接收数据，Puppet Bridge中已经启动了一个websoket服务并将从wxhelper接收到的数据转发给所有的客户端，你只需要连接该服务即可订阅消息推送，端口号保持wxhelper默认的19099
 
 ## 更新日志
+
+### v0.14.0
+
+- 优化websoket服务为客户端模式，支持多端订阅
+- 保留wxhelper的原生API，其他编程语言可直接调用
 
 ### v0.12.0
 

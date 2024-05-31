@@ -697,6 +697,7 @@ class PuppetBridge extends PUPPET.Puppet {
 
   private async loadContactList () {
     const contactListRes = await this.bridge.wxhelper.getContactList()
+    // console.info('contactListRes:', JSON.stringify(contactListRes.data))
     const contactList = contactListRes.data.data as wxhelper.ContactRaw[]
     // log.info('contactList get success, wait for contactList init ...', JSON.stringify(contactList, undefined, 2))
     for (const contactInfo of contactList) {
