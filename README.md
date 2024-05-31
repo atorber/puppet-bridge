@@ -12,16 +12,6 @@ wechaty-puppet-bridge 是一个虚拟的Wechaty Puppet，实际上它只是一�
 
 如果你想方便且高效的使用免费的机器人，那么它是一个很好的选择，它不需要token同时又能使用Wechaty进行聊天机器人开发
 
-与wechaty-puppet-xp比较：
-
-| 项目 | [puppet-xp](https://github.com/atorber/puppet-xp) | [puppet-bridge](https://github.com/atorber/puppet-bridge) |
-| :------------- |:-------------| :-----|
-| 手动注入 | ⭐⭐⭐<br>不需要 | ⭐⭐⭐<br>不需要 |
-| 功能| ⭐⭐⭐<br>基于[cixingguangming55555/wechat-bot](https://github.com/cixingguangming55555/wechat-bot)项目 | ⭐⭐⭐<br>基于[cixingguangming55555/wechat-bot](https://github.com/cixingguangming55555/wechat-bot)、[jwping/wxbot](https://github.com/jwping/wxbot)、[ttttupup/wxhelper](https://github.com/ttttupup/wxhelper)等开源项目 |
-| 梯子 | ⭐<br>依赖frida，国内网络无法安装，需使用梯子 | ⭐⭐⭐<br>不需要，直接运行程序即可 |
-| 启动| ⭐⭐⭐<br>直接运行nodejs程序 | ⭐⭐<br>需先手动启动确认启动，但很简单|
-| 环境| ⭐⭐⭐<br>nodejs | ⭐⭐<br>nodejs|
-
 获取更多信息[访问项目语雀文档](https://www.yuque.com/atorber/chatflow/mean34ibdoonvox4)
 
 ## 功能清单
@@ -100,6 +90,7 @@ wxhelper要求用户启动一个websoket服务接收数据，Puppet Bridge中已
 
 - 优化websoket服务为客户端模式，支持多端订阅
 - 保留wxhelper的原生API，其他编程语言可直接调用
+- 暂时移除[cixingguangming55555/wechat-bot](https://github.com/cixingguangming55555/wechat-bot)支持
 
 ### v0.12.0
 
