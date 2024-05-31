@@ -62,7 +62,7 @@ class Bridge extends EventEmitter {
     const timer = setInterval(() => {
       if (this.isLoggedIn) {
         log.info('已登录，清除定时器...')
-        this.server = this.createWebSocket(this.wsUrl.split(':')[2] as string)
+        this.createWebSocketClient(this.wsUrl.split(':')[2] as string, '127.0.0.1')
         // 启动wxbot-sidecar-3.9.8.25.exe
         clearInterval(timer)
       } else {
@@ -122,7 +122,10 @@ class Bridge extends EventEmitter {
               }
 
               // C:\Users\tyutl\Documents\GitHub\chatflow\node_modules\wechaty-puppet-bridge\src\assets\funtool_wx_3.9.2.23.exe
-              const dllPath = join(dirname, 'src', 'assets', 'wxhelper-3.9.10.19-v1.dll')
+              // const dllPath = join(dirname, 'src', 'assets', 'wxhelper-3.9.10.19-v1.dll')
+              const dllPath = join(dirname, 'src', 'assets', 'wxhelper-native.dll')
+              // const dllPath = join(dirname, 'src', 'assets', 'wxhelper-vs22.dll')
+
               // const execString = `${injectorPath} --process-name WeChat.exe --inject ${dllPath}`
               const execString = `${injectorPath} -p ${pid} --inject ${dllPath}`
 
@@ -206,28 +209,26 @@ class Bridge extends EventEmitter {
   }
 
   private createWebSocket (port: string) {
-    const server = net.createServer((socket: any) => {
-      let messageStore = readMsgStore()
+    const clients:net.Socket[] = [] // 用来存储所有客户端
+
+    const server = net.createServer()
+    server.on('connection', (socket: net.Socket) => {
+      clients.push(socket) // 新增，将新连接的客户端加入到clients数组中
       // const data = Buffer.from('')
+
+      socket.on('connect', () => {
+        log.verbose('Client connected')
+      })
 
       socket.on('data', (data: any) => {
         log.verbose(`Received data: ${data}`)
 
-        try {
-          data = data.toString()
-          const dataJson = JSON.parse(data)
-
-          // log.info('原始dataJson:\n', JSON.stringify(dataJson, undefined, 2))
-
-          // 缓存消息
-          messageStore = writeMsgStore(messageStore, dataJson)
-
-          const j = JSON.parse(data)
-          // log.info('ws message hook type:', j.type, JSON.stringify(j, undefined, 2))
-          this.handleReceiveMessage(j)
-        } catch (e) {
-          log.error('Received data error:', e)
-        }
+        // 将接收到的消息发送给所有客户端
+        clients.forEach((client: net.Socket) => {
+          if (client !== socket) {
+            client.write(data)
+          }
+        })
 
       })
 
@@ -237,12 +238,22 @@ class Bridge extends EventEmitter {
 
       socket.on('close', () => {
         log.verbose('Client disconnected')
+        // 将断开连接的客户端从clients数组中删除
+        const index = clients.indexOf(socket)
+        if (index !== -1) {
+          clients.splice(index, 1)
+        }
       })
 
       socket.on('error', (err: any) => {
         log.error('Socket error:', err)
         this.emit('error', err)
       })
+    })
+
+    server.on('error', (err: any) => {
+      log.error('Server error:', err)
+      this.emit('error', err)
     })
 
     server.listen(Number(port), () => {
@@ -253,46 +264,7 @@ class Bridge extends EventEmitter {
     log.info('ip:', ip)
     log.info('port:', port)
 
-    // this.wxhelper.unhookSyncMsg().then((res) => {
-    //   log.info('unhookSyncMsg success:', JSON.stringify(res.data))
-    //   this.wxhelper.hookSyncMsg({
-    //     port,
-    //     ip,
-    //     url: '',
-    //     timeout: '3000',
-    //     enableHttp: '0',
-    //   })
-    //     .then(async (res) => {
-    //       log.info('hookSyncMsg success:', JSON.stringify(res.data))
-    //       const checkLoginRes = await this.wxhelper.checkLogin()
-    //       log.info('checkLogin success:', JSON.stringify(checkLoginRes.data))
-
-    //       if (checkLoginRes.data && checkLoginRes.data.code === 1 && checkLoginRes.data.msg === 'success') {
-    //         log.info('login success')
-    //         // 如果非首次登录，且当前状态为未登录，则触发登录事件
-    //         if (!this.isLoggedIn) {
-    //           this.isLoggedIn = true
-    //           this.emit('login', 'login')
-    //         } else {
-    //           this.emit('heartbeat', 'heartbeat')
-    //         }
-    //       } else {
-    //         if (this.isLoggedIn) {
-    //           this.isLoggedIn = false
-    //           this.emit('logout', 'logout')
-    //         } else {
-    //           throw new Error('启动失败，请检查微信是否已经处于登录状态')
-    //         }
-    //       }
-    //       return res
-    //     })
-    //     .catch((e) => {
-    //       log.error('hookSyncMsg error:', e)
-    //     })
-    //   return res
-    // }).catch((e) => {
-    //   log.error('unhookSyncMsg error:', e)
-    // })
+    this.createWebSocketClient(port, ip)
 
     this.wxhelper.hookSyncMsg({
       port,
@@ -328,46 +300,40 @@ class Bridge extends EventEmitter {
       .catch((e) => {
         log.error('hookSyncMsg error:', e)
       })
-
-    // 每隔30s发送心跳消息
-    // setTimeout(() => {
-    //   log.info('send heartbeat...')
-    //   this.wxhelper.hookSyncMsg({
-    //     port,
-    //     ip,
-    //     url: '',
-    //     timeout: '3000',
-    //     enableHttp: '0',
-    //   })
-    //     .then(async (res) => {
-    //       log.info('hookSyncMsg success:', JSON.stringify(res.data))
-    //       const checkLoginRes = await this.wxhelper.checkLogin()
-    //       log.info('checkLogin success:', JSON.stringify(checkLoginRes.data))
-
-    //       if (checkLoginRes.data && checkLoginRes.data.code !== 0 && checkLoginRes.data.msg === 'success') {
-    //         log.info('login success')
-    //         // 如果非首次登录，且当前状态为未登录，则触发登录事件
-    //         if (!this.isLoggedIn) {
-    //           this.isLoggedIn = true
-    //           this.emit('login', 'login')
-    //         } else {
-    //           this.emit('heartbeat', 'heartbeat')
-    //         }
-    //       } else {
-    //         if (this.isLoggedIn) {
-    //           this.isLoggedIn = false
-    //           this.emit('logout', 'logout')
-    //         } else {
-    //           throw new Error('启动失败，请检查微信是否已经处于登录状态')
-    //         }
-    //       }
-    //       return res
-    //     })
-    //     .catch((e) => {
-    //       log.error('hookSyncMsg error:', e)
-    //     })
-    // }, 10000)
     return server
+  }
+
+  private createWebSocketClient (port: string, host: string) {
+    let messageStore = readMsgStore()
+    const client = new net.Socket()
+    // 连接到服务器并接收消息
+    client.connect(Number(port), host, () => {
+      log.verbose('Connected to server')
+    })
+
+    client.on('data', (data: any) => {
+      log.verbose(`Received data: ${data}`)
+      try {
+        data = data.toString()
+        const dataJson = JSON.parse(data)
+
+        // log.info('原始dataJson:\n', JSON.stringify(dataJson, undefined, 2))
+
+        // 缓存消息
+        messageStore = writeMsgStore(messageStore, dataJson)
+
+        const j = JSON.parse(data)
+        // log.info('ws message hook type:', j.type, JSON.stringify(j, undefined, 2))
+        this.handleReceiveMessage(j)
+      } catch (e) {
+        log.error('Received data error:', e)
+      }
+    })
+
+    client.on('error', (err: any) => {
+      log.error('Socket error:', err)
+      this.createWebSocket(port)
+    })
   }
 
   private doLogin = async () => {
