@@ -1,6 +1,6 @@
 {
   "name": "wechaty-puppet-bridge",
-  "version": "0.14.2",
+  "version": "0.15.0",
   "description": "Puppet Bridge for Wechaty",
   "type": "module",
   "exports": {
@@ -39,6 +39,9 @@
     "start:ripe-wechaty-atorber-fused:info": "cross-env WECHATY_LOG=info NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/ripe-wechaty-atorber-fused-3090825.ts",
     "start:raw-bridge-ttttupup-wxhelper-3091019:info": "cross-env BROLOG_LEVEL=info NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/raw-bridge-ttttupup-wxhelper-3091019.ts",
     "start:ripe-bridge-ttttupup-wxhelper-3091019:info": "cross-env WECHATY_LOG=info NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/ripe-bridge-ttttupup-wxhelper-3091019.ts",
+    "start:raw-puppet-bridge-lich0821-WeChatFerry-3091027:info": "cross-env BROLOG_LEVEL=info NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/raw-wechaty-lich0821-WeChatFerry-3091027.ts",
+    "start:ripe-puppet-bridge-lich0821-WeChatFerry-3091027:info": "cross-env BROLOG_LEVEL=info NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/ripe-wechaty-lich0821-WeChatFerry-3091027.ts",
+    "start:wcf": "cross-env BROLOG_LEVEL=info NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/wcf.ts",
     "test:wxhelper": "cross-env WECHATY_LOG=info NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/wxhelper.ts",
     "lint": "npm run lint:es && npm run lint:ts && npm run lint:md",
     "lint:md": "markdownlint README.md",
@@ -92,6 +95,7 @@
     "wechaty-puppet": "^1.10.2"
   },
   "dependencies": {
+    "@zippybee/wechatcore": "^2.1.13",
     "axios": "^1.6.5",
     "cuid": "^2.1.8",
     "sudo-prompt": "^9.2.1",
