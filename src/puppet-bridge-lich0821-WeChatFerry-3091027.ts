@@ -30,7 +30,7 @@ import {
 import {
   Bridge,
 } from './agents/lich0821-WeChatFerry-3091027.js'
-import { Message, UserInfo, Contact } from '@zippybee/wechatcore'
+import type { Message, UserInfo, Contact } from '@zippybee/wechatcore'
 
 import { ImageDecrypt } from './pure-functions/image-decrypt.js'
 import { XmlDecrypt } from './pure-functions/xml-msgpayload.js'
