@@ -123,8 +123,9 @@ class Bridge extends EventEmitter {
 
               // C:\Users\tyutl\Documents\GitHub\chatflow\node_modules\wechaty-puppet-bridge\src\assets\funtool_wx_3.9.2.23.exe
               // const dllPath = join(dirname, 'src', 'assets', 'wxhelper-3.9.10.19-v1.dll')
-              const dllPath = join(dirname, 'src', 'assets', 'wxhelper-native.dll')
-              // const dllPath = join(dirname, 'src', 'assets', 'wxhelper-vs22.dll')
+              // const dllPath = join(dirname, 'src', 'assets', 'wxhelper-native.dll')
+              // const dllPath = join(dirname, 'src', 'assets', 'wxhelper-10.dll')
+              const dllPath = 'C:\\Users\\tyutl\\Documents\\GitHub\\wxhelper\\app\\wxhelper\\lib\\Debug\\wxhelper.dll'
 
               // const execString = `${injectorPath} --process-name WeChat.exe --inject ${dllPath}`
               const execString = `${injectorPath} -p ${pid} --inject ${dllPath}`
@@ -312,7 +313,7 @@ class Bridge extends EventEmitter {
     })
 
     client.on('data', (data: any) => {
-      log.verbose(`Received data: ${data}`)
+      log.info(`Received data: ${data}`)
       try {
         data = data.toString()
         const dataJson = JSON.parse(data)

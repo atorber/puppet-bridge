@@ -577,7 +577,7 @@ class PuppetBridge extends PUPPET.Puppet {
   async getMemberDetail (contactId:string): Promise<PUPPET.payloads.Contact | undefined> {
     let contact = this.contactStore[contactId]
     log.info('getMemberDetail contactId:', JSON.stringify(contact, undefined, 2))
-    if (!contact || !contact.name) {
+    if ((!contact || !contact.name) && contactId) {
       log.verbose('缓存中没有找到联系人信息，开始请求:', contactId)
       const contactInfoRes = await this.bridge.wxhelper.getContactProfile(contactId)
       log.info('请求联系人结果contactInfoRes:', JSON.stringify(contactInfoRes.data))
@@ -620,7 +620,8 @@ class PuppetBridge extends PUPPET.Puppet {
     const memberIdList:string[] = roomMember.members.split('^G')
     // log.info('memberIdList:', memberIdList)
     const topic:string = roomStore.topic
-    await this.getMemberDetail(roomRaw.admin)
+
+    if (roomRaw.admin) await this.getMemberDetail(roomRaw.admin)
 
     roomStore.adminIdList = [ roomRaw.admin ]
     roomStore.avatar = ''

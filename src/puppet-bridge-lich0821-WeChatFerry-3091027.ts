@@ -29,8 +29,8 @@ import {
 
 import {
   Bridge,
-} from './agents/atorber-fused.js'
-import type * as wxhelper from './agents/atorber-fused-api.js'
+} from './agents/lich0821-WeChatFerry-3091027.js'
+import { Message, UserInfo, Contact } from '@zippybee/wechatcore'
 
 import { ImageDecrypt } from './pure-functions/image-decrypt.js'
 import { XmlDecrypt } from './pure-functions/xml-msgpayload.js'
@@ -46,8 +46,6 @@ const rootPath = `${userInfo.homedir}\\Documents\\WeChat Files\\`
 
 export type PuppetBridgeOptions = PUPPET.PuppetOptions & {
   sidecarName?: string
-  wsUrl?: string
-  httpUrl?: string
   weChatFilesPath?: string
 }
 
@@ -73,7 +71,7 @@ class PuppetBridge extends PUPPET.Puppet {
 
   constructor (
     public override options: PuppetBridgeOptions = {
-      sidecarName: 'atorber-fused',
+      sidecarName: 'lich0821-WeChatFerry',
     },
   ) {
 
@@ -83,10 +81,7 @@ class PuppetBridge extends PUPPET.Puppet {
     if (options.weChatFilesPath) {
       this.weChatFilesPath = options.weChatFilesPath
     }
-    this.bridge = new Bridge({
-      httpUrl: options.httpUrl,
-      wsUrl: options.wsUrl,
-    })
+    this.bridge = new Bridge()
 
     // FIXME: use LRU cache for message store so that we can reduce memory usage
     this.messageStore = {}
@@ -112,7 +107,7 @@ class PuppetBridge extends PUPPET.Puppet {
       })
     })
 
-    this.bridge.on('message', (message: wxhelper.MessageRaw) => {
+    this.bridge.on('message', (message: Message) => {
       // log.info('onMessage...', message)
       this.onHookRecvMsg(message).then((res) => {
         log.info('onHookRecvMsg success...')
@@ -184,11 +179,10 @@ class PuppetBridge extends PUPPET.Puppet {
 
       // const selfInfoRaw = JSON.parse(await this.bridge.getMyselfInfo())
       // log.debug('selfInfoRaw:\n\n\n', selfInfoRaw)
-      const selfInfoRawRes = await this.bridge.wxhelper.userInfo()
-      const selfInfoRaw = selfInfoRawRes.data.data as wxhelper.AccountInfo
+      const selfInfoRaw:UserInfo = await this.bridge.client.getUserInfo()
       const selfInfo: PUPPET.payloads.Contact = {
         alias: '',
-        avatar: selfInfoRaw.headImage,
+        avatar: '',
         friend: false,
         gender: PUPPET.types.ContactGender.Unknown,
         id: selfInfoRaw.wxid,
@@ -272,25 +266,26 @@ class PuppetBridge extends PUPPET.Puppet {
 
   }
 
-  private async onHookRecvMsg (messageRaw: wxhelper.MessageRaw) {
-    // log.info('onHookRecvMsg\n', JSON.stringify(messageRaw, undefined, 2))
+  private async onHookRecvMsg (messageRaw: Message) {
+    log.info('onHookRecvMsg\n', JSON.stringify(messageRaw, undefined, 2))
     let type = PUPPET.types.Message.Unknown
     let roomId = ''
     let talkerId = ''
     let listenerId = ''
     let text = messageRaw.content
-    const msgId = messageRaw.msgId
+    const msgId = messageRaw.id
 
-    if (messageRaw.fromUser.indexOf('@chatroom') !== -1) { // 如果包含@，则为群
-      roomId = messageRaw.fromUser
-      talkerId = text.split(':\n').length > 1 ? (text.split(':\n')[0] as string) : ''
-      text = text.replace(`${talkerId}:\n`, '')
-    } else if (messageRaw.toUser.indexOf('@chatroom') !== -1) {
-      talkerId = messageRaw.fromUser
-      roomId = messageRaw.toUser
+    if (messageRaw.roomId && messageRaw.roomId.indexOf('@') !== -1) { // 如果包含@，则为群
+      roomId = messageRaw.roomId
+      talkerId = messageRaw.sender
     } else {
-      talkerId = messageRaw.fromUser
-      listenerId  = messageRaw.toUser
+      if (messageRaw.isSelf) {
+        talkerId = this.currentUserId
+        listenerId  = messageRaw.roomId
+      } else {
+        talkerId = messageRaw.sender
+        listenerId  = this.currentUserId
+      }
     }
 
     log.info('talkerId:', talkerId)
@@ -336,10 +331,13 @@ class PuppetBridge extends PUPPET.Puppet {
       case 1:
         type = PUPPET.types.Message.Text
         break
-      case 3:
+      case 3:{
         type = PUPPET.types.Message.Image
-        text = JSON.stringify([ 'content.thumb', 'content.thumb', 'content.detail', 'content.thumb' ])
+        console.info('图片消息:', JSON.stringify(messageRaw))
+        const msgPayload = JSON.parse(JSON.stringify(messageRaw))
+        text = JSON.stringify([ msgPayload.message.u[9], msgPayload.message.u[9], msgPayload.message.u[10], msgPayload.message.u[10] ])
         break
+      }
       case 4:
         type = PUPPET.types.Message.Video
         break
@@ -597,25 +595,25 @@ class PuppetBridge extends PUPPET.Puppet {
     // log.info('getMemberDetail contactId:', JSON.stringify(contact, undefined, 2))
     if ((!contact || !contact.name) && contactId) {
       log.verbose('缓存中没有找到联系人信息，开始请求:', contactId)
-      const contactInfoRes = await this.bridge.wxhelper.getContactProfile(contactId)
-      log.info('请求联系人结果contactInfoRes:', JSON.stringify(contactInfoRes.data))
-      if (contactInfoRes.data.data !== null) {
-        log.info('查询信息成功:', JSON.stringify(contactInfoRes.data.data))
-        const contactInfo = contactInfoRes.data.data as wxhelper.MemberDetailRaw
+      const contactInfoRes:Contact | undefined = await this.bridge.client.getContact(contactId)
+      log.info('请求联系人结果contactInfoRes:', JSON.stringify(contactInfoRes))
+      if (contactInfoRes) {
+        log.info('查询信息成功:', JSON.stringify(contactInfoRes))
+        const contactInfo = contactInfoRes
         contact =  {
           alias: '',
-          avatar: contactInfo.headImage || '',
+          avatar: '',
           friend: false,
           gender: PUPPET.types.ContactGender.Unknown,
           id: contactId,
-          name: contactInfo.nickname || '',
+          name: contactInfo.name || '',
           phone: [],
           type: PUPPET.types.Contact.Individual,
         }
         if (contact.id && contact.name) this.contactStore[contactId] = contact
         await this.contactPayloadDirty(contactId)
       } else {
-        log.error('请求联系人信息失败:', JSON.stringify(contactInfoRes.data))
+        log.error('请求联系人信息失败:', JSON.stringify(contactInfoRes))
       }
     } else {
       log.verbose('缓存中找到联系人信息:', contactId)
@@ -630,32 +628,32 @@ class PuppetBridge extends PUPPET.Puppet {
     const roomStore = rooms[roomId] as PUPPET.payloads.Room
 
     // 获取群详情
-    const roomRes = await this.bridge.wxhelper.getChatRoomDetailInfo(roomId)
-    const roomRaw = roomRes.data.data as wxhelper.RoomRaw
+    // const roomRaw:Contact | undefined = await this.bridge.client.getContact(roomId)
 
     // 获取群成员列表
-    const roomMemberRes = await this.bridge.wxhelper.getMemberFromChatRoom(roomId)
-    const roomMember = roomMemberRes.data.data as wxhelper.RoomMembersRaw
-    const memberIdList:string[] = roomMember.members.split('^G')
+    const roomMember:{
+      [key:string]: string
+    } = await this.bridge.client.getChatRoomMembers(roomId)
+
+    const memberIdList:string[] = Object.keys(roomMember)
     // log.info('memberIdList:', memberIdList)
     const topic:string = roomStore.topic
-    if (roomRaw.admin) {
-      await this.getMemberDetail(roomRaw.admin)
-    }
+    // if (roomRaw?.admin) {
+    //   await this.getMemberDetail(roomRaw.admin)
+    // }
 
-    roomStore.adminIdList = [ roomRaw.admin ]
+    roomStore.adminIdList = []
     roomStore.avatar = ''
     roomStore.external = false
     roomStore.memberIdList = memberIdList
-    roomStore.ownerId = roomRaw.admin
+    roomStore.ownerId = ''
     roomStore.topic = topic
 
     this.roomStore[roomStore.id] = roomStore
 
-    const memberNicknameList = roomMember.memberNickname.split('^G')
     for (const memberKey in memberIdList) {
       const memberId = memberIdList[memberKey] as string
-      const nickName = memberNicknameList[memberKey]
+      const nickName = roomMember[memberId]
       const contact = this.contactStore[memberId]
       if (!contact) {
         try {
@@ -698,8 +696,7 @@ class PuppetBridge extends PUPPET.Puppet {
   }
 
   private async loadContactList () {
-    const contactListRes = await this.bridge.wxhelper.getContactList()
-    const contactList = contactListRes.data.data as wxhelper.ContactRaw[]
+    const contactList:Contact[] = await this.bridge.client.getContacts()
     // log.info('contactList get success, wait for contactList init ...', JSON.stringify(contactList, undefined, 2))
     for (const contactInfo of contactList) {
       log.verbose('PuppetBridge', 'contactInfo:%s', JSON.stringify(contactInfo))
@@ -712,7 +709,7 @@ class PuppetBridge extends PUPPET.Puppet {
           id: contactInfo.wxid,
           memberIdList: [],
           ownerId: '',
-          topic: contactInfo.nickname,
+          topic: contactInfo.name,
         }
         this.roomStore[contactInfo.wxid] = room
       } else {
@@ -727,12 +724,12 @@ class PuppetBridge extends PUPPET.Puppet {
         }
 
         const contact = {
-          alias: '',
+          alias: contactInfo.remark || '',
           avatar: '',
           friend: true,
           gender: 1,
           id: contactInfo.wxid,
-          name: contactInfo.nickname,
+          name: contactInfo.name,
           phone: [],
           type: contactType,
         }
@@ -883,92 +880,43 @@ class PuppetBridge extends PUPPET.Puppet {
     imageType: PUPPET.types.Image,
   ): Promise<FileBoxInterface> {
     log.verbose('PuppetBridge', 'messageImage(%s, %s)', messageId, imageType)
-    await this.bridge.wxhelper.downloadAttach(Number(messageId))
     // log.info('PuppetBridge', 'messageImage(%s, %s, %s)',
     //   messageId,
     //   imageType,
     //   PUPPET.types.Image[imageType],
     // )
+    await wait(3000)
     const message = this.messageStore[messageId]
     let base64 = ''
     let fileName = ''
     let imagePath = ''
     let file: FileBoxInterface
-    let messagePath = ''
-    const msgAttachPath = path.join(this.weChatFilesPath, this.selfInfo.id, 'FileStorage', 'MsgAttach')
-    log.info('messageImage：注意当前的实现方式可能存在并发接收图片消息时接收不到或图片与消息不匹配的情况！！！！')
+    const text = message?.text ? JSON.parse(message.text) : []
     try {
-      // 检测图片文件，获得图片文件路径
-    // \wxid_0o1t51l3f57221\FileStorage\MsgAttach\22345360df09c59f1e7d69cdac380eb4\Thumb\2024-04\9a7b66d87889dc47ad0b066063f73ebf_t.dat
-      // 遍历messagePath路径下的所有文夹，取第一个文件夹作为图片文件夹
-      messagePath = msgAttachPath
-      const dirs1 = fs.readdirSync(messagePath)
-      // log.info('dirs:', dirs1)
-      if (dirs1.length !== 0) {
-        const curMon = new Date().getMonth() + 1
-        const curYear = new Date().getFullYear()
-        messagePath = path.join(messagePath, dirs1[0] as string, 'Thumb', `${curYear}-${curMon < 10 ? ('0' + curMon) : curMon}`)
-        await wait(1000)
-        let dirs2 = fs.readdirSync(messagePath)
-        let count = 0
-        while (!dirs2.length) {
-          await wait(200)
-          dirs2 = fs.readdirSync(messagePath)
-          if (count > 10) {
-            break
-          }
-          count++
-        }
-        // log.info('dirs2:', dirs2)
-        if (dirs2.length !== 0) {
-          messagePath = path.join(messagePath, dirs2[0] as string)
-        }
-      }
-      log.info('messagePath:', messagePath)
+      const picData = [ text[0], text[1], text[2] ]
+      const filePath = picData[imageType]
+      const dataPath = filePath as string    // 要解密的文件路径
+      // log.info('图片原始文件路径：', dataPath, true)
+      await fsPromise.access(dataPath)
+      // log.info('图片解密文件路径：', dataPath, true)
+      const imageInfo = ImageDecrypt(dataPath, messageId)
+      // const imageInfo = ImageDecrypt('C:\\Users\\choogoo\\Documents\\WeChat Files\\wxid_pnza7m7kf9tq12\\FileStorage\\Image\\Thumb\\2022-05\\e83b2aea275460cd50352559e040a2f8_t.dat','cl34vez850000gkmw2macd3dw')
+
+      log.verbose(dataPath, imageInfo.fileName, imageInfo.extension)
+      base64 = imageInfo.base64
+      fileName = `message-${messageId}-url-${imageType}.${imageInfo.extension}`
+      file = FileBox.fromBase64(
+        base64,
+        fileName,
+      )
+      const paths = dataPath.split('\\')
+      paths[paths.length - 1] = fileName
+      imagePath = paths.join('\\')
+      log.verbose('图片解密后文件路径：', imagePath, true)
+      await file.toFile(imagePath)
+
     } catch (err) {
       log.error('messageImage fail:', err)
-      messagePath = ''
-    }
-
-    try {
-      if (messagePath && message?.text) {
-        const picData = [ messagePath, messagePath, messagePath ]
-        const filePath = picData[imageType]
-        const dataPath = filePath as string    // 要解密的文件路径
-        // log.info('图片原始文件路径：', dataPath, true)
-        await fsPromise.access(dataPath)
-        // log.info('图片解密文件路径：', dataPath, true)
-        const imageInfo = ImageDecrypt(dataPath, messageId)
-        // const imageInfo = ImageDecrypt('C:\\Users\\choogoo\\Documents\\WeChat Files\\wxid_pnza7m7kf9tq12\\FileStorage\\Image\\Thumb\\2022-05\\e83b2aea275460cd50352559e040a2f8_t.dat','cl34vez850000gkmw2macd3dw')
-
-        log.verbose(dataPath, imageInfo.fileName, imageInfo.extension)
-        base64 = imageInfo.base64
-        fileName = `message-${messageId}-url-${imageType}.${imageInfo.extension}`
-        file = FileBox.fromBase64(
-          base64,
-          fileName,
-        )
-        const paths = dataPath.split('\\')
-        paths[paths.length - 1] = fileName
-        imagePath = paths.join('\\')
-        log.verbose('图片解密后文件路径：', imagePath, true)
-        await file.toFile(imagePath)
-      }
-    } catch (err) {
-      log.error('messageImage fail:', err)
-    }
-
-    try {
-      // 删除msgAttachPath下的所有文件夹
-      const dirs = fs.readdirSync(msgAttachPath)
-      dirs.forEach((dir) => {
-        const curPath = path.join(msgAttachPath, dir)
-        if (fs.statSync(curPath).isDirectory()) {
-          fs.rmdirSync(curPath, { recursive: true })
-        }
-      })
-    } catch (err) {
-      log.error('删除文件夹失败:', err)
     }
 
     return FileBox.fromBase64(
@@ -1099,11 +1047,6 @@ class PuppetBridge extends PUPPET.Puppet {
       //     }
       //   ],
       // }
-      const payload = JSON.parse(text)
-      if (payload.chatRoomId) {
-        await this.bridge.wxhelper.sendMultiAtText(payload.chatRoomId, payload.at)
-        return
-      }
     } catch (err) {
       log.error('messageSendText fail:', err)
     }
@@ -1115,9 +1058,9 @@ class PuppetBridge extends PUPPET.Puppet {
         mentionIdListString = 'notify@all'
       }
 
-      await this.bridge.wxhelper.sendAtText(mentionIdListString, conversationId, text)
+      await this.bridge.client.sendTxt(text, conversationId, mentionIdListString)
     } else {
-      await this.bridge.wxhelper.sendTextMsg(conversationId, text)
+      await this.bridge.client.sendTxt(text, conversationId)
     }
   }
 
@@ -1142,7 +1085,7 @@ class PuppetBridge extends PUPPET.Puppet {
     }
     if (file.type === FileBoxType.Url) {
       try {
-        await this.bridge.wxhelper.sendImagesMsg(conversationId, filePath)
+        await this.bridge.client.sendImage(filePath, conversationId)
         // fs.unlinkSync(filePath)
       } catch {
         fs.unlinkSync(filePath)
@@ -1151,7 +1094,7 @@ class PuppetBridge extends PUPPET.Puppet {
     } else {
       // filePath = 'C:\\Users\\wechaty\\Documents\\GitHub\\wechat-openai-qa-bot\\data1652169999200.xls'
       try {
-        await this.bridge.wxhelper.sendFileMsg(conversationId, filePath)
+        await this.bridge.client.sendFile(filePath, conversationId)
         // fs.unlinkSync(filePath)
       } catch (err) {
         PUPPET.throwUnsupportedError(conversationId, file)
@@ -1177,16 +1120,20 @@ class PuppetBridge extends PUPPET.Puppet {
     urlLinkPayload: PUPPET.payloads.UrlLink,
   ): Promise<void> {
     log.verbose('PuppetBridge', 'messageSendUrl(%s, %s)', conversationId, JSON.stringify(urlLinkPayload))
-    const param = {
-      appName: urlLinkPayload.description || '',
-      digest: urlLinkPayload.description || '',
-      thumbUrl: urlLinkPayload.thumbnailUrl || '',
-      title: urlLinkPayload.title,
-      url: urlLinkPayload.url,
-      userName: urlLinkPayload.title,
-      wxid: conversationId,
-    }
-    await this.bridge.wxhelper.forwardPublicMsg(param)
+    const desc:any = {}
+    // * @param desc.name 左下显示的名字
+    // * @param desc.account 填公众号 id 可以显示对应的头像（gh_ 开头的）
+    // * @param desc.title 标题，最多两行
+    // * @param desc.digest 摘要，三行
+    // * @param desc.url 点击后跳转的链接
+    // * @param desc.thumburl 缩略图的链接
+    desc.name = urlLinkPayload.title
+    desc.account = urlLinkPayload.thumbnailUrl
+    desc.title = urlLinkPayload.title
+    desc.digest = urlLinkPayload.description
+    desc.url = urlLinkPayload.url
+    desc.thumburl = urlLinkPayload.thumbnailUrl
+    await this.bridge.client.sendRichText(desc, conversationId)
     // const url = new UrlLink(urlLinkPayload)
     // return this.messageSend(conversationId, url)
   }
@@ -1229,24 +1176,12 @@ class PuppetBridge extends PUPPET.Puppet {
     //  `
     // const xmlstr=`<msg><fromusername>${this.selfInfo.id}</fromusername><scene>0</scene><commenturl></commenturl><appmsg appid="wx65cc950f42e8fff1" sdkver=""><title>腾讯出行服务｜加油代驾公交</title><des></des><action>view</action><type>33</type><showtype>0</showtype><content></content><url>https://mp.weixin.qq.com/mp/waerrpage?appid=wx65cc950f42e8fff1&amp;amp;type=upgrade&amp;amp;upgradetype=3#wechat_redirect</url><dataurl></dataurl><lowurl></lowurl><lowdataurl></lowdataurl><recorditem><![CDATA[]]></recorditem><thumburl>http://mmbiz.qpic.cn/mmbiz_png/NM1fK7leWGPaFnMAe95jbg4sZAI3fkEZWHq69CIk6zA00SGARbmsGTbgLnZUXFoRwjROelKicbSp9K34MaZBuuA/640?wx_fmt=png&amp;wxfrom=200</thumburl><messageaction></messageaction><extinfo></extinfo><sourceusername></sourceusername><sourcedisplayname>腾讯出行服务｜加油代驾公交</sourcedisplayname><commenturl></commenturl><appattach><totallen>0</totallen><attachid></attachid><emoticonmd5></emoticonmd5><fileext></fileext><aeskey></aeskey></appattach><weappinfo><pagepath></pagepath><username>gh_ad64296dc8bd@app</username><appid>wx65cc950f42e8fff1</appid><type>1</type><weappiconurl>http://mmbiz.qpic.cn/mmbiz_png/NM1fK7leWGPaFnMAe95jbg4sZAI3fkEZWHq69CIk6zA00SGARbmsGTbgLnZUXFoRwjROelKicbSp9K34MaZBuuA/640?wx_fmt=png&amp;wxfrom=200</weappiconurl><appservicetype>0</appservicetype><shareId>2_wx65cc950f42e8fff1_875237370_1644979747_1</shareId></weappinfo><websearch /></appmsg><appinfo><version>1</version><appname>Window wechat</appname></appinfo></msg>`
     // log.info('发送小程序功能暂不支持')
-    const param: {
-      wxid: string;
-      waidConcat: string;
-      appletWxid: string;
-      jsonParam: string;
-      headImgUrl: string;
-      mainImg: string;
-      indexPage: string;
-  } = {
-    appletWxid: miniProgramPayload.appid || '',
-    headImgUrl: miniProgramPayload.iconUrl || '',
-    indexPage: miniProgramPayload.pagePath || '',
-    jsonParam: JSON.stringify(miniProgramPayload),
-    mainImg: miniProgramPayload.thumbUrl || '',
-    waidConcat: miniProgramPayload.shareId || '',
-    wxid: conversationId,
-  }
-    await this.bridge.wxhelper.sendApplet(param)
+    const param = {
+      content: miniProgramPayload.description || '',
+      path: miniProgramPayload.pagePath,
+      type: 33,
+    }
+    await this.bridge.client.sendXML(param, conversationId)
   }
 
   override async messageSendLocation (
@@ -1265,7 +1200,7 @@ class PuppetBridge extends PUPPET.Puppet {
       conversationId,
       messageId,
     )
-    await this.bridge.wxhelper.forwardMsg(conversationId, messageId)
+    await this.bridge.client.forwardMsg(messageId, conversationId)
   }
 
   /**
@@ -1291,7 +1226,7 @@ class PuppetBridge extends PUPPET.Puppet {
     contactId: string,
   ): Promise<void> {
     log.verbose('PuppetBridge', 'roomDel(%s, %s)', roomId, contactId)
-    await this.bridge.wxhelper.delMemberFromChatRoom(roomId, contactId)
+    await this.bridge.client.delChatRoomMembers(roomId, [ contactId ])
   }
 
   override async roomAvatar (roomId: string): Promise<FileBoxInterface> {
@@ -1311,7 +1246,7 @@ class PuppetBridge extends PUPPET.Puppet {
     contactId: string,
   ): Promise<void> {
     log.verbose('PuppetBridge', 'roomAdd(%s, %s)', roomId, contactId)
-    await this.bridge.wxhelper.addMemberToChatRoom(roomId, contactId)
+    await this.bridge.client.addChatRoomMembers(roomId, [ contactId ])
   }
 
   override async roomTopic(roomId: string): Promise<string>
@@ -1335,13 +1270,12 @@ class PuppetBridge extends PUPPET.Puppet {
     topic: string,
   ): Promise<string> {
     log.verbose('PuppetBridge', 'roomCreate(%s, %s)', contactIdList, topic)
-    await this.bridge.wxhelper.createChatRoom(contactIdList.join(','))
-    return contactIdList.join(',')
+    return [].join(',')
   }
 
   override async roomQuit (roomId: string): Promise<void> {
     log.verbose('PuppetBridge', 'roomQuit(%s)', roomId)
-    await this.bridge.wxhelper.quitChatRoom(roomId)
+    await this.bridge.client.delChatRoomMembers(roomId, [ this.currentUserId ])
   }
 
   override async roomQRCode (roomId: string): Promise<string> {
@@ -1391,9 +1325,8 @@ class PuppetBridge extends PUPPET.Puppet {
     }
     const room = this.roomStore[roomId]
     if (room) {
-      const roomInfoRes = await this.bridge.wxhelper.getChatRoomDetailInfo(roomId)
-      const roomInfo = roomInfoRes.data.data as wxhelper.RoomRaw
-      return roomInfo.notice
+      const roomInfo:Contact|undefined = await this.bridge.client.getContact(roomId)
+      return roomInfo?.remark || ''
     }
     return 'room is not exist or no announce'
   }
