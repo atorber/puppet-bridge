@@ -66,7 +66,7 @@ try {
   console.info('消息类型:', msgType)
 
   // 监听消息
-  const unsubscribe = wcferry.listening(async (msg) => {
+  const unsubscribe = wcferry.listening((msg) => {
     console.info('收到消息:', msg)
     const roomId = msg.roomId.indexOf('@') !== -1 ? msg.roomId : ''
     const listenerId = roomId ? '' : msg.roomId
@@ -80,14 +80,6 @@ try {
       type: msg.type,
     }
     console.info('消息:', mseeage)
-
-    if (msg.type === 3) {
-      try {
-        await wcferry.downloadImage(msg.id, 'C:\\Users\\tyutl\\Documents\\GitHub\\puppet-bridge\\examples')
-      } catch (error) {
-        console.error('下载图片错误:', error)
-      }
-    }
   })
   console.info('开始监听消息。', unsubscribe)
   // // 等待一段时间接收消息
