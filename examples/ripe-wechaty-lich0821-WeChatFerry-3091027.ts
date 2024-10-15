@@ -8,7 +8,7 @@ import {
 } from 'wechaty'
 import { FileBox } from 'file-box'
 
-import { PuppetBridgeLich0821WeChatFerryV3091027 as PuppetBridge } from '../src/mod.js'
+import {  PuppetBridge } from '../src/mod.js'
 import qrcodeTerminal from 'qrcode-terminal'
 import * as fs from 'fs'
 
