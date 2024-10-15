@@ -571,6 +571,7 @@ class PuppetBridge extends PUPPET.Puppet {
     log.verbose('PuppetBridge', 'onStop()')
 
     if (this.logonoff()) {
+      this.bridge.client.stop()
       await this.logout()
     }
   }
