@@ -29,8 +29,8 @@ import {
 
 import {
   Bridge,
-} from './agents/atorber-fused.js'
-import type * as wxhelper from './agents/atorber-fused-api.js'
+} from './agents/fused/atorber-fused.js'
+import type * as wxhelper from './agents/fused/atorber-fused-api.js'
 
 import { ImageDecrypt } from './pure-functions/image-decrypt.js'
 import { XmlDecrypt } from './pure-functions/xml-msgpayload.js'

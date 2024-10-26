@@ -1,5 +1,5 @@
 import { log } from 'wechaty-puppet'
-import { Wxhelper } from '../src/agents/atorber-fused-api.js'
+import { Wxhelper } from '../src/agents/fused/atorber-fused-api.js'
 
 // const testRoom1 = '21341182572@chatroom'
 // const testRoom2 = '25172281579@chatroom'

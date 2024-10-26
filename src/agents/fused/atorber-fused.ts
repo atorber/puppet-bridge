@@ -11,7 +11,7 @@ import {
   readMsgStore,
   writeMsgStore,
   // getTimeLocaleString,
-} from '../utils/messageStore.js'
+} from '../../utils/messageStore.js'
 import {
   Wxhelper,
   MessageRaw,

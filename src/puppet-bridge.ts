@@ -33,7 +33,7 @@ import {
   Bridge,
   MessageRaw,
   ContentRaw,
-} from './agents/cixingguangming55555-wechat-bot.js'
+} from './agents/wechat-bot/cixingguangming55555-wechat-bot.js'
 
 import { ImageDecrypt } from './pure-functions/image-decrypt.js'
 import { XmlDecrypt } from './pure-functions/xml-msgpayload.js'

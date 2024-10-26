@@ -29,9 +29,9 @@ import {
 
 import {
   Bridge,
-} from './agents/ttttupup-wxhelper.js'
+} from './agents/ttttupup-wxhelper/ttttupup-wxhelper.js'
 
-import type * as wxhelper from './agents/ttttupup-wxhelper-api.js'
+import type * as wxhelper from './agents/ttttupup-wxhelper/ttttupup-wxhelper-api.js'
 
 import { ImageDecrypt } from './pure-functions/image-decrypt.js'
 import { XmlDecrypt } from './pure-functions/xml-msgpayload.js'

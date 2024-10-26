@@ -27,7 +27,7 @@ import {
   MessageRaw,
   AccountInfo,
   ContactRaw,
-} from './agents/jwping-wxbot.js'
+} from './agents/jwping-wxbot/jwping-wxbot.js'
 import { ImageDecrypt } from './pure-functions/image-decrypt.js'
 import { XmlDecrypt } from './pure-functions/xml-msgpayload.js'
 // import type { Contact } from 'wechaty'

@@ -6,7 +6,7 @@ import {
   readMsgStore,
   writeMsgStore,
   // getTimeLocaleString,
-} from '../utils/messageStore.js'
+} from '../../utils/messageStore.js'
 
 import { Message, Wcferry } from '@zippybee/wechatcore'
 

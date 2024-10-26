@@ -1,10 +1,10 @@
 import {
   Bridge,
   log,
-} from '../src/agents/ttttupup-wxhelper-3091019.js'
+} from '../src/agents/ttttupup-wxhelper/ttttupup-wxhelper-3091019.js'
 import os from 'os'
 
-import type { MessageRaw, AccountInfo, ContactRaw } from '../src/agents/ttttupup-wxhelper-3091019-api.js'
+import type { MessageRaw, AccountInfo, ContactRaw } from '../src/agents/ttttupup-wxhelper/ttttupup-wxhelper-3091019-api.js'
 
 const userInfo = os.userInfo()
 const rootPath = userInfo.homedir
