@@ -6,7 +6,7 @@ import {
   log,
 } from 'wechaty'
 import { FileBox } from 'file-box'
-import { PuppetBridge } from '../src/puppet-bridge.js'
+import { PuppetBridge } from '../src/puppet/puppet-bridge.js'
 
 async function onLogin (user: Contact) {
   log.info('onLogin', '%s login', user)

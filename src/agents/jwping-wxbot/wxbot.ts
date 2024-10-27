@@ -2,7 +2,7 @@
 import axios  from 'axios'
 
 // POST /api/syncurl
-async function syncurl () {
+export async function syncurl () {
   const data = {
     url: 'http://localhost:8081/qrcode-callback',
     timeout: 60,
@@ -16,7 +16,7 @@ async function syncurl () {
   }
 }
 
-async function getSyncurl () {
+export async function getSyncurl () {
   try {
     const response = await axios.get('http://127.0.0.1:8080/api/syncurl')
     console.info('success:', JSON.stringify(response.data, undefined, 2))
@@ -26,7 +26,7 @@ async function getSyncurl () {
 }
 
 // DELETE /api/syncurl
-async function deleteSyncurl () {
+export async function deleteSyncurl () {
   const data = {
     url: 'http://localhost:8081/qrcode-callback',
     timeout: 60,
@@ -41,7 +41,7 @@ async function deleteSyncurl () {
 }
 
 // 测试回调地址是否正常 http://127.0.0.1:8081/qrcode-callback
-async function test () {
+export async function test () {
   try {
     const getResponse = await axios.get('http://localhost:8081/qrcode-callback')
     console.info('success:', getResponse.data)
@@ -67,7 +67,7 @@ async function dbchatroom (wxid: string) {
   }
 }
 
-async function main () {
+export async function main () {
   // Uncomment the function calls you need
   // await test();
   // await deleteSyncurl();
