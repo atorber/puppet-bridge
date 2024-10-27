@@ -19,21 +19,15 @@ import {
   CHATIE_OFFICIAL_ACCOUNT_QRCODE,
   qrCodeForChatie,
   VERSION,
-} from './config.js'
-
-// import {
-//   Bridge,
-//   MessageRaw,
-//   ContentRaw,
-// } from './wechat-bridge.js'
+} from '../config.js'
 
 import {
   Bridge,
-} from './agents/atorber-fused.js'
-import type * as wxhelper from './agents/atorber-fused-api.js'
+} from '../agents/ttttupup-wxhelper/ttttupup-wxhelper-3091019.js'
+import type * as wxhelper from '../agents/ttttupup-wxhelper/ttttupup-wxhelper-3091019-api.js'
 
-import { ImageDecrypt } from './pure-functions/image-decrypt.js'
-import { XmlDecrypt } from './pure-functions/xml-msgpayload.js'
+import { ImageDecrypt } from '../pure-functions/image-decrypt.js'
+import { XmlDecrypt } from '../pure-functions/xml-msgpayload.js'
 // import type { Contact } from 'wechaty'
 
 // 定义一个延时方法
@@ -639,9 +633,7 @@ class PuppetBridge extends PUPPET.Puppet {
     const memberIdList:string[] = roomMember.members.split('^G')
     // log.info('memberIdList:', memberIdList)
     const topic:string = roomStore.topic
-    if (roomRaw.admin) {
-      await this.getMemberDetail(roomRaw.admin)
-    }
+    if (roomRaw.admin) await this.getMemberDetail(roomRaw.admin)
 
     roomStore.adminIdList = [ roomRaw.admin ]
     roomStore.avatar = ''
@@ -699,6 +691,7 @@ class PuppetBridge extends PUPPET.Puppet {
 
   private async loadContactList () {
     const contactListRes = await this.bridge.wxhelper.getContactList()
+    // console.info('contactListRes:', JSON.stringify(contactListRes.data))
     const contactList = contactListRes.data.data as wxhelper.ContactRaw[]
     // log.info('contactList get success, wait for contactList init ...', JSON.stringify(contactList, undefined, 2))
     for (const contactInfo of contactList) {

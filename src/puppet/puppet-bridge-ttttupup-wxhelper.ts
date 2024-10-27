@@ -19,21 +19,16 @@ import {
   CHATIE_OFFICIAL_ACCOUNT_QRCODE,
   qrCodeForChatie,
   VERSION,
-} from './config.js'
-
-// import {
-//   Bridge,
-//   MessageRaw,
-//   ContentRaw,
-// } from './wechat-bridge.js'
+} from '../config.js'
 
 import {
   Bridge,
-} from './agents/ttttupup-wxhelper-3091019.js'
-import type * as wxhelper from './agents/ttttupup-wxhelper-3091019-api.js'
+} from '../agents/ttttupup-wxhelper/ttttupup-wxhelper.js'
 
-import { ImageDecrypt } from './pure-functions/image-decrypt.js'
-import { XmlDecrypt } from './pure-functions/xml-msgpayload.js'
+import type * as wxhelper from '../agents/ttttupup-wxhelper/ttttupup-wxhelper-api.js'
+
+import { ImageDecrypt } from '../pure-functions/image-decrypt.js'
+import { XmlDecrypt } from '../pure-functions/xml-msgpayload.js'
 // import type { Contact } from 'wechaty'
 
 // 定义一个延时方法
@@ -48,7 +43,6 @@ export type PuppetBridgeOptions = PUPPET.PuppetOptions & {
   sidecarName?: string
   wsUrl?: string
   httpUrl?: string
-  weChatFilesPath?: string
 }
 
 class PuppetBridge extends PUPPET.Puppet {
@@ -69,20 +63,16 @@ class PuppetBridge extends PUPPET.Puppet {
 
   private isReady = false
 
-  private weChatFilesPath = rootPath
-
   constructor (
     public override options: PuppetBridgeOptions = {
-      sidecarName: 'atorber-fused',
+      sidecarName: 'ttttupup-wxhelper',
     },
   ) {
 
     log.info('options...', JSON.stringify(options))
     super(options)
     log.verbose('PuppetBridge', 'constructor(%s)', JSON.stringify(options))
-    if (options.weChatFilesPath) {
-      this.weChatFilesPath = options.weChatFilesPath
-    }
+
     this.bridge = new Bridge({
       httpUrl: options.httpUrl,
       wsUrl: options.wsUrl,
@@ -202,12 +192,10 @@ class PuppetBridge extends PUPPET.Puppet {
       // 初始化机器人信息
       await super.login(this.selfInfo.id)
       // await this.onAgentReady()
-      log.info('puppet 登录成功')
     } else {
-      log.info('puppet 已处于登录状态，无需再次登录')
+      log.info('已处于登录状态，无需再次登录')
     }
 
-    log.info('puppet 登录状态：', this.isLoggedIn ? '已登录' : '未登录')
     if (this.isLoggedIn) {
       await this.onAgentReady()
     }
@@ -293,10 +281,6 @@ class PuppetBridge extends PUPPET.Puppet {
       listenerId  = messageRaw.toUser
     }
 
-    log.info('talkerId:', talkerId)
-    log.info('listenerId:', listenerId)
-    log.info('roomId:', roomId)
-
     if (talkerId) {
       try {
         log.info('get talkerInfo:', talkerId)
@@ -350,7 +334,6 @@ class PuppetBridge extends PUPPET.Puppet {
         type = PUPPET.types.Message.Audio
         break
       case 37:
-        type = PUPPET.types.Message.Contact
         break
       case 40:
         break
@@ -552,14 +535,7 @@ class PuppetBridge extends PUPPET.Puppet {
         } else {
           this.messageStore[payload.id] = payload
           if (this.isReady) {
-            if (code === 37) {
-              this.emit('friendship', { friendshipId: payload.id })
-            } else {
-              this.emit('message', { messageId: payload.id })
-            }
-
-          } else {
-            log.info('isReady is false, wait for ready...')
+            this.emit('message', { messageId: payload.id })
           }
         }
       }
@@ -594,12 +570,12 @@ class PuppetBridge extends PUPPET.Puppet {
 
   async getMemberDetail (contactId:string): Promise<PUPPET.payloads.Contact | undefined> {
     let contact = this.contactStore[contactId]
-    // log.info('getMemberDetail contactId:', JSON.stringify(contact, undefined, 2))
+    log.info('getMemberDetail contactId:', JSON.stringify(contact, undefined, 2))
     if ((!contact || !contact.name) && contactId) {
       log.verbose('缓存中没有找到联系人信息，开始请求:', contactId)
       const contactInfoRes = await this.bridge.wxhelper.getContactProfile(contactId)
       log.info('请求联系人结果contactInfoRes:', JSON.stringify(contactInfoRes.data))
-      if (contactInfoRes.data.data !== null) {
+      if (contactInfoRes.data && contactInfoRes.data.data !== null) {
         log.info('查询信息成功:', JSON.stringify(contactInfoRes.data.data))
         const contactInfo = contactInfoRes.data.data as wxhelper.MemberDetailRaw
         contact =  {
@@ -608,12 +584,11 @@ class PuppetBridge extends PUPPET.Puppet {
           friend: false,
           gender: PUPPET.types.ContactGender.Unknown,
           id: contactId,
-          name: contactInfo.nickname || '',
+          name: contactInfo.nickname,
           phone: [],
           type: PUPPET.types.Contact.Individual,
         }
-        if (contact.id && contact.name) this.contactStore[contactId] = contact
-        await this.contactPayloadDirty(contactId)
+        this.contactStore[contactId] = contact
       } else {
         log.error('请求联系人信息失败:', JSON.stringify(contactInfoRes.data))
       }
@@ -697,7 +672,6 @@ class PuppetBridge extends PUPPET.Puppet {
 
   private async loadContactList () {
     const contactListRes = await this.bridge.wxhelper.getContactList()
-    // console.info('contactListRes:', JSON.stringify(contactListRes.data))
     const contactList = contactListRes.data.data as wxhelper.ContactRaw[]
     // log.info('contactList get success, wait for contactList init ...', JSON.stringify(contactList, undefined, 2))
     for (const contactInfo of contactList) {
@@ -748,12 +722,7 @@ class PuppetBridge extends PUPPET.Puppet {
     log.info('wait for roomList init...')
     const rooms = this.roomStore
     for (const key in rooms) {
-      log.info('loadRoomList key:', key)
-      try {
-        await this.updateMembers(key)
-      } catch (err) {
-        log.error('loadRoomList fail:', err)
-      }
+      await this.updateMembers(key)
     }
   }
 
@@ -893,48 +862,25 @@ class PuppetBridge extends PUPPET.Puppet {
     let fileName = ''
     let imagePath = ''
     let file: FileBoxInterface
-    let messagePath = ''
-    const msgAttachPath = path.join(this.weChatFilesPath, this.selfInfo.id, 'FileStorage', 'MsgAttach')
-    log.info('messageImage：注意当前的实现方式可能存在并发接收图片消息时接收不到或图片与消息不匹配的情况！！！！')
+
     try {
-      // 检测图片文件，获得图片文件路径
-    // \wxid_0o1t51l3f57221\FileStorage\MsgAttach\22345360df09c59f1e7d69cdac380eb4\Thumb\2024-04\9a7b66d87889dc47ad0b066063f73ebf_t.dat
-      // 遍历messagePath路径下的所有文夹，取第一个文件夹作为图片文件夹
-      messagePath = msgAttachPath
-      const dirs1 = fs.readdirSync(messagePath)
-      // log.info('dirs:', dirs1)
-      if (dirs1.length !== 0) {
-        const curMon = new Date().getMonth() + 1
-        const curYear = new Date().getFullYear()
-        messagePath = path.join(messagePath, dirs1[0] as string, 'Thumb', `${curYear}-${curMon < 10 ? ('0' + curMon) : curMon}`)
-        await wait(1000)
-        let dirs2 = fs.readdirSync(messagePath)
+      if (message?.text) {
+        const picData = JSON.parse(message.text)
+        const filePath = picData[imageType]
+        const dataPath = rootPath + filePath    // 要解密的文件路径
+        // log.info('图片原始文件路径：', dataPath, true)
+
+        //  检测图片原始文件是否存在，如果存在则继续，如果不存在则每隔0.5秒后检测一次，直到10s后还不存在则继续
+        let fileExist = fs.existsSync(dataPath)
         let count = 0
-        while (!dirs2.length) {
-          await wait(200)
-          dirs2 = fs.readdirSync(messagePath)
-          if (count > 10) {
+        while (!fileExist) {
+          await wait(500)
+          fileExist = fs.existsSync(dataPath)
+          if (count > 20) {
             break
           }
           count++
         }
-        // log.info('dirs2:', dirs2)
-        if (dirs2.length !== 0) {
-          messagePath = path.join(messagePath, dirs2[0] as string)
-        }
-      }
-      log.info('messagePath:', messagePath)
-    } catch (err) {
-      log.error('messageImage fail:', err)
-      messagePath = ''
-    }
-
-    try {
-      if (messagePath && message?.text) {
-        const picData = [ messagePath, messagePath, messagePath ]
-        const filePath = picData[imageType]
-        const dataPath = filePath as string    // 要解密的文件路径
-        // log.info('图片原始文件路径：', dataPath, true)
         await fsPromise.access(dataPath)
         // log.info('图片解密文件路径：', dataPath, true)
         const imageInfo = ImageDecrypt(dataPath, messageId)
@@ -956,20 +902,6 @@ class PuppetBridge extends PUPPET.Puppet {
     } catch (err) {
       log.error('messageImage fail:', err)
     }
-
-    try {
-      // 删除msgAttachPath下的所有文件夹
-      const dirs = fs.readdirSync(msgAttachPath)
-      dirs.forEach((dir) => {
-        const curPath = path.join(msgAttachPath, dir)
-        if (fs.statSync(curPath).isDirectory()) {
-          fs.rmdirSync(curPath, { recursive: true })
-        }
-      })
-    } catch (err) {
-      log.error('删除文件夹失败:', err)
-    }
-
     return FileBox.fromBase64(
       base64,
       fileName,
@@ -1013,7 +945,7 @@ class PuppetBridge extends PUPPET.Puppet {
         }
         fileName = '\\' + messageJson.msg.appmsg[0].title[0]
         const filePath = `${this.selfInfo.id}\\FileStorage\\File\\${year}-${month}`
-        dataPath = this.weChatFilesPath + filePath + fileName  // 要解密的文件路径
+        dataPath = rootPath + filePath + fileName  // 要解密的文件路径
         log.info('保存文件路径：', dataPath)
         return FileBox.fromFile(
           dataPath,
@@ -1088,32 +1020,8 @@ class PuppetBridge extends PUPPET.Puppet {
     text: string,
     mentionIdList?: string[],
   ): Promise<void> {
-    try {
-      // {
-      //   "chatRoomId":"xxxx",
-      //   "at":[
-      //     {
-      //       "wxid":"wxid_xxx",
-      //       "msg":"@xxx"
-      //     }
-      //   ],
-      // }
-      const payload = JSON.parse(text)
-      if (payload.chatRoomId) {
-        await this.bridge.wxhelper.sendMultiAtText(payload.chatRoomId, payload.at)
-        return
-      }
-    } catch (err) {
-      log.error('messageSendText fail:', err)
-    }
-    if (conversationId.split('@').length === 2 && mentionIdList) {
-      let mentionIdListString = mentionIdList.join(',')
-
-      // 如果mentionIdListString中只包含自己的id，则替换为@all
-      if (mentionIdListString === this.selfInfo) {
-        mentionIdListString = 'notify@all'
-      }
-
+    if (conversationId.split('@').length === 2 && mentionIdList && mentionIdList[0]) {
+      const mentionIdListString = mentionIdList.join(',')
       await this.bridge.wxhelper.sendAtText(mentionIdListString, conversationId, text)
     } else {
       await this.bridge.wxhelper.sendTextMsg(conversationId, text)
@@ -1421,13 +1329,10 @@ class PuppetBridge extends PUPPET.Puppet {
  *
  */
   override async friendshipRawPayload (id: string): Promise<any> {
-    return this.messageStore[id]
+    return { id } as any
   }
 
   override async friendshipRawPayloadParser (rawPayload: any): Promise<PUPPET.payloads.Friendship> {
-    rawPayload.contactId = rawPayload.text.match(/fromusername="([^"]*)"/)[1]
-    rawPayload.type = 2
-    rawPayload.hello = rawPayload.text.match(/content="([^"]*)"/)[1]
     return rawPayload
   }
 

@@ -21,22 +21,16 @@ import {
   CHATIE_OFFICIAL_ACCOUNT_QRCODE,
   qrCodeForChatie,
   VERSION,
-} from './config.js'
-
-// import {
-//   Bridge,
-//   MessageRaw,
-//   ContentRaw,
-// } from './wechat-bridge.js'
+} from '../config.js'
 
 import {
   Bridge,
   MessageRaw,
   ContentRaw,
-} from './agents/cixingguangming55555-wechat-bot.js'
+} from '../agents/wechat-bot/cixingguangming55555-wechat-bot.js'
 
-import { ImageDecrypt } from './pure-functions/image-decrypt.js'
-import { XmlDecrypt } from './pure-functions/xml-msgpayload.js'
+import { ImageDecrypt } from '../pure-functions/image-decrypt.js'
+import { XmlDecrypt } from '../pure-functions/xml-msgpayload.js'
 // import type { Contact } from 'wechaty'
 
 // 定义一个延时方法

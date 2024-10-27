@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import {
   Bridge,
-} from '../src/agents/jwping-wxbot.js'
+} from '../src/agents/jwping-wxbot/jwping-wxbot.js'
 import os from 'os'
 
 const userInfo = os.userInfo()

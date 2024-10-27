@@ -11,13 +11,13 @@ import {
   readMsgStore,
   writeMsgStore,
   // getTimeLocaleString,
-} from '../utils/messageStore.js'
-import { Wxhelper, MessageRaw } from './ttttupup-wxhelper-3090223-api.js'
+} from '../../utils/messageStore.js'
+import { Wxhelper, MessageRaw } from './ttttupup-wxhelper-api.js'
 
 import sudo from 'sudo-prompt'
 import type {
   AccountInfo,
-} from './ttttupup-wxhelper-3090223-api.js'
+} from './ttttupup-wxhelper-api.js'
 
 export {
   AccountInfo,
@@ -124,7 +124,7 @@ class Bridge extends EventEmitter {
                   throw new Error('newInjectorPath文件不存在，无法更新injectorPath...')
                 }
               }
-              const dllPath = join(dirname, 'src', 'assets', 'wxhelper-3.9.2.23-v9.dll')
+              const dllPath = join(dirname, 'src', 'assets', 'wxhelper-3.9.5.81-v11.dll')
               // const execString = `${injectorPath} --process-name WeChat.exe --inject ${dllPath}`
               const execString = `${injectorPath} -p ${pid} --inject ${dllPath}`
 

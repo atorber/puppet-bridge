@@ -2,7 +2,7 @@ import {
   Bridge,
   log,
   AccountInfo,
-} from '../src/agents/ttttupup-wxhelper.js'
+} from '../src/agents/ttttupup-wxhelper/ttttupup-wxhelper.js'
 import os from 'os'
 
 const userInfo = os.userInfo()

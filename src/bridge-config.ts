@@ -3,24 +3,24 @@
  *
  */
 const OFFICIAL_PUPPET_DEPENDENCIES = {
-    /**
+  /**
      * The following puppets were DEPRECATED before 2020
      */
-    // 'wechaty-puppet-ioscat'    : '^0.5.22',   // https://www.npmjs.com/package/wechaty-puppet-ioscat
-    // 'wechaty-puppet-padchat'   : '^0.19.3',   // https://www.npmjs.com/package/wechaty-puppet-padchat
-    // 'wechaty-puppet-padpro'    : '^0.3.21',   // https://www.npmjs.com/package/wechaty-puppet-padpro
+  // 'wechaty-puppet-ioscat'    : '^0.5.22',   // https://www.npmjs.com/package/wechaty-puppet-ioscat
+  // 'wechaty-puppet-padchat'   : '^0.19.3',   // https://www.npmjs.com/package/wechaty-puppet-padchat
+  // 'wechaty-puppet-padpro'    : '^0.3.21',   // https://www.npmjs.com/package/wechaty-puppet-padpro
 
-    /**
+  /**
      * Deprecated History:
      *  https://github.com/wechaty/puppet-service-providers/issues/11
      */
-    // Dec 2020
-    //  - https://github.com/wechaty/puppet-services/issues/61
-    //    'wechaty-puppet-padplus'   : '^0.7.30',   // https://www.npmjs.com/package/wechaty-puppet-padplus
-    // Sep 2021:
-    //    'wechaty-puppet-hostie'    : '*',       // https://www.npmjs.com/package/wechaty-puppet-hostie
+  // Dec 2020
+  //  - https://github.com/wechaty/puppet-services/issues/61
+  //    'wechaty-puppet-padplus'   : '^0.7.30',   // https://www.npmjs.com/package/wechaty-puppet-padplus
+  // Sep 2021:
+  //    'wechaty-puppet-hostie'    : '*',       // https://www.npmjs.com/package/wechaty-puppet-hostie
 
-    /**
+  /**
      * Wechaty Internal Puppets: dependency by package.json
      *
      *  Huan(202108): DO NOT REMOVE THE SPECIFIC VERSIONS BELOW
@@ -29,32 +29,32 @@ const OFFICIAL_PUPPET_DEPENDENCIES = {
      *    because the `bin/puppet-install.ts` will use those version
      *    to install all them inside the Docker
      */
-    'wechaty-puppet-service': '>=1.19.8',  // https://www.npmjs.com/package/wechaty-puppet-service
-    'wechaty-puppet-mock': '>=1.10.2',  // https://www.npmjs.com/package/wechaty-puppet-mock
+  'wechaty-puppet-service': '>=1.19.8',  // https://www.npmjs.com/package/wechaty-puppet-service
+  'wechaty-puppet-mock': '>=1.10.2',  // https://www.npmjs.com/package/wechaty-puppet-mock
 
-    /**
+  /**
      * WeChat Puppets
      */
-    'wechaty-puppet-wechat': '>=1.11.8', // https://www.npmjs.com/package/wechaty-puppet-wechat
-    'wechaty-puppet-wechat4u': '>=1.11.1', // https://www.npmjs.com/package/wechaty-puppet-wechat4u
-    'wechaty-puppet-padlocal': '>=1.11.13',  // https://www.npmjs.com/package/wechaty-puppet-padlocal
-    'wechaty-puppet-xp': '>=1.10.2',  // https://www.npmjs.com/package/wechaty-puppet-xp
-    'wechaty-puppet-oicq': '>=1.10.2',  // https://www.npmjs.com/package/wechaty-puppet-oicq
-    'wechaty-puppet-official-account': '>=1.10.2',    // https://www.npmjs.com/package/wechaty-puppet-official-account
+  'wechaty-puppet-wechat': '>=1.11.8', // https://www.npmjs.com/package/wechaty-puppet-wechat
+  'wechaty-puppet-wechat4u': '>=1.11.1', // https://www.npmjs.com/package/wechaty-puppet-wechat4u
+  'wechaty-puppet-padlocal': '>=1.11.13',  // https://www.npmjs.com/package/wechaty-puppet-padlocal
+  'wechaty-puppet-xp': '>=1.10.2',  // https://www.npmjs.com/package/wechaty-puppet-xp
+  'wechaty-puppet-oicq': '>=1.10.2',  // https://www.npmjs.com/package/wechaty-puppet-oicq
+  'wechaty-puppet-official-account': '>=1.10.2',    // https://www.npmjs.com/package/wechaty-puppet-official-account
 
-    /**
+  /**
      * Non-WeChat External Puppets
      */
-    'wechaty-puppet-gitter': '>=1.10.1',   // https://www.npmjs.com/package/wechaty-puppet-gitter
-    'wechaty-puppet-lark': '>=0.4.5',   // https://www.npmjs.com/package/wechaty-puppet-lark
-    'wechaty-puppet-whatsapp': '>=1.10.4',   // https://www.npmjs.com/package/wechaty-puppet-whatsapp
-    'wechaty-puppet-walnut': '>=0.1.41',  // https://www.npmjs.com/package/wechaty-puppet-walnut
+  'wechaty-puppet-gitter': '>=1.10.1',   // https://www.npmjs.com/package/wechaty-puppet-gitter
+  'wechaty-puppet-lark': '>=0.4.5',   // https://www.npmjs.com/package/wechaty-puppet-lark
+  'wechaty-puppet-whatsapp': '>=1.10.4',   // https://www.npmjs.com/package/wechaty-puppet-whatsapp
+  'wechaty-puppet-walnut': '>=0.1.41',  // https://www.npmjs.com/package/wechaty-puppet-walnut
 
-    /**
+  /**
      * Scoped puppets (private)
      */
-    '@juzibot/wechaty-puppet-donut': '*',   // https://www.npmjs.com/package/wechaty-puppet-donut (to be published)
-    '@juzibot/wechaty-puppet-wxwork': '*',   // https://www.npmjs.com/package/wechaty-puppet-wxwork (to be published)
+  '@juzibot/wechaty-puppet-donut': '*',   // https://www.npmjs.com/package/wechaty-puppet-donut (to be published)
+  '@juzibot/wechaty-puppet-wxwork': '*',   // https://www.npmjs.com/package/wechaty-puppet-wxwork (to be published)
 }
 
 type OfficialPuppetNpmName = keyof typeof OFFICIAL_PUPPET_DEPENDENCIES
@@ -79,10 +79,10 @@ type PuppetNpmName = `${PuppetNpmScope}wechaty-puppet-${string}`
 type PuppetModuleName = OfficialPuppetNpmName
 
 export {
-    type OfficialPuppetNpmName,
-    type PuppetNpmName,
-    type PuppetModuleName, // DEPRECATED
-    OFFICIAL_PUPPET_DEPENDENCIES,
-    OFFICIAL_PUPPET_DEFAULT,
-    isPuppetModuleName,
+  type OfficialPuppetNpmName,
+  type PuppetNpmName,
+  type PuppetModuleName, // DEPRECATED
+  OFFICIAL_PUPPET_DEPENDENCIES,
+  OFFICIAL_PUPPET_DEFAULT,
+  isPuppetModuleName,
 }

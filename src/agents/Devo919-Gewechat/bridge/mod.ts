@@ -1,11 +1,17 @@
 /* eslint-disable camelcase */
 /* eslint-disable sort-keys */
-/* eslint-disable no-console */
 import WebSocket from 'ws'
 import axios from 'axios'
 import { EventEmitter } from 'events'
 import { log } from 'wechaty-puppet'
 import * as fs from 'fs'
+import { exec } from 'child_process'
+import path, { join } from 'path'
+
+let dirname = path.resolve(path.dirname(''))
+log.verbose('当前文件的目录路径:', dirname)
+
+// 获取当前文件夹的绝对路径，不使用fileURLToPath(import.meta.url)方法
 
 type ContactRaw = {
   headimg: string
@@ -90,7 +96,9 @@ class Bridge extends EventEmitter {
 
   private httpUrl: string
 
-  ws: WebSocket
+  ws: WebSocket | undefined
+
+  isLoggedIn = false
 
   messageTypeTest: any = {}
 
@@ -99,11 +107,109 @@ class Bridge extends EventEmitter {
     httpUrl?:string
   }) {
     super()
-    // 收集消息类型，临时保存到文件'/msgStore.json'
-    this.messageTypeTest = JSON.parse(fs.readFileSync('msgStore.json', 'utf-8'))
     this.wsUrl = options?.wsUrl || 'ws://127.0.0.1:5555'
     this.httpUrl = options?.httpUrl || 'http://127.0.0.1:5555'
-    this.ws = this.connectWebSocket()
+    // 收集消息类型，临时保存到文件'/msgStore.json'
+    this.messageTypeTest = JSON.parse(fs.readFileSync('msgStore.json', 'utf-8'))
+
+    // 如果未登录，则每隔5s检测一次是否已登录，未登录则获取登录二维码或操作登录
+    const timer = setInterval(() => {
+      if (this.isLoggedIn) {
+        log.info('已登录，清除定时器...')
+        this.ws = this.connectWebSocket()
+        // 启动wxbot-sidecar-3.9.8.25.exe
+        clearInterval(timer)
+      } else {
+        log.info('未登录，每隔5s获取一次登录二维码...')
+        // 检查http server是否已经启动,如果未启动，则自动注入dll
+        this.checkHttpServer().then((res) => {
+          log.info('checkHttpServer成功：', res ? '已启动' : '未启动')
+          // 如果http server未启动，且未指定httpUrl，则自动注入dll
+          if (!res && !options?.httpUrl) {
+            log.info('http server未启动，自动注入dll...')
+            // this.checkWechatVersion()
+            let injectorPath = join(dirname, 'src', 'assets', 'funtool_wx_3.9.2.23.exe')
+            log.info('execString:', injectorPath)
+            // 检测injectorPath所指路径文件是否存在，如果不存在则更新dirname为当前文件夹拼接\node_modules\wechaty-puppet-bridge
+            if (!fs.existsSync(injectorPath)) {
+              log.info('injectorPath所指路径文件不存在，更新dirname为当前文件夹拼接\\node_modules\\wechaty-puppet-bridge...')
+              dirname = path.resolve(dirname, 'node_modules', 'wechaty-puppet-bridge')
+              const newInjectorPath = join(dirname, 'src', 'assets', 'funtool_wx_3.9.2.23.exe')
+              if (fs.existsSync(newInjectorPath)) {
+                log.info('newInjectorPath文件存在，更新injectorPath为newInjectorPath...')
+                injectorPath = newInjectorPath
+              } else {
+                log.error('newInjectorPath文件不存在，无法更新injectorPath...')
+                throw new Error('newInjectorPath文件不存在，无法更新injectorPath...')
+              }
+            }
+            // 检查funtool_wx_3.9.2.23.exe是否已经在运行，如果已经在运行则结束进程
+            exec('tasklist', (error: any, stdout: any, _stderr: any) => {
+              if (error) {
+                log.error(`查询程序列表执行出错: ${error}`)
+                return
+              }
+              // log.info(`程序列表stdout: ${stdout}`)
+              if (stdout.indexOf('funtool_wx_3.9.2.23.exe') !== -1) {
+                // 结束进程
+                exec('taskkill /F /IM funtool_wx_3.9.2.23.exe', (error: any, _stdout: any, _stderr: any) => {
+                  if (error) {
+                    log.error(`执行出错: ${error}`)
+                    return
+                  }
+                  // log.info(`stdout: ${stdout}`)
+                  // log.error(`stderr: ${stderr}`)
+                  // 使用命令行自动运行 \assets\funtool_wx=3.9.2.23.exe，先检查execString是否已经在运行，如果没有运行，则自动运行
+                  exec(injectorPath, (error: any, _stdout: any, stderr: any) => {
+                    if (error) {
+                      log.error(`执行出错: ${error}`)
+                      log.error(`stderr: ${stderr}`)
+                      throw new Error('启动funtool_wx_3.9.2.23.exe失败，请检查程序是否存在或者是否有权限运行...')
+                    } else {
+                      log.info(`stdout: ${stdout}`)
+                      this.isLoggedIn = true
+                    }
+                  })
+                })
+              } else {
+                log.info('funtool_wx_3.9.2.23.exe未运行，启动程序')
+                // 使用命令行自动运行 \assets\funtool_wx=3.9.2.23.exe，先检查execString是否已经在运行，如果没有运行，则自动运行
+                exec(injectorPath, (error: any, stdout: any, stderr: any) => {
+                  if (error) {
+                    log.error(`执行出错: ${error}`)
+                    log.error(`stderr: ${stderr}`)
+                    throw new Error('启动funtool_wx_3.9.2.23.exe失败，请检查程序是否存在或者是否有权限运行...')
+                  } else {
+                    log.info(`stdout: ${stdout}`)
+                    this.isLoggedIn = true
+                  }
+                })
+              }
+            })
+          } else if (!res && options?.httpUrl) {
+            log.info('http server未启动，但已指定httpUrl，不自动注入dll...')
+            throw new Error('由于指定了httpUrl，不自动注入dll，需要手动注入dll启动服务...')
+          } else {
+            log.info('http server已启动，无需注入dll...')
+          }
+          return res
+        }).catch((e) => {
+          log.error('checkHttpServer error:', e)
+        })
+      }
+    }, 5000)
+
+  }
+
+  private async checkHttpServer () {
+    try {
+      await axios.get(this.httpUrl)
+      log.info('http server is running')
+      return true
+    } catch (e) {
+      log.error('http server is not running:', e)
+      return false
+    }
   }
 
   private connectWebSocket () {
@@ -230,16 +336,21 @@ class Bridge extends EventEmitter {
         default:
           break
       }
+      // log.info(`Roundtrip time: ${Date.now() - data} ms`);
+
+      /* setTimeout(function timeout() {
+        ws.send(Date.now());
+      }, 500); */
     })
     this.ws.on('close', () => {
-      log.info('WebSocket connection closed. Attempting to reconnect...')
+      log.info('WebSocket connection closed. Attempting to reconnect after 3s...')
       this.emit('logout', 'logout')
       setTimeout(() => this.connectWebSocket(), 3000) // 1秒后重连
     })
     this.ws.on('error', (err) => {
       log.error('WebSocket error:', err)
       this.emit('error', err)
-      // setTimeout(() => this.connectWebSocket(), 3000) // 错误后也尝试1秒后重连
+      // setTimeout(() => this.connectWebSocket(), 1000) // 错误后也尝试1秒后重连
     })
     return this.ws
   }
@@ -247,13 +358,6 @@ class Bridge extends EventEmitter {
   // 处理消息hook
   handleReceiveMessage (j: MessageRaw) {
     this.emit('message', j)
-    // const content = j.content
-    // const wxid = j.wxid
-    // const sender = j.id1
-    // log.info(j)
-    // log.info('接收人:' + wxid)
-    // log.info('内容：' + content)
-    // log.info('发送人：' + sender) // 如果为空，那就是你自己发的
   }
 
   // 处理心跳消息
@@ -263,15 +367,26 @@ class Bridge extends EventEmitter {
   }
 
   // 1.获取登录微信信息
-  getPersonalInfo () {
-    const j = {
+  async getPersonalInfo () {
+    const jpara = {
       id: getid(),
       type: PERSONAL_INFO,
       content: 'op:personal info',
       wxid: 'ROOT',
     }
-    const s = JSON.stringify(j)
-    return s
+    const options = {
+      url: this.httpUrl + '/api/getpersonalinfo',
+      body: {
+        para: jpara,
+      },
+      json: true,
+    }
+    const data = await axios.post(options.url, options.body)
+    // const j = JSON.parse(data);
+
+    // log.info(j.id);
+    // log.info(j.status);
+    return data
   }
 
   // 2.发送文本消息
@@ -450,7 +565,7 @@ class Bridge extends EventEmitter {
 
   // 40.转发消息
   async messageForward (wxid: string, msgId: string) {
-    console.log('messageForward:', wxid, msgId)
+    log.info('messageForward:', wxid, msgId)
     return 'null'
   }
 
@@ -504,9 +619,7 @@ class Bridge extends EventEmitter {
 
 }
 
-export {
-  Bridge,
-}
+export { Bridge }
 
 export type {
   ContactRaw,

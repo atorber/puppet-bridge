@@ -17,6 +17,6 @@
     "src/**/*.ts",
     "src/**/*.d.ts",
     "tests/**/*.spec.ts",
-    "src/assets/**/*" 
+    "src/assets/**/*"
   ],
 }

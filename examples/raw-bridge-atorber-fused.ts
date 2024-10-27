@@ -1,10 +1,10 @@
 import {
   Bridge,
   log,
-} from '../src/agents/atorber-fused.js'
+} from '../src/agents/fused/atorber-fused.js'
 import os from 'os'
 
-import type { MessageRaw, AccountInfo, ContactRaw } from '../src/agents/atorber-fused-api.js'
+import type { MessageRaw, AccountInfo, ContactRaw } from '../src/agents/fused/atorber-fused-api.js'
 
 const userInfo = os.userInfo()
 const rootPath = userInfo.homedir

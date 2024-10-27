@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-import cuid from 'cuid'
 import path from 'path'
 import fs from 'fs'
 import fsPromise from 'fs/promises'
@@ -21,22 +19,15 @@ import {
   CHATIE_OFFICIAL_ACCOUNT_QRCODE,
   qrCodeForChatie,
   VERSION,
-} from './config.js'
-
-// import {
-//   Bridge,
-//   MessageRaw,
-//   ContentRaw,
-// } from './wechat-bridge.js'
+} from '../config.js'
 
 import {
   Bridge,
-  MessageRaw,
-  ContentRaw,
-} from './agents/cixingguangming55555-wechat-bot.js'
+} from '../agents/lich0821-WeChatFerry/lich0821-WeChatFerry-3091027.js'
+import type { Message, UserInfo, Contact } from '@zippybee/wechatcore'
 
-import { ImageDecrypt } from './pure-functions/image-decrypt.js'
-import { XmlDecrypt } from './pure-functions/xml-msgpayload.js'
+import { ImageDecrypt } from '../pure-functions/image-decrypt.js'
+import { XmlDecrypt } from '../pure-functions/xml-msgpayload.js'
 // import type { Contact } from 'wechaty'
 
 // 定义一个延时方法
@@ -49,8 +40,7 @@ const rootPath = `${userInfo.homedir}\\Documents\\WeChat Files\\`
 
 export type PuppetBridgeOptions = PUPPET.PuppetOptions & {
   sidecarName?: string
-  wsUrl?: string
-  httpUrl?: string
+  weChatFilesPath?: string
 }
 
 class PuppetBridge extends PUPPET.Puppet {
@@ -69,26 +59,23 @@ class PuppetBridge extends PUPPET.Puppet {
 
   private bridge: Bridge
 
-  private currentUserNameBySet = ''
+  private isReady = false
+
+  private weChatFilesPath = rootPath
 
   constructor (
     public override options: PuppetBridgeOptions = {
-      sidecarName: 'cixingguangming55555-wechat-bot',
+      sidecarName: 'lich0821-WeChatFerry',
     },
   ) {
 
     log.info('options...', JSON.stringify(options))
-    if (!options.token) {
-      throw new Error('nickName is not set')
-    }
     super(options)
     log.verbose('PuppetBridge', 'constructor(%s)', JSON.stringify(options))
-
-    this.currentUserNameBySet = options.token
-    this.bridge = new Bridge({
-      httpUrl: options.httpUrl,
-      wsUrl: options.wsUrl,
-    })
+    if (options.weChatFilesPath) {
+      this.weChatFilesPath = options.weChatFilesPath
+    }
+    this.bridge = new Bridge()
 
     // FIXME: use LRU cache for message store so that we can reduce memory usage
     this.messageStore = {}
@@ -114,9 +101,14 @@ class PuppetBridge extends PUPPET.Puppet {
       })
     })
 
-    this.bridge.on('message', (message: MessageRaw) => {
+    this.bridge.on('message', (message: Message) => {
       // log.info('onMessage...', message)
-      this.onHookRecvMsg(message)
+      this.onHookRecvMsg(message).then((res) => {
+        log.info('onHookRecvMsg success...')
+        return res
+      }).catch(e => {
+        log.error('onHookRecvMsg fail:', e)
+      })
     })
 
     this.bridge.on('ready', () => {
@@ -161,6 +153,8 @@ class PuppetBridge extends PUPPET.Puppet {
 
   private async onAgentReady () {
     log.verbose('PuppetBridge', 'onAgentReady()')
+    this.isReady = true
+    this.emit('ready', this.selfInfo)
     // const isLoggedIn = await this.Bridge.isLoggedIn()
     // if (!isLoggedIn) {
     //   await this.Bridge.callLoginQrcode(false)
@@ -179,30 +173,31 @@ class PuppetBridge extends PUPPET.Puppet {
 
       // const selfInfoRaw = JSON.parse(await this.bridge.getMyselfInfo())
       // log.debug('selfInfoRaw:\n\n\n', selfInfoRaw)
-      const selfInfoRaw = Object.values(this.contactStore).find(contact => contact.name === this.currentUserNameBySet)
-
-      if (!selfInfoRaw) {
-        log.error('selfInfoRaw is not find')
-        return
-      }
+      const selfInfoRaw:UserInfo = await this.bridge.client.getUserInfo()
       const selfInfo: PUPPET.payloads.Contact = {
         alias: '',
-        avatar: selfInfoRaw.avatar,
+        avatar: '',
         friend: false,
         gender: PUPPET.types.ContactGender.Unknown,
-        id: selfInfoRaw.id,
+        id: selfInfoRaw.wxid,
         name: selfInfoRaw.name,
-        phone: [],
+        phone: selfInfoRaw.mobile ? [ selfInfoRaw.mobile ] : [],
         type: PUPPET.types.Contact.Individual,
       }
 
       this.selfInfo = selfInfo
-      // this.contactStore[selfInfo.id] = selfInfo
+      this.contactStore[selfInfo.id] = selfInfo
       // 初始化机器人信息
       await super.login(this.selfInfo.id)
-      await this.onAgentReady()
+      // await this.onAgentReady()
+      log.info('puppet 登录成功')
     } else {
-      log.info('已处于登录状态，无需再次登录')
+      log.info('puppet 已处于登录状态，无需再次登录')
+    }
+
+    log.info('puppet 登录状态：', this.isLoggedIn ? '已登录' : '未登录')
+    if (this.isLoggedIn) {
+      await this.onAgentReady()
     }
   }
 
@@ -265,39 +260,78 @@ class PuppetBridge extends PUPPET.Puppet {
 
   }
 
-  private onHookRecvMsg (messageRaw: MessageRaw) {
-    log.info('onHookRecvMsg', JSON.stringify(messageRaw, undefined, 2))
-    const that = this
+  private async onHookRecvMsg (messageRaw: Message) {
+    log.info('onHookRecvMsg\n', JSON.stringify(messageRaw, undefined, 2))
     let type = PUPPET.types.Message.Unknown
     let roomId = ''
+    let talkerId = ''
     let listenerId = ''
-    let talkerId = messageRaw.id2 || messageRaw.id1 || this.currentUserId || ''
-    let wxid = messageRaw.wxid || messageRaw.id1
-    let text = messageRaw.content as string
+    let text = messageRaw.content
+    const msgId = messageRaw.id
+
+    if (messageRaw.roomId && messageRaw.roomId.indexOf('@') !== -1) { // 如果包含@，则为群
+      roomId = messageRaw.roomId
+      talkerId = messageRaw.sender
+    } else {
+      if (messageRaw.isSelf) {
+        talkerId = this.currentUserId
+        listenerId  = messageRaw.roomId
+      } else {
+        talkerId = messageRaw.sender
+        listenerId  = this.currentUserId
+      }
+    }
+
+    log.info('talkerId:', talkerId)
+    log.info('listenerId:', listenerId)
+    log.info('roomId:', roomId)
+
+    if (talkerId) {
+      try {
+        log.info('get talkerInfo:', talkerId)
+        await this.getMemberDetail(talkerId)
+      } catch (e) {
+        log.error('get talkerInfo fail:', e)
+      }
+    }
+
+    if (listenerId) {
+      try {
+        log.info('get listenerInfo:', listenerId)
+        await this.getMemberDetail(listenerId)
+      } catch (e) {
+        log.error('get listenerInfo fail:', e)
+      }
+    }
+
+    if (roomId) {
+      try {
+        const room = this.roomStore[roomId]
+        if (room && room.ownerId) {
+          log.info('get roomOwnerInfo:', room.ownerId)
+          await this.getMemberDetail(room.ownerId)
+        }
+      } catch (e) {
+        log.error('get roomOwnerInfo fail:', e)
+      }
+    }
+
     const code = messageRaw.type
-    const content: ContentRaw = messageRaw.content as ContentRaw
-    const xml = content.content
+    const content = text
+    const xml = content
+    let subType = xml.match(/<type>(\d+)<\/type>/)?.[1] ? String(xml.match(/<type>(\d+)<\/type>/)?.[1]) : '0'
+
     switch (code) {
       case 1:
         type = PUPPET.types.Message.Text
-        try {
-          xml2js.parseString(String(xml), { explicitArray: false, ignoreAttrs: true }, function (err: any, json: any) {
-            log.verbose('PuppetBridge', 'xml2json err:%s', err)
-            //  log.verbose('PuppetBridge', 'json content:%s', JSON.stringify(json))
-            if (json.msgsource && json.msgsource.atuserlist === 'atuserlist') {
-              type = PUPPET.types.Message.GroupNote
-            }
-          })
-        } catch (err) {
-          log.error('xml2js.parseString fail:', err)
-        }
         break
-      case 3:
+      case 3:{
         type = PUPPET.types.Message.Image
-        wxid = content.id1
-        talkerId = content.id2 || this.currentUserId
-        text = JSON.stringify([ content.thumb, content.thumb, content.detail, content.thumb ])
+        console.info('图片消息:', JSON.stringify(messageRaw))
+        const msgPayload = JSON.parse(JSON.stringify(messageRaw))
+        text = JSON.stringify([ msgPayload.message.u[9], msgPayload.message.u[9], msgPayload.message.u[10], msgPayload.message.u[10] ])
         break
+      }
       case 4:
         type = PUPPET.types.Message.Video
         break
@@ -308,6 +342,7 @@ class PuppetBridge extends PUPPET.Puppet {
         type = PUPPET.types.Message.Audio
         break
       case 37:
+        type = PUPPET.types.Message.Contact
         break
       case 40:
         break
@@ -338,16 +373,16 @@ class PuppetBridge extends PUPPET.Puppet {
         type = PUPPET.types.Message.Location
         break
       case 49:
-        wxid = content.id1
-        talkerId = content.id2 || this.currentUserId
         try {
-          xml2js.parseString(xml, { explicitArray: false, ignoreAttrs: true }, function (err: any, json: { msg: { appmsg: { type: String } } }) {
+          xml2js.parseString(xml, { explicitArray: false, ignoreAttrs: true }, function (err: any, json: { msg: { appmsg: { type: string; title:string } } }) {
             // log.error('xml2js.parseString fail:', err)
             // log.info(JSON.stringify(json))
             log.error('PuppetBridge', 'xml2json err:%s', err)
             log.info('PuppetBridge', 'json content:%s', JSON.stringify(json))
-            switch (json.msg.appmsg.type) {
+            subType = json.msg.appmsg.type || subType
+            switch (subType) {
               case '5':
+                // 卡片式链接
                 type = PUPPET.types.Message.Url
                 break
               case '4':
@@ -358,13 +393,15 @@ class PuppetBridge extends PUPPET.Puppet {
                 break
               case '6': // 文件
                 type = PUPPET.types.Message.Attachment
-                text = xml
                 break
               case '19':
                 type = PUPPET.types.Message.ChatHistory
                 break
               case '33':
                 type = PUPPET.types.Message.MiniProgram
+                break
+              case '87':
+                type = PUPPET.types.Message.GroupNote
                 break
               case '2000':
                 type = PUPPET.types.Message.Transfer
@@ -408,31 +445,8 @@ class PuppetBridge extends PUPPET.Puppet {
       default:
     }
 
-    if (wxid.split('@').length !== 2) {
-      listenerId = this.currentUserId
-      talkerId = wxid
-      if (messageRaw.other) {
-        try {
-          xml2js.parseString(messageRaw.other, { explicitArray: false, ignoreAttrs: true }, function (err: any, xml2json: any) {
-            log.error('PuppetBridge', 'messageRaw.other xml2json err:%s', err)
-            // log.info('PuppetBridge', 'messageRaw.other json content:%s', JSON.stringify(xml2json, undefined, 2))
-            if (!xml2json.msgsource || !xml2json.msgsource.alnode || !Object.keys(xml2json.msgsource.alnode).includes('fr')) {
-              // console.log('is not fr')
-              listenerId = talkerId
-              talkerId = that.selfInfo.id
-            }
-          })
-
-        } catch (e) {
-          log.error('messageRaw.other xml2js.parseString fail:', e)
-        }
-      }
-    } else {
-      roomId = wxid
-    }
-
     const payload: PUPPET.payloads.Message = {
-      id: cuid(),
+      id: String(msgId),
       listenerId: roomId ? '' : listenerId,
       roomId: roomId || '',
       talkerId,
@@ -444,17 +458,14 @@ class PuppetBridge extends PUPPET.Puppet {
     //  log.info('payloadType----------', PUPPET.types.Message[type])
     //  log.info('payload----------', payload)
 
-    if (talkerId && (!this.contactStore[talkerId] || !this.contactStore[talkerId]?.name)) {
-      void this.loadContactList()
-    }
-
     if (roomId && (!this.roomStore[roomId] || !this.roomStore[roomId]?.topic)) {
+      void this.loadContactList()
       void this.loadRoomList()
     }
 
     try {
       if (this.isLoggedIn) {
-        if (code === 10000) {
+        if (code === 10000 || code === 10002) {
           // 你邀请"瓦力"加入了群聊
           // "超超超哥"邀请"瓦力"加入了群聊
           // "luyuchao"邀请"瓦力"加入了群聊
@@ -469,10 +480,10 @@ class PuppetBridge extends PUPPET.Puppet {
 
           const room = this.roomStore[roomId]
           //  log.info('room=========================', room)
-          let topic = ''
-          const oldTopic = room ? room.topic : ''
 
           if (text.indexOf('修改群名为') !== -1) {
+            let topic = ''
+            const oldTopic = room ? room.topic : ''
             const arrInfo = text.split('修改群名为')
             let changer = this.selfInfo
             if (arrInfo[0] && room) {
@@ -500,50 +511,48 @@ class PuppetBridge extends PUPPET.Puppet {
             this.emit('room-topic', { changerId, newTopic: topic, oldTopic, roomId })
 
           }
-          if (text.indexOf('加入了群聊') !== -1) {
-            const inviteeList = []
-            let inviter = this.selfInfo
-            const arrInfo = text.split(/邀请|加入了群聊/)
 
-            if (arrInfo[0]) {
-              topic = arrInfo[0]?.split(/“|”|"/)[1] || ''
-              if (arrInfo[0] === '你') {
-                //  changer = this.selfInfo
+          // "\"大锤\"邀请\"Michael\"加入了群聊"
+          if (text.indexOf('加入了群聊') !== -1) {
+            await this.updateMembers(roomId)
+            const inviteeIdList = []
+            let inviter: PUPPET.payloads.Contact | undefined
+            const arrInfo = text.split(/邀请|加入了群聊/)
+            if (arrInfo.length === 2 && arrInfo[0] && arrInfo[1]) {
+
+              if (arrInfo[0] !== '你') {
+                inviter = this.selfInfo
+                const name = arrInfo[1].split(/“|”|"/)[1] || ''
+                const invitee = await this.getMemberByNickName(roomId, name)
+                if (invitee) {
+                  inviteeIdList.push(invitee.id)
+                }
+              }
+
+              if (arrInfo[1] === '你') {
+                inviteeIdList.push(this.selfInfo.id)
               } else {
                 const name = arrInfo[0].split(/“|”|"/)[1] || ''
-                for (const i in this.contactStore) {
-                  if (this.contactStore[i] && this.contactStore[i]?.name === name) {
-                    inviter = this.contactStore[i]
-                  }
-                }
+                inviter = await this.getMemberByNickName(roomId, name)
+              }
+
+              if (inviter && inviteeIdList.length > 0) {
+                this.emit('room-join', { inviteeIdList, inviterId: inviter.id, roomId })
               }
             }
-
-            if (arrInfo[1]) {
-              topic = arrInfo[1]?.split(/“|”|"/)[1] || ''
-              if (arrInfo[1] === '你') {
-                inviteeList.push(this.selfInfo.id)
-              } else {
-                const name = arrInfo[1].split(/“|”|"/)[1] || ''
-                for (const i in this.contactStore) {
-                  if (this.contactStore[i] && this.contactStore[i]?.name === name) {
-                    if (this.contactStore[i]?.id && room?.memberIdList.includes(this.contactStore[i]?.id || '')) {
-                      inviteeList.push(this.contactStore[i]?.id)
-                    }
-                  }
-                }
-
-              }
-            }
-            //  log.info(inviteeList)
-            //  log.info(inviter)
-            //  log.info(room)
-
-            this.emit('room-join', { inviteeIdList: inviteeList, inviterId: inviter.id, roomId })
           }
         } else {
           this.messageStore[payload.id] = payload
-          this.emit('message', { messageId: payload.id })
+          if (this.isReady) {
+            if (code === 37) {
+              this.emit('friendship', { friendshipId: payload.id })
+            } else {
+              this.emit('message', { messageId: payload.id })
+            }
+
+          } else {
+            log.info('isReady is false, wait for ready...')
+          }
         }
       }
     } catch (e) {
@@ -556,6 +565,7 @@ class PuppetBridge extends PUPPET.Puppet {
     log.verbose('PuppetBridge', 'onStop()')
 
     if (this.logonoff()) {
+      this.bridge.client.stop()
       await this.logout()
     }
   }
@@ -572,11 +582,117 @@ class PuppetBridge extends PUPPET.Puppet {
 
   notSupported (name: string): void {
     log.info(`${name} is not supported by PuppetBridge yet.`)
+    throw new Error(`${name} is not supported by PuppetBridge yet.`)
+  }
+
+  async getMemberDetail (contactId:string): Promise<PUPPET.payloads.Contact | undefined> {
+    let contact = this.contactStore[contactId]
+    // log.info('getMemberDetail contactId:', JSON.stringify(contact, undefined, 2))
+    if ((!contact || !contact.name) && contactId) {
+      log.verbose('缓存中没有找到联系人信息，开始请求:', contactId)
+      const contactInfoRes:Contact | undefined = await this.bridge.client.getContact(contactId)
+      log.info('请求联系人结果contactInfoRes:', JSON.stringify(contactInfoRes))
+      if (contactInfoRes) {
+        log.info('查询信息成功:', JSON.stringify(contactInfoRes))
+        const contactInfo = contactInfoRes
+        contact =  {
+          alias: '',
+          avatar: '',
+          friend: false,
+          gender: PUPPET.types.ContactGender.Unknown,
+          id: contactId,
+          name: contactInfo.name || '',
+          phone: [],
+          type: PUPPET.types.Contact.Individual,
+        }
+        if (contact.id && contact.name) this.contactStore[contactId] = contact
+        await this.contactPayloadDirty(contactId)
+      } else {
+        log.error('请求联系人信息失败:', JSON.stringify(contactInfoRes))
+      }
+    } else {
+      log.verbose('缓存中找到联系人信息:', contactId)
+    }
+    return contact
+  }
+
+  async updateMembers (roomId: string): Promise<void> {
+    log.verbose('updateMembers roomId:', roomId)
+    const rooms = this.roomStore
+    // 本地缓存的群信息
+    const roomStore = rooms[roomId] as PUPPET.payloads.Room
+
+    // 获取群详情
+    // const roomRaw:Contact | undefined = await this.bridge.client.getContact(roomId)
+
+    // 获取群成员列表
+    const roomMember:{
+      [key:string]: string
+    } = await this.bridge.client.getChatRoomMembers(roomId)
+
+    const memberIdList:string[] = Object.keys(roomMember)
+    // log.info('memberIdList:', memberIdList)
+    const topic:string = roomStore.topic
+    // if (roomRaw?.admin) {
+    //   await this.getMemberDetail(roomRaw.admin)
+    // }
+
+    roomStore.adminIdList = []
+    roomStore.avatar = ''
+    roomStore.external = false
+    roomStore.memberIdList = memberIdList
+    roomStore.ownerId = ''
+    roomStore.topic = topic
+
+    this.roomStore[roomStore.id] = roomStore
+
+    for (const memberKey in memberIdList) {
+      const memberId = memberIdList[memberKey] as string
+      const nickName = roomMember[memberId]
+      const contact = this.contactStore[memberId]
+      if (!contact) {
+        try {
+          // log.info('memberNickName:', memberNickName.content)
+          const contact = {
+            alias: '',
+            avatar: '',
+            friend: false,
+            gender: PUPPET.types.ContactGender.Unknown,
+            id: memberId,
+            name: nickName || '',
+            phone: [],
+            type: PUPPET.types.Contact.Individual,
+          }
+          this.contactStore[memberId] = contact
+        } catch (err) {
+          log.error('loadRoomList fail:', err)
+        }
+      } else if (!contact.name) {
+        contact.name = nickName || ''
+      } else {
+        log.verbose('contact is already in contactStore and has name...')
+      }
+    }
+
+  }
+
+  async getMemberByNickName (roomId: string, nickName: string): Promise<PUPPET.payloads.Contact | undefined> {
+    const room = this.roomStore[roomId]
+    if (room) {
+      const memberIdList = room.memberIdList
+      for (const memberId of memberIdList) {
+        const contact = this.contactStore[memberId]
+        if (contact && contact.name === nickName) {
+          return contact
+        }
+      }
+    }
+    return undefined
   }
 
   private async loadContactList () {
-    const contactList = await this.bridge.getContactList()
-    log.info('contactList get success, wait for contactList init ...')
+    const contactList:Contact[] = await this.bridge.client.getContacts()
+    // log.info('contactList get success, wait for contactList init ...', JSON.stringify(contactList, undefined, 2))
     for (const contactInfo of contactList) {
       log.verbose('PuppetBridge', 'contactInfo:%s', JSON.stringify(contactInfo))
 
@@ -603,8 +719,8 @@ class PuppetBridge extends PUPPET.Puppet {
         }
 
         const contact = {
-          alias: contactInfo.remarks,
-          avatar: contactInfo.headimg,
+          alias: contactInfo.remark || '',
+          avatar: '',
           friend: true,
           gender: 1,
           id: contactInfo.wxid,
@@ -622,61 +738,15 @@ class PuppetBridge extends PUPPET.Puppet {
   }
 
   private async loadRoomList () {
-    const rooms = await this.bridge.getRoomList()
     log.info('wait for roomList init...')
-
-    for (const roomInfo of rooms) {
-      // console.log('room:', JSON.stringify(room))
-      const roomMembers = roomInfo.member
-      const roomId = roomInfo.room_id
-      const roomMember = roomMembers
-      const roomStore = this.roomStore[roomId]
-
-      if (!roomStore) {
-        log.info('roomInfo is not store:', roomInfo)
+    const rooms = this.roomStore
+    for (const key in rooms) {
+      log.info('loadRoomList key:', key)
+      try {
+        await this.updateMembers(key)
+      } catch (err) {
+        log.error('loadRoomList fail:', err)
       }
-
-      const topic = this.roomStore[roomId]?.topic || ''
-      const room = {
-        adminIdList: [],
-        avatar: '',
-        external: false,
-        id: roomId,
-        memberIdList: roomMember,
-        ownerId: '',
-        topic,
-      }
-      this.roomStore[roomId] = room
-
-      for (const memberKey in roomMember) {
-        const memberId = roomMember[memberKey]
-        if (memberId && !this.contactStore[memberId]) {
-          try {
-            const memberNickNameRes = await this.bridge.getMemberNickName(memberId, roomId)
-            // log.info('memberNickName:', memberNickName.content)
-            const nickName = JSON.parse(memberNickNameRes.content).nick || 'Unknown'
-            const contact = {
-              alias: '',
-              avatar: '',
-              friend: false,
-              gender: PUPPET.types.ContactGender.Unknown,
-              id: memberId,
-              name: nickName || memberId,
-              phone: [],
-              type: PUPPET.types.Contact.Individual,
-            }
-            this.contactStore[memberId] = contact
-          } catch (err) {
-            log.error('loadRoomList fail:', err)
-          }
-        }
-      }
-
-      // for (const roomMember of roomMembers) {
-      //   console.log('roomMember:', roomMember)
-      //   const getMemberNickName = await bridge.getMemberNickName(roomMember, roomid);
-      //   console.log('getMemberNickName_res:', getMemberNickName.content)
-      // }
     }
   }
 
@@ -713,6 +783,9 @@ class PuppetBridge extends PUPPET.Puppet {
   override async contactAlias (contactId: string, alias?: string | null): Promise<void | string> {
     log.verbose('PuppetBridge', 'contactAlias(%s, %s)', contactId, alias)
     const contact = await this.contactRawPayload(contactId)
+    if (alias) {
+      this.notSupported('modify contactAlias')
+    }
     // if (typeof alias === 'undefined') {
     //   throw new Error('to be implement')
     // }
@@ -727,6 +800,8 @@ class PuppetBridge extends PUPPET.Puppet {
     if (typeof phoneList === 'undefined') {
       return []
     }
+    const contact = await this.contactRawPayload(contactId)
+    return contact.phone
   }
 
   override async contactCorporationRemark (contactId: string, corporationRemark: string) {
@@ -799,57 +874,46 @@ class PuppetBridge extends PUPPET.Puppet {
     messageId: string,
     imageType: PUPPET.types.Image,
   ): Promise<FileBoxInterface> {
-
+    log.verbose('PuppetBridge', 'messageImage(%s, %s)', messageId, imageType)
     // log.info('PuppetBridge', 'messageImage(%s, %s, %s)',
     //   messageId,
     //   imageType,
     //   PUPPET.types.Image[imageType],
     // )
+    await wait(3000)
     const message = this.messageStore[messageId]
     let base64 = ''
     let fileName = ''
     let imagePath = ''
     let file: FileBoxInterface
-
+    const text = message?.text ? JSON.parse(message.text) : []
     try {
-      if (message?.text) {
-        const picData = JSON.parse(message.text)
-        const filePath = picData[imageType]
-        const dataPath = rootPath + filePath    // 要解密的文件路径
-        // log.info('图片原始文件路径：', dataPath, true)
+      const picData = [ text[0], text[1], text[2] ]
+      const filePath = picData[imageType]
+      const dataPath = filePath as string    // 要解密的文件路径
+      // log.info('图片原始文件路径：', dataPath, true)
+      await fsPromise.access(dataPath)
+      // log.info('图片解密文件路径：', dataPath, true)
+      const imageInfo = ImageDecrypt(dataPath, messageId)
+      // const imageInfo = ImageDecrypt('C:\\Users\\choogoo\\Documents\\WeChat Files\\wxid_pnza7m7kf9tq12\\FileStorage\\Image\\Thumb\\2022-05\\e83b2aea275460cd50352559e040a2f8_t.dat','cl34vez850000gkmw2macd3dw')
 
-        //  检测图片原始文件是否存在，如果存在则继续，如果不存在则每隔0.5秒后检测一次，直到10s后还不存在则继续
-        let fileExist = fs.existsSync(dataPath)
-        let count = 0
-        while (!fileExist) {
-          await wait(500)
-          fileExist = fs.existsSync(dataPath)
-          if (count > 20) {
-            break
-          }
-          count++
-        }
-        await fsPromise.access(dataPath)
-        // log.info('图片解密文件路径：', dataPath, true)
-        const imageInfo = ImageDecrypt(dataPath, messageId)
-        // const imageInfo = ImageDecrypt('C:\\Users\\choogoo\\Documents\\WeChat Files\\wxid_pnza7m7kf9tq12\\FileStorage\\Image\\Thumb\\2022-05\\e83b2aea275460cd50352559e040a2f8_t.dat','cl34vez850000gkmw2macd3dw')
+      log.verbose(dataPath, imageInfo.fileName, imageInfo.extension)
+      base64 = imageInfo.base64
+      fileName = `message-${messageId}-url-${imageType}.${imageInfo.extension}`
+      file = FileBox.fromBase64(
+        base64,
+        fileName,
+      )
+      const paths = dataPath.split('\\')
+      paths[paths.length - 1] = fileName
+      imagePath = paths.join('\\')
+      log.verbose('图片解密后文件路径：', imagePath, true)
+      await file.toFile(imagePath)
 
-        log.verbose(dataPath, imageInfo.fileName, imageInfo.extension)
-        base64 = imageInfo.base64
-        fileName = `message-${messageId}-url-${imageType}.${imageInfo.extension}`
-        file = FileBox.fromBase64(
-          base64,
-          fileName,
-        )
-        const paths = dataPath.split('\\')
-        paths[paths.length - 1] = fileName
-        imagePath = paths.join('\\')
-        log.verbose('图片解密后文件路径：', imagePath, true)
-        await file.toFile(imagePath)
-      }
     } catch (err) {
       log.error('messageImage fail:', err)
     }
+
     return FileBox.fromBase64(
       base64,
       fileName,
@@ -867,7 +931,7 @@ class PuppetBridge extends PUPPET.Puppet {
   override async messageFile (id: string): Promise<FileBoxInterface> {
     const message = this.messageStore[id]
     //  log.verbose('messageFile', String(message))
-    log.info('messageFile:', message)
+    log.info('检索到messageFile:', JSON.stringify(message))
     let dataPath = ''
     let fileName = ''
 
@@ -883,7 +947,7 @@ class PuppetBridge extends PUPPET.Puppet {
       try {
         const parser = new xml2js.Parser(/* options */)
         const messageJson = await parser.parseStringPromise(message.text || '')
-        // log.info(JSON.stringify(messageJson))
+        log.info('解析xml结果', JSON.stringify(messageJson))
 
         const curDate = new Date()
         const year = curDate.getFullYear()
@@ -893,14 +957,14 @@ class PuppetBridge extends PUPPET.Puppet {
         }
         fileName = '\\' + messageJson.msg.appmsg[0].title[0]
         const filePath = `${this.selfInfo.id}\\FileStorage\\File\\${year}-${month}`
-        dataPath = rootPath + filePath + fileName  // 要解密的文件路径
-        // log.info(dataPath)
+        dataPath = this.weChatFilesPath + filePath + fileName  // 要解密的文件路径
+        log.info('保存文件路径：', dataPath)
         return FileBox.fromFile(
           dataPath,
           fileName,
         )
       } catch (err) {
-        log.error('messageFile fail:', err)
+        log.error('保存图片messageFile fail:', err)
       }
     }
 
@@ -968,12 +1032,30 @@ class PuppetBridge extends PUPPET.Puppet {
     text: string,
     mentionIdList?: string[],
   ): Promise<void> {
-    if (conversationId.split('@').length === 2 && mentionIdList && mentionIdList[0]) {
-      const wxid = mentionIdList[0]
-      const contact = await this.contactRawPayload(wxid)
-      await this.bridge.messageSendTextAt(conversationId, mentionIdList, text, [ contact.name ])
+    try {
+      // {
+      //   "chatRoomId":"xxxx",
+      //   "at":[
+      //     {
+      //       "wxid":"wxid_xxx",
+      //       "msg":"@xxx"
+      //     }
+      //   ],
+      // }
+    } catch (err) {
+      log.error('messageSendText fail:', err)
+    }
+    if (conversationId.split('@').length === 2 && mentionIdList) {
+      let mentionIdListString = mentionIdList.join(',')
+
+      // 如果mentionIdListString中只包含自己的id，则替换为@all
+      if (mentionIdListString === this.selfInfo) {
+        mentionIdListString = 'notify@all'
+      }
+
+      await this.bridge.client.sendTxt(text, conversationId, mentionIdListString)
     } else {
-      await this.bridge.messageSendText(conversationId, text)
+      await this.bridge.client.sendTxt(text, conversationId)
     }
   }
 
@@ -998,7 +1080,7 @@ class PuppetBridge extends PUPPET.Puppet {
     }
     if (file.type === FileBoxType.Url) {
       try {
-        await this.bridge.messageSendFile(conversationId, filePath)
+        await this.bridge.client.sendImage(filePath, conversationId)
         // fs.unlinkSync(filePath)
       } catch {
         fs.unlinkSync(filePath)
@@ -1007,7 +1089,7 @@ class PuppetBridge extends PUPPET.Puppet {
     } else {
       // filePath = 'C:\\Users\\wechaty\\Documents\\GitHub\\wechat-openai-qa-bot\\data1652169999200.xls'
       try {
-        await this.bridge.messageSendFile(conversationId, filePath)
+        await this.bridge.client.sendFile(filePath, conversationId)
         // fs.unlinkSync(filePath)
       } catch (err) {
         PUPPET.throwUnsupportedError(conversationId, file)
@@ -1033,7 +1115,20 @@ class PuppetBridge extends PUPPET.Puppet {
     urlLinkPayload: PUPPET.payloads.UrlLink,
   ): Promise<void> {
     log.verbose('PuppetBridge', 'messageSendUrl(%s, %s)', conversationId, JSON.stringify(urlLinkPayload))
-    this.notSupported('SendUrl')
+    const desc:any = {}
+    // * @param desc.name 左下显示的名字
+    // * @param desc.account 填公众号 id 可以显示对应的头像（gh_ 开头的）
+    // * @param desc.title 标题，最多两行
+    // * @param desc.digest 摘要，三行
+    // * @param desc.url 点击后跳转的链接
+    // * @param desc.thumburl 缩略图的链接
+    desc.name = urlLinkPayload.title
+    desc.account = urlLinkPayload.thumbnailUrl
+    desc.title = urlLinkPayload.title
+    desc.digest = urlLinkPayload.description
+    desc.url = urlLinkPayload.url
+    desc.thumburl = urlLinkPayload.thumbnailUrl
+    await this.bridge.client.sendRichText(desc, conversationId)
     // const url = new UrlLink(urlLinkPayload)
     // return this.messageSend(conversationId, url)
   }
@@ -1075,8 +1170,13 @@ class PuppetBridge extends PUPPET.Puppet {
     //    </msg>
     //  `
     // const xmlstr=`<msg><fromusername>${this.selfInfo.id}</fromusername><scene>0</scene><commenturl></commenturl><appmsg appid="wx65cc950f42e8fff1" sdkver=""><title>腾讯出行服务｜加油代驾公交</title><des></des><action>view</action><type>33</type><showtype>0</showtype><content></content><url>https://mp.weixin.qq.com/mp/waerrpage?appid=wx65cc950f42e8fff1&amp;amp;type=upgrade&amp;amp;upgradetype=3#wechat_redirect</url><dataurl></dataurl><lowurl></lowurl><lowdataurl></lowdataurl><recorditem><![CDATA[]]></recorditem><thumburl>http://mmbiz.qpic.cn/mmbiz_png/NM1fK7leWGPaFnMAe95jbg4sZAI3fkEZWHq69CIk6zA00SGARbmsGTbgLnZUXFoRwjROelKicbSp9K34MaZBuuA/640?wx_fmt=png&amp;wxfrom=200</thumburl><messageaction></messageaction><extinfo></extinfo><sourceusername></sourceusername><sourcedisplayname>腾讯出行服务｜加油代驾公交</sourcedisplayname><commenturl></commenturl><appattach><totallen>0</totallen><attachid></attachid><emoticonmd5></emoticonmd5><fileext></fileext><aeskey></aeskey></appattach><weappinfo><pagepath></pagepath><username>gh_ad64296dc8bd@app</username><appid>wx65cc950f42e8fff1</appid><type>1</type><weappiconurl>http://mmbiz.qpic.cn/mmbiz_png/NM1fK7leWGPaFnMAe95jbg4sZAI3fkEZWHq69CIk6zA00SGARbmsGTbgLnZUXFoRwjROelKicbSp9K34MaZBuuA/640?wx_fmt=png&amp;wxfrom=200</weappiconurl><appservicetype>0</appservicetype><shareId>2_wx65cc950f42e8fff1_875237370_1644979747_1</shareId></weappinfo><websearch /></appmsg><appinfo><version>1</version><appname>Window wechat</appname></appinfo></msg>`
-    log.info('发送小程序功能暂不支持')
-    // await this.Bridge.SendMiniProgram('', conversationId, xmlstr)
+    // log.info('发送小程序功能暂不支持')
+    const param = {
+      content: miniProgramPayload.description || '',
+      path: miniProgramPayload.pagePath,
+      type: 33,
+    }
+    await this.bridge.client.sendXML(param, conversationId)
   }
 
   override async messageSendLocation (
@@ -1095,13 +1195,7 @@ class PuppetBridge extends PUPPET.Puppet {
       conversationId,
       messageId,
     )
-    const curMessage = this.messageStore[messageId]
-    if (curMessage?.type === PUPPET.types.Message.Text) {
-      await this.messageSendText(conversationId, curMessage.text || '')
-    } else {
-      log.info('only Text message forward is supported by xp.')
-      PUPPET.throwUnsupportedError(conversationId, messageId)
-    }
+    await this.bridge.client.forwardMsg(messageId, conversationId)
   }
 
   /**
@@ -1127,6 +1221,7 @@ class PuppetBridge extends PUPPET.Puppet {
     contactId: string,
   ): Promise<void> {
     log.verbose('PuppetBridge', 'roomDel(%s, %s)', roomId, contactId)
+    await this.bridge.client.delChatRoomMembers(roomId, [ contactId ])
   }
 
   override async roomAvatar (roomId: string): Promise<FileBoxInterface> {
@@ -1146,6 +1241,7 @@ class PuppetBridge extends PUPPET.Puppet {
     contactId: string,
   ): Promise<void> {
     log.verbose('PuppetBridge', 'roomAdd(%s, %s)', roomId, contactId)
+    await this.bridge.client.addChatRoomMembers(roomId, [ contactId ])
   }
 
   override async roomTopic(roomId: string): Promise<string>
@@ -1169,12 +1265,12 @@ class PuppetBridge extends PUPPET.Puppet {
     topic: string,
   ): Promise<string> {
     log.verbose('PuppetBridge', 'roomCreate(%s, %s)', contactIdList, topic)
-
-    return 'mock_room_id'
+    return [].join(',')
   }
 
   override async roomQuit (roomId: string): Promise<void> {
     log.verbose('PuppetBridge', 'roomQuit(%s)', roomId)
+    await this.bridge.client.delChatRoomMembers(roomId, [ this.currentUserId ])
   }
 
   override async roomQRCode (roomId: string): Promise<string> {
@@ -1197,26 +1293,16 @@ class PuppetBridge extends PUPPET.Puppet {
 
   override async roomMemberRawPayload (roomId: string, contactId: string): Promise<PUPPET.payloads.RoomMember> {
     log.verbose('PuppetBridge', 'roomMemberRawPayload(%s, %s)', roomId, contactId)
-    try {
-      const contact = this.contactStore[contactId]
-      const MemberRawPayload = {
-        avatar: '',
-        id: contactId,
-        inviterId: contactId,   // "wxid_7708837087612",
-        name: contact?.name || 'Unknow',
-        roomAlias: contact?.name || '',
-      }
-      // log.info(MemberRawPayload)
-      return MemberRawPayload
-    } catch (e) {
-      log.error('roomMemberRawPayload()', e)
-      const member: PUPPET.payloads.RoomMember = {
-        avatar: '',
-        id: contactId,
-        name: '',
-      }
-      return member
+    const contact:PUPPET.payloads.Contact | undefined = await this.getMemberDetail(contactId)
+    const MemberRawPayload = {
+      avatar: '',
+      id: contactId,
+      inviterId: contactId,   // "wxid_7708837087612",
+      name: contact?.name || 'Unknow',
+      roomAlias: '',
     }
+    // log.info(MemberRawPayload)
+    return MemberRawPayload
 
   }
 
@@ -1230,9 +1316,14 @@ class PuppetBridge extends PUPPET.Puppet {
 
   override async roomAnnounce (roomId: string, text?: string): Promise<void | string> {
     if (text) {
-      return
+      this.notSupported('set roomAnnounce')
     }
-    return 'mock announcement for ' + roomId
+    const room = this.roomStore[roomId]
+    if (room) {
+      const roomInfo:Contact|undefined = await this.bridge.client.getContact(roomId)
+      return roomInfo?.remark || ''
+    }
+    return 'room is not exist or no announce'
   }
 
   /**
@@ -1259,10 +1350,13 @@ class PuppetBridge extends PUPPET.Puppet {
  *
  */
   override async friendshipRawPayload (id: string): Promise<any> {
-    return { id } as any
+    return this.messageStore[id]
   }
 
   override async friendshipRawPayloadParser (rawPayload: any): Promise<PUPPET.payloads.Friendship> {
+    rawPayload.contactId = rawPayload.text.match(/fromusername="([^"]*)"/)[1]
+    rawPayload.type = 2
+    rawPayload.hello = rawPayload.text.match(/content="([^"]*)"/)[1]
     return rawPayload
   }
 
