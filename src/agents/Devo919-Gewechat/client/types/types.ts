@@ -4,6 +4,8 @@ export interface Options {
   token?:string
   appId?:string
   host: string
+  apiPort: string,
+  downloadPort: string,
   callbackHost?: string
 }
 

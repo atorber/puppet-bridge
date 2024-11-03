@@ -7,8 +7,10 @@ import 'dotenv/config.js'
 const options = {
   token: process.env['token'],
   appId: process.env['appId'] || '',
-  host: '127.0.0.1',
-  callbackHost: '192.168.3.72',
+  host: 'http://127.0.0.1',
+  apiPort: '2531',
+  downloadPort: '2532',
+  callbackHost: 'http://192.168.3.72:2544/v2/api/callback/collect',
 }
 
 const bridge = new Bridge(options)

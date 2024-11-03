@@ -20,7 +20,9 @@ class Client extends EventEmitter {
 
   token: string
   private appId: string
-  private host: string
+  private host: string = 'http://127.0.0.1'
+  private apiPort: string = '2531'
+  private downloadPort: string = '2532'
   private callbackHost: string
   private axiosInstance: ReturnType<typeof setupAxios>
   private login: Login
@@ -31,15 +33,19 @@ class Client extends EventEmitter {
   private account: Account
   private message: Message
   private self: Self
+  private baseUrl: string
 
   constructor (options: Options) {
     super()
 
     this.token = options.token || ''
     this.appId = options.appId || ''
-    this.host = options.host || '127.0.0.1'
+    this.host = options.host || this.host
+    this.apiPort = options.apiPort || this.apiPort
+    this.downloadPort = options.downloadPort || this.downloadPort
     this.callbackHost = options.callbackHost || ''
-    this.axiosInstance = setupAxios(`http://${this.host}:2531`, this.token)
+    this.baseUrl = `${this.host}:${this.apiPort}`
+    this.axiosInstance = setupAxios(this.baseUrl, this.token)
 
     // Initialize modules
     this.login = new Login({ appId: this.appId, axiosInstance: this.axiosInstance })
@@ -65,7 +71,7 @@ class Client extends EventEmitter {
   }
 
   private updateModules () {
-    this.axiosInstance = setupAxios(`http://${this.host}:2531`, this.token)
+    this.axiosInstance = setupAxios(this.baseUrl, this.token)
     this.login = new Login({ appId: this.appId, axiosInstance: this.axiosInstance })
     this.contacts = new Contacts({ appId: this.appId, axiosInstance: this.axiosInstance })
     this.groups = new Groups({ appId: this.appId, axiosInstance: this.axiosInstance })
@@ -117,7 +123,7 @@ class Client extends EventEmitter {
   }
 
   getDownloadUrl (path: string) {
-    return `http://${this.host}:2532/download/${path}`
+    return `${this.host}:${this.downloadPort}/download/${path}`
   }
 
   // HTTP Server Setup

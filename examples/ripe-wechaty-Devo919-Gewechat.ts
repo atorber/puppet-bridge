@@ -11,7 +11,7 @@ import {
 } from 'wechaty'
 import { FileBox } from 'file-box'
 
-import { PuppetBridge } from '../src/puppet-bridge.js'
+import { PuppetBridge, PuppetBridgeOptions } from '../src/puppet-bridge.js'
 import qrcodeTerminal from 'qrcode-terminal'
 import * as fs from 'fs'
 import 'dotenv/config.js'
@@ -248,11 +248,13 @@ const onReady = async () => {
 
 }
 
-const ops = {
+const ops:PuppetBridgeOptions = {
   token: process.env['token'] || '',
   appId: process.env['appId'] || '',
-  host: '127.0.0.1',
-  callbackHost: '192.168.3.72',
+  host: 'http://127.0.0.1',
+  apiPort: '2531',
+  downloadPort: '2532',
+  callbackHost: 'http://192.168.3.72:2544/v2/api/callback/collect',
 }
 
 const puppet = new PuppetBridge(ops)

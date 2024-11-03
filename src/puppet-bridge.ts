@@ -25,6 +25,8 @@ export type PuppetBridgeOptions = PUPPET.PuppetOptions & {
   token: string
   appId: string
   host: string
+  apiPort: string
+  downloadPort: string
   callbackHost: string
 }
 

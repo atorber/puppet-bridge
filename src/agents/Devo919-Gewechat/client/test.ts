@@ -8,8 +8,10 @@ import 'dotenv/config.js'
 const options = {
   token: process.env['token'],
   appId: process.env['appId'] || '',
-  host: '127.0.0.1',
-  callbackHost: '192.168.3.72',
+  host: process.env['host'] || 'http://127.0.0.1',
+  apiPort: process.env['apiPort'] || '2531',
+  downloadPort: process.env['downloadPort'] || '2532',
+  callbackHost: process.env['callbackHost'],
 }
 
 const client = new Client(options)
