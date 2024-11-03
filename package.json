@@ -39,7 +39,9 @@
     "start:ripe-puppet-bridge-lich0821-WeChatFerry-3091027:info": "cross-env BROLOG_LEVEL=info NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/ripe-wechaty-lich0821-WeChatFerry-3091027.ts",
     "start:wcf": "cross-env BROLOG_LEVEL=info NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/wcf.ts",
     "test:wxhelper": "cross-env WECHATY_LOG=info NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/wxhelper.ts",
-    "dev:gewe": "cross-env WECHATY_LOG=info NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node src/agents/Devo919-Gewechat/test.ts",
+    "gewe:client": "cross-env WECHATY_LOG=info NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node src/agents/Devo919-Gewechat/client/test.ts",
+    "gewe:bridge": "cross-env WECHATY_LOG=info NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node src/agents/Devo919-Gewechat/bridge/test.ts",
+    "gewe:ripe": "cross-env BROLOG_LEVEL=verbose NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/ripe-wechaty-Devo919-Gewechat.ts",
     "lint": "npm run lint:es && npm run lint:ts && npm run lint:md",
     "lint:md": "markdownlint README.md",
     "lint:ts": "tsc --isolatedModules --noEmit",
@@ -92,10 +94,11 @@
     "wechaty-puppet": "^1.10.2"
   },
   "dependencies": {
-    "qrcode-terminal": "^0.12.0",
     "@zippybee/wechatcore": "^2.1.13",
     "axios": "^1.6.5",
     "cuid": "^2.1.8",
+    "dotenv": "^16.4.5",
+    "qrcode-terminal": "^0.12.0",
     "sudo-prompt": "^9.2.1",
     "ws": "^8.16.0",
     "xml2js": "^0.4.23",

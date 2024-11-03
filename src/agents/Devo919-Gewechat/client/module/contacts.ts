@@ -202,11 +202,11 @@ string
     }
     try {
       const response = await this.axios.post('/v2/api/contacts/getBriefInfo', data)
-      log.info('getBriefInfo success:' + response.data)
+      log.info('getBriefInfo success:', JSON.stringify(response.data))
       return response.data
     } catch (error) {
       // console.error('getBriefInfo failed:', error)
-      log.error('getBriefInfo failed:' + error)
+      log.error('getBriefInfo failed:', error)
       throw error
     }
   }

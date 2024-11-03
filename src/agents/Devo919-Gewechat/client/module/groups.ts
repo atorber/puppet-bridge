@@ -162,7 +162,7 @@ export class Groups {
     }
     try {
       const response = await this.axios.post('/v2/api/group/getChatroomInfo', data)
-      log.info('getChatroomInfo success:' + response.data)
+      log.info('getChatroomInfo success:', JSON.stringify(response.data))
       return response.data
     } catch (error) {
       // console.error('getChatroomInfo failed:', error)
@@ -179,7 +179,7 @@ export class Groups {
     }
     try {
       const response = await this.axios.post('/v2/api/group/getChatroomMemberList', data)
-      log.info('getChatroomMemberList success:' + response.data)
+      log.info('getChatroomMemberList success:', JSON.stringify(response.data))
       return response.data
     } catch (error) {
       // console.error('getChatroomMemberList failed:', error)

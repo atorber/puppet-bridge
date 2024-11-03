@@ -21,17 +21,106 @@ xml string 回调消息中的XML 必需
 type integer 必需 下载的图片类型 1:高清图片 2:常规图片 3:缩略图 默认值: 2
   */
   async downloadImage (xml: string, type: 1 | 2 | 3) {
+    if (xml.indexOf(':\n') !== -1) {
+      xml = xml.replace(`${xml.split(':\n')[0]}:\n`, '')
+    }
     const data = {
       appId: this.appId,
       xml,
       type,
     }
+    log.info('downloadImage data:', JSON.stringify(data))
     try {
       const response = await this.axios.post('/v2/api/message/downloadImage', data)
       log.info('downloadImage success:', JSON.stringify(response.data))
       return response.data
     } catch (error) {
       log.error('downloadImage failed:', error)
+      throw error
+    }
+  }
+
+  /**
+     * 下载语音
+     */
+  async downloadVoice (xml: string, msgId: number) {
+    if (xml.indexOf(':\n') !== -1) {
+      xml = xml.replace(`${xml.split(':\n')[0]}:\n`, '')
+    }
+    const data = {
+      appId: this.appId,
+      xml,
+      msgId,
+    }
+    log.info('downloadVoice data:', JSON.stringify(data))
+    try {
+      const response = await this.axios.post('/v2/api/message/downloadVoice', data)
+      log.info('downloadVoice success:', JSON.stringify(response.data))
+      return response.data
+    } catch (error) {
+      log.error('downloadVoice failed:', error)
+      throw error
+    }
+  }
+
+  /**
+   * 下载视频
+   */
+  async downloadVideo (xml: string) {
+    if (xml.indexOf(':\n') !== -1) {
+      xml = xml.replace(`${xml.split(':\n')[0]}:\n`, '')
+    }
+    const data = {
+      appId: this.appId,
+      xml,
+    }
+    log.info('downloadVideo data:', JSON.stringify(data))
+    try {
+      const response = await this.axios.post('/v2/api/message/downloadVideo', data)
+      log.info('downloadVideo success:', JSON.stringify(response.data))
+      return response.data
+    } catch (error) {
+      log.error('downloadVideo failed:', error)
+      throw error
+    }
+  }
+
+  /**
+   * 下载emoji
+   */
+  async downloadEmojiMd5 (emojiMd5: string) {
+    const data = {
+      appId: this.appId,
+      emojiMd5,
+    }
+    try {
+      const response = await this.axios.post('/v2/api/message/downloadEmojiMd5', data)
+      log.info('downloadEmojiMd5 success:', JSON.stringify(response.data))
+      return response.data
+    } catch (error) {
+      log.error('downloadEmojiMd5 failed:', error)
+      throw error
+    }
+  }
+
+  /**
+   * cdn下载
+   */
+  async downloadCdn (aesKey: string, fileId: string, type: string, totalSize: string, suffix: string) {
+    const data = {
+      appId: this.appId,
+      aesKey,
+      fileId,
+      type,
+      totalSize,
+      suffix,
+    }
+    try {
+      const response = await this.axios.post('/v2/api/message/downloadCdn', data)
+      log.info('downloadCdn success:', JSON.stringify(response.data))
+      return response.data
+    } catch (error) {
+      log.error('downloadCdn failed:', error)
       throw error
     }
   }
@@ -76,15 +165,14 @@ fileName string 文件名 必需
       fileUrl,
       fileName,
     }
+    log.info('postFile data:', JSON.stringify(data))
     try {
       const response = await this.axios.post('/v2/api/message/postFile', data)
-      // console.info('postFile success:', response.data)
-      log.info('postFile success:' + response.data)
+      log.info('postFile success:', JSON.stringify(response.data))
       return response.data
     } catch (error) {
-      // console.error('postFile failed:', error)
-      log.error('postFile failed:' + error)
-      throw error
+      log.error('postFile failed:', error)
+      // throw error
     }
   }
 
@@ -104,13 +192,12 @@ fileName string 文件名 必需
     }
     try {
       const response = await this.axios.post('/v2/api/message/postImage', data)
-      // console.info('postImage success:', response.data)
-      log.info('postImage success:' + response.data)
+      log.info('postImage success:', JSON.stringify(response.data))
       return response.data
     } catch (error) {
       // console.error('postImage failed:', error)
-      log.error('postImage failed:' + error)
-      throw error
+      log.error('postImage failed:', error)
+      // throw error
     }
   }
 
@@ -133,7 +220,7 @@ fileName string 文件名 必需
     try {
       const response = await this.axios.post('/v2/api/message/postVoice', data)
       // console.info('postVoice success:', response.data)
-      log.info('postVoice success:' + response.data)
+      log.info('postVoice success:', JSON.stringify(response.data))
       return response.data
     } catch (error) {
       // console.error('postVoice failed:', error)
@@ -222,8 +309,7 @@ fileName string 文件名 必需
     }
     try {
       const response = await this.axios.post('/v2/api/message/postNameCard', data)
-      // console.info('postNameCard success:', response.data)
-      log.info('postNameCard success:' + response.data)
+      log.info('postNameCard success:', JSON.stringify(response.data))
       return response.data
     } catch (error) {
       // console.error('postNameCard failed:', error)

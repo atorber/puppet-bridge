@@ -21,8 +21,7 @@ export class Self {
     }
     try {
       const response = await this.axios.post('/v2/api/personal/getProfile', data)
-      // console.info('getProfile success:', response.data)
-      log.info('getProfile success:' + response.data)
+      log.info('getProfile success:', JSON.stringify(response.data))
       return response.data
     } catch (error) {
       // console.error('getProfile failed:', error)

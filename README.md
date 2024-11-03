@@ -20,8 +20,6 @@ wechaty-puppet-bridge 是一个全新的wechaty-puppet，它可以连接所有�
 
 > 最新功能清单查看[功能清单](https://www.yuque.com/atorber/chatflow/imovlh1l8ypxmd9n#eTg6)
 
-![功能清单](./docs/images/fnlist.png)
-
 ## 机器人支持
 
 1. Wechat-bot 馈人玫瑰之手，历久犹有余香 [cixingguangming55555/wechat-bot](https://github.com/cixingguangming55555/wechat-bot)
@@ -29,6 +27,10 @@ wechaty-puppet-bridge 是一个全新的wechaty-puppet，它可以连接所有�
 2. wxbot - 聊天机器人 [jwping/wxbot](https://github.com/jwping/wxbot)
 
 3. wxhelper - PC端微信逆向学习 [ttttupup/wxhelper](https://github.com/ttttupup/wxhelper)
+
+4. WeChatFerry - 一个玩微信的工具 [lich0821/WeChatFerry](https://github.com/lich0821/WeChatFerry)
+
+5. Gewechat -  Gewechat🤖，个人微信免费开源框架 [Devo919/Gewechat](https://github.com/Devo919/Gewechat)
 
 ## 快速开始
 
@@ -66,6 +68,7 @@ npm i wechaty-puppet-bridge
 
 |源|WeChat版本|使用|安装|
 |--|--|--|--|
+|[Devo919/Gewechat](https://github.com/Devo919/Gewechat)|iPad协议|[示例代码](./examples/ripe-wechaty-Devo919-Gewechat.ts) |npm i wechaty-puppet-bridge@0.16.0|
 |[lich0821/WeChatFerry](https://github.com/lich0821/WeChatFerry)|v3.9.10.27|[示例代码](./examples/ripe-wechaty-lich0821-WeChatFerry-3091027.ts) |npm i wechaty-puppet-bridge@0.15.0|
 |[jwping/wxbot](https://github.com/jwping/wxbot)|v3.9.8.25|[示例代码](./examples/ripe-wechaty-jwping-wxbot-3090825.ts)|npm i wechaty-puppet-bridge@0.15.0|
 |[ttttupup/wxhelper](https://github.com/ttttupup/wxhelper/tree/dev-3.9.2.23)|v3.9.2.23|[示例代码](./examples/ripe-wechaty-ttttupup-wxhelper-3090223.ts) (需要【以管理员身份运行】WeChat客户端)|npm i wechaty-puppet-bridge@0.15.0|

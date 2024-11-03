@@ -20,14 +20,14 @@ export class Login {
     const data = { appId: this.appId }
     try {
       const response = await this.axios.post('/v2/api/login/getLoginQrCode', data)
+      response.data.data.qrImgBase64 = ''
       logger.info('getLoginQrCode success:' + JSON.stringify(response.data))
       if (response.data.ret === 200) {
-        const qrData = response.data.data.qrData
-        logger.info('QR Code Base64:' + qrData)
-        qrcode.generate(qrData, { small: true })
+        // const qrData = response.data.data.qrData
+        // logger.info('QR Code Url:' + qrData)
+        // this.showQrCode(qrData)
         this.appId = response.data.data.appId
         this.uuid = response.data.data.uuid
-        await this.checkLoginInterval(this.uuid)
       }
       return response.data
     } catch (error) {
@@ -36,30 +36,21 @@ export class Login {
     }
   }
 
-  private checkLoginInterval (uuid: string) {
-    setInterval(() => {
-      if (!this.isLogin) {
-        this.checkLogin(uuid).then((res) => {
-          return res
-        }).catch((error) => {
-          logger.error('checkLogin failed:' + error)
-          throw error
-        })
-      } else {
-        logger.info('checkLoginInterval isLogin:', this.isLogin)
-      }
-    }, 5000)
+  showQrCode (qrData: string) {
+    logger.info('QR Code Url:' + qrData)
+    qrcode.generate(qrData, { small: true })
   }
 
-  async checkLogin (uuid: string) {
+  async checkLogin (uuid?: string) {
     try {
+      uuid = uuid || this.uuid
       const data = { appId: this.appId, uuid }
       logger.info('checkLogin data:', JSON.stringify(data))
       const response = await this.axios.post('/v2/api/login/checkLogin', data)
       logger.info('checkLogin success:', JSON.stringify(response.data))
       if (
         response.data.ret === 200
-          && response.data.data.loginInfo !== null
+          && response.data.data.loginInfo
           && response.data.data.loginInfo.wxid
       ) {
         this.loginInfo = response.data.data.loginInfo

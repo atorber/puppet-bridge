@@ -41,8 +41,7 @@ export class Account {
       log.info('logout success:', JSON.stringify(response.data))
       return response.data
     } catch (error) {
-      // console.error('logout failed:', error)
-      log.error('logout failed:' + error)
+      log.error('logout failed:', error)
       throw error
     }
   }
