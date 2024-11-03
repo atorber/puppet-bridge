@@ -1,5 +1,5 @@
-import { EventEmitter } from 'events'
-import * as PUPPET from 'wechaty-puppet'
+import type { EventEmitter } from 'events'
+import type * as PUPPET from 'wechaty-puppet'
 
 export interface BridgeInterface extends EventEmitter {
     login(): Promise<any>

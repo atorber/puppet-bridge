@@ -1,24 +1,22 @@
 /* eslint-disable sort-keys */
 import type { BridgeInterface } from '../../../schemas/bridge.js'
-import { Client, Options, log, GeweTypes, xml2js, logger, MessageTypes, NoticeTypes, RoomTypes } from '../client/mod.js'
+import { Client, log, GeweTypes, xml2js, logger, MessageTypes, NoticeTypes, RoomTypes } from '../client/mod.js'
 import { createHttpServer } from './server.js'
 import * as PUPPET from 'wechaty-puppet'
 import { parseXml } from './util.js'
 import {
   FileBox,
-  FileBoxType,
   FileBoxInterface,
 } from 'file-box'
-import readXml from 'xmlreader'
 
 class Bridge implements BridgeInterface {
 
   private client: Client
   timer: any
   uuid:string = ''
-  options: Options
+  options: GeweTypes.Options
 
-  constructor (options: Options) {
+  constructor (options: GeweTypes.Options) {
     console.info('Bridge constructor')
     this.options = options
     this.client = new Client(options)
@@ -845,6 +843,7 @@ class Bridge implements BridgeInterface {
   }
 
   addListener (eventName: string | symbol, listener: (...args: any[]) => void): this {
+    log.info('addListener event:', eventName, listener)
     throw new Error('Method not implemented.')
   }
 
@@ -855,22 +854,27 @@ class Bridge implements BridgeInterface {
   }
 
   once (eventName: string | symbol, listener: (...args: any[]) => void): this {
+    log.info('once event:', eventName, listener)
     throw new Error('Method not implemented.')
   }
 
   removeListener (eventName: string | symbol, listener: (...args: any[]) => void): this {
+    log.info('removeListener event:', eventName, listener)
     throw new Error('Method not implemented.')
   }
 
   off (eventName: string | symbol, listener: (...args: any[]) => void): this {
+    log.info('off event:', eventName, listener)
     throw new Error('Method not implemented.')
   }
 
   removeAllListeners (event?: string | symbol): this {
+    log.info('removeAllListeners event:', event)
     throw new Error('Method not implemented.')
   }
 
   setMaxListeners (n: number): this {
+    log.info('setMaxListeners event:', n)
     throw new Error('Method not implemented.')
   }
 
@@ -879,27 +883,33 @@ class Bridge implements BridgeInterface {
   }
 
   listeners (eventName: string | symbol): Function[] {
+    log.info('listeners event:', eventName)
     throw new Error('Method not implemented.')
   }
 
   rawListeners (eventName: string | symbol): Function[] {
+    log.info('rawListeners event:', eventName)
     throw new Error('Method not implemented.')
   }
 
   emit (eventName: string | symbol, ...args: any[]): boolean {
+    log.info('emit event:', eventName, args)
     log.info('emit event:', eventName)
     return true
   }
 
   listenerCount (eventName: string | symbol, listener?: Function): number {
+    log.info('listenerCount event:', eventName, listener)
     throw new Error('Method not implemented.')
   }
 
   prependListener (eventName: string | symbol, listener: (...args: any[]) => void): this {
+    log.info('prependListener event:', eventName, listener)
     throw new Error('Method not implemented.')
   }
 
   prependOnceListener (eventName: string | symbol, listener: (...args: any[]) => void): this {
+    log.info('prependOnceListener event:', eventName, listener)
     throw new Error('Method not implemented.')
   }
 
