@@ -13,14 +13,20 @@ const options = {
   callbackHost: 'http://192.168.3.72:2544/v2/api/callback/collect',
 }
 
-const bridge = new Bridge(options)
-// await bridge.logout()
-await bridge.getLoginQrCode()
+async function main () {
+  const bridge = new Bridge(options)
+  // await bridge.logout()
+  await bridge.getLoginQrCode()
 
-// await client.setCallback()
-// await client.loadContactList()
-// await client.loadRoomList()
+  // await client.setCallback()
+  // await client.loadContactList()
+  // await client.loadRoomList()
 
-bridge.on('message', (msg) => {
-  log.info('onmessage', JSON.stringify(msg))
+  bridge.on('message', (msg) => {
+    log.info('onmessage', JSON.stringify(msg))
+  })
+}
+
+main().catch(err => {
+  log.error('Main function error:', err)
 })
