@@ -1,4 +1,4 @@
-# Wechaty Puppet Bridge
+# Puppet Bridge
 
 <img alt="GitHub stars badge" src="https://img.shields.io/github/stars/atorber/puppet-bridge"> <img alt="GitHub forks badge" src="https://img.shields.io/github/forks/atorber/puppet-bridge"> [![NPM](https://github.com/atorber/puppet-bridge/workflows/NPM/badge.svg)](https://github.com/atorber/puppet-bridge/actions?query=workflow%3ANPM)
 [![NPM Version](https://img.shields.io/npm/v/wechaty-puppet-bridge?color=brightgreen)](https://www.npmjs.com/package/wechaty-puppet-bridge)
@@ -8,30 +8,30 @@
 
 ## 简介
 
-wechaty-puppet-bridge 是一个虚拟的Wechaty Puppet，实际上它只是一个桥接服务，它将GitHub中开源的机器人桥接到Wechaty，是开源IM bot搬运工
+puppet-bridge 是一个虚拟的第三方Wechaty Puppet，实际上它只是一个桥接服务，它将GitHub中开源的机器人桥接到Wechaty，是开源IM bot搬运工
 
-如果你想方便且高效的使用免费的机器人，那么它是一个很好的选择，它不需要token同时又能使用Wechaty进行聊天机器人开发
+如果你想方便且高效的使用免费的机器人，那么它是一个很好的选择，它不需要token同时又能使用Wechaty进行聊天机器人开发。
 
-> 获取更多信息[项目文档](https://www.yuque.com/atorber/chatflow/mean34ibdoonvox4)
+获取更多信息 [项目文档](https://www.yuque.com/atorber/chatflow/mean34ibdoonvox4)
 
 ## 示例代码
 
-|源|WeChat版本|使用|安装|
+|源项目|WeChat|实例代码|安装|
 |--|--|--|--|
 |[Devo919/Gewechat](https://github.com/Devo919/Gewechat)|iPad协议|[示例代码](./examples/ripe-wechaty-Devo919-Gewechat.ts) |npm i wechaty-puppet-bridge@0.16.0|
 |[lich0821/WeChatFerry](https://github.com/lich0821/WeChatFerry)|v3.9.10.27|[示例代码](./examples/ripe-wechaty-lich0821-WeChatFerry-3091027.ts) |npm i wechaty-puppet-bridge@0.15.0|
 |[jwping/wxbot](https://github.com/jwping/wxbot)|v3.9.8.25|[示例代码](./examples/ripe-wechaty-jwping-wxbot-3090825.ts)|npm i wechaty-puppet-bridge@0.15.0|
-|[ttttupup/wxhelper](https://github.com/ttttupup/wxhelper/tree/dev-3.9.2.23)|v3.9.2.23|[示例代码](./examples/ripe-wechaty-ttttupup-wxhelper-3090223.ts)<br> (需要【以管理员身份运行】WeChat客户端)|npm i wechaty-puppet-bridge@0.15.0|
-|[ttttupup/wxhelper](https://github.com/ttttupup/wxhelper/tree/dev-3.9.5.81)|v3.9.5.81|[示例代码](./examples/ripe-wechaty-ttttupup-wxhelper-3090581.ts)<br>(需要【以管理员身份运行】WeChat客户端)|npm i wechaty-puppet-bridge@0.15.0|
-|[ttttupup/wxhelper](https://github.com/ttttupup/wxhelper/tree/dev-3.9.8.25)|v3.9.8.25|[示例代码](./examples/ripe-wechaty-atorber-fused-3090825.ts)<br>(需要【以管理员身份运行】WeChat客户端)|npm i wechaty-puppet-bridge@0.15.0|
-|[ttttupup/wxhelper](https://github.com/ttttupup/wxhelper/tree/dev-3.9.10.19)|v3.9.10.19|[示例代码](./examples/ripe-bridge-ttttupup-wxhelper-3091019.ts)<br>(需要【以管理员身份运行】WeChat客户端)|npm i wechaty-puppet-bridge@0.15.0|
+|[ttttupup/wxhelper](https://github.com/ttttupup/wxhelper/tree/dev-3.9.2.23)|v3.9.2.23|[示例代码](./examples/ripe-wechaty-ttttupup-wxhelper-3090223.ts)<br> (【以管理员身份运行】WeChat客户端)|npm i wechaty-puppet-bridge@0.15.0|
+|[ttttupup/wxhelper](https://github.com/ttttupup/wxhelper/tree/dev-3.9.5.81)|v3.9.5.81|[示例代码](./examples/ripe-wechaty-ttttupup-wxhelper-3090581.ts)<br>(【以管理员身份运行】WeChat客户端)|npm i wechaty-puppet-bridge@0.15.0|
+|[ttttupup/wxhelper](https://github.com/ttttupup/wxhelper/tree/dev-3.9.8.25)|v3.9.8.25|[示例代码](./examples/ripe-wechaty-atorber-fused-3090825.ts)<br>(【以管理员身份运行】WeChat客户端)|npm i wechaty-puppet-bridge@0.15.0|
+|[ttttupup/wxhelper](https://github.com/ttttupup/wxhelper/tree/dev-3.9.10.19)|v3.9.10.19|[示例代码](./examples/ripe-bridge-ttttupup-wxhelper-3091019.ts)<br>(【以管理员身份运行】WeChat客户端)|npm i wechaty-puppet-bridge@0.15.0|
 
 ## 使用NPM包
 
-puppet-bridge 已经在NPM上发布了安装包，Wechaty用户可以直接安装使用
+puppet-bridge 已经在[npmjs.com](https://www.npmjs.com/package/wechaty-puppet-bridge)上发布了安装包，Wechaty用户可以直接安装使用
 
 ```shell
-npm i wechaty-puppet-bridge
+npm i wechaty-puppet-bridge@0.16.0
 ```
 
 ## 机器人支持
@@ -48,15 +48,11 @@ npm i wechaty-puppet-bridge
 
 ## 功能清单
 
-wechaty-puppet-bridge 是一个全新的wechaty-puppet，它可以连接所有的通过ws、http、mqtt开放IM访问的聊天机器人.
-
-> 最新功能清单查看[功能清单](https://www.yuque.com/atorber/chatflow/imovlh1l8ypxmd9n#eTg6)
+puppet-bridge可以连接所有的通过ws、http、mqtt开放IM访问的聊天机器人。最新功能清单查看 [功能清单](https://www.yuque.com/atorber/chatflow/imovlh1l8ypxmd9n#eTg6)
 
 ## API接口
 
-Puppet Bridge是对开源bot项目的API封装，并不会对原生的API进行修改，因此你依然可以使用底层bot的原生API进行开发
-
-[原生API使用说明](https://www.yuque.com/atorber/chatflow/wo5wzr75qdzs1t7p)
+Puppet Bridge是对开源bot项目的API封装，并不会对原生的API进行修改，因此你依然可以使用底层bot的原生API进行开发 [原生API使用说明](https://www.yuque.com/atorber/chatflow/wo5wzr75qdzs1t7p)
 
 ## 更新日志
 
@@ -64,7 +60,7 @@ Puppet Bridge是对开源bot项目的API封装，并不会对原生的API进行�
 
 - 支持lich0821/WeChatFerry
 
-[更多版本记录详见](https://www.yuque.com/atorber/chatflow/hyy64kf0a0iguy68)
+[查看更多版本记录](https://www.yuque.com/atorber/chatflow/hyy64kf0a0iguy68)
 
 ## 推荐
 
