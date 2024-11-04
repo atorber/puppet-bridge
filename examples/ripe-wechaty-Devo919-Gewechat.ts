@@ -11,7 +11,7 @@ import {
 } from 'wechaty'
 import { FileBox } from 'file-box'
 
-import { PuppetBridge, PuppetBridgeOptions } from '../src/puppet-bridge.js'
+import { PuppetBridge, PuppetBridgeOptions } from '../src/puppet/puppet-bridge-ipad.js'
 import qrcodeTerminal from 'qrcode-terminal'
 import * as fs from 'fs'
 import 'dotenv/config.js'

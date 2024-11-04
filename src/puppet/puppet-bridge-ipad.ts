@@ -12,14 +12,14 @@ import {
 import {
   qrCodeForChatie,
   VERSION,
-} from './config.js'
+} from '../config.js'
 
 import type {
   MessageRaw,
-} from './agents/wechat-bot/cixingguangming55555-wechat-bot.js'
+} from '../agents/wechat-bot/cixingguangming55555-wechat-bot.js'
 
-import { XmlDecrypt } from './pure-functions/xml-msgpayload.js'
-import { Bridge } from './agents/Devo919-Gewechat/bridge/mod.js'
+import { XmlDecrypt } from '../pure-functions/xml-msgpayload.js'
+import { Bridge } from '../agents/Devo919-Gewechat/bridge/mod.js'
 
 export type PuppetBridgeOptions = PUPPET.PuppetOptions & {
   token: string
