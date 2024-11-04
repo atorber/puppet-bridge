@@ -2,7 +2,7 @@
 
 import { test } from 'tstest'
 
-import { PuppetBridge } from './puppet-bridge.js'
+import { PuppetBridge } from './puppet-bridge-cixingguangming55555-wechat-bot-391027.js'
 
 class PuppetBridgeTest extends PuppetBridge {
 }
