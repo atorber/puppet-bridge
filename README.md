@@ -177,3 +177,20 @@ wxhelper要求用户启动一个websoket服务接收数据，Puppet Bridge中已
 ### v0.1.0 (2023-1-21)
 
 初始化版本，适配 [cixingguangming55555/wechat-bot](https://github.com/cixingguangming55555/wechat-bot) 项目，支持v3.9.2.23版本
+
+## 推荐
+
+1. [wechatferry/wechatferry](https://github.com/wechatferry/wechatferry)项目完整的实现了[lich0821/WeChatFerry](https://github.com/lich0821/WeChatFerry)，并且作者制作了一个非常精美丰富的使用文档[https://wcferry.netlify.app/](https://wcferry.netlify.app/)
+
+```javascript
+import { WechatferryPuppet } from '@wechatferry/puppet'
+import { WechatyBuilder } from 'wechaty'
+
+const puppet = new WechatferryPuppet()
+const bot = WechatyBuilder.build({ puppet })
+
+bot.on('message', (msg) => {
+  msg.text() === 'ding' && msg.say('dong')
+})
+  .start()
+```
