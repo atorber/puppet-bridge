@@ -1,7 +1,6 @@
 import {
   Contact,
   Message,
-  ScanStatus,
   WechatyBuilder,
   log,
   types,
@@ -9,7 +8,6 @@ import {
 import { FileBox } from 'file-box'
 
 import { PuppetBridgeHi as PuppetBridge } from '../src/mod.js'
-import * as qrcodeTerminal from 'qrcode-terminal'
 import * as fs from 'fs'
 
 import 'dotenv/config.js'
@@ -25,21 +23,6 @@ export function writeLog (info: string) {
   fs.appendFileSync(logPath, info + '\n')
 }
 
-function onScan (qrcode: string, status: ScanStatus) {
-  if (qrcode) {
-    const qrcodeImageUrl = [
-      'https://wechaty.js.org/qrcode/',
-      encodeURIComponent(qrcode),
-    ].join('')
-    log.info('onScan', '%s(%s) - %s', status, qrcodeImageUrl)
-
-    qrcodeTerminal.generate(qrcode, { small: true })  // show qrcode on console
-    log.info(`[${status}] ${qrcode}\nScan QR Code above to log in: `)
-  } else {
-    log.info(`[${status}]`)
-  }
-}
-
 async function onLogin (user: Contact) {
   log.info('onLogin', JSON.stringify(user, null, 2))
   log.info('user.id：', user.id)
@@ -53,10 +36,6 @@ async function onLogin (user: Contact) {
   const room = await bot.Room.find({ id: '11837093' })
   log.info('room：', room)
   room?.say(`Hi,我是数字员工${name}，很高兴认识你`)
-}
-
-function onLogout (user: Contact) {
-  log.info('onLogout', '%s logout', user)
 }
 
 async function onMessage (msg: Message) {
@@ -182,27 +161,19 @@ const puppet = new PuppetBridge({
   selfId: process.env['HI_SELF_ID'] || '',
   selfName: process.env['HI_SELF_NAME'] || '',
 })
+
 const bot = WechatyBuilder.build({
   name: 'ding-dong-bot',
   puppet,
 })
 
-bot.on('scan', onScan)
 bot.on('login', onLogin)
 bot.on('ready', async () => {
   log.info('bot已经准备好了')
-  // const roomList = await bot.Room.findAll()
-  // writeLog('群信息：' + JSON.stringify(roomList))
-  // log.info('群数量：', roomList.length)
-  // const contactList = await bot.Contact.findAll()
-  // writeLog('联系人信息：' + JSON.stringify(contactList))
-  // log.info('联系人数量：', contactList.length)
-  // const friends = contactList.filter(c => c.friend())
-  // log.info('好友数量：', friends.length)
   // 发送@好友消息
   log.info('bot.currentUser.id：', bot.currentUser.id)
   try {
-    const room = await bot.Room.find({ topic: '大师是群主' })
+    const room = await bot.Room.find({ id: '11837093' })
     log.info('room：', room)
     log.info('room.id：', room?.id)
   } catch (e) {
@@ -218,28 +189,7 @@ bot.on('ready', async () => {
   }
 })
 
-bot.on('logout', onLogout)
 bot.on('message', onMessage)
-bot.on('room-join', async (room, inviteeList, inviter) => {
-  const nameList = inviteeList.map(c => c.name()).join(',')
-  log.info(`Room ${await room.topic()} got new member ${nameList}, invited by ${inviter}`)
-})
-bot.on('room-leave', async (room, leaverList, remover) => {
-  const nameList = leaverList.map(c => c.name()).join(',')
-  log.info(`Room ${await room.topic()} lost member ${nameList}, the remover is: ${remover}`)
-})
-bot.on('room-topic', async (room, topic, oldTopic, changer) => {
-  log.info(`Room ${await room.topic()} topic changed from ${oldTopic} to ${topic} by ${changer.name()}`)
-})
-bot.on('room-invite', async roomInvitation => {
-  log.info(JSON.stringify(roomInvitation))
-  try {
-    log.info('received room-invite event.')
-    await roomInvitation.accept()
-  } catch (e) {
-    log.error('处理进群申请信息错误：', e)
-  }
-})
 
 bot.start()
   .then(() => {
