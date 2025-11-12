@@ -24,7 +24,7 @@ import {
 import {
   Bridge,
   MessageRaw,
-  ContentRaw,
+  // ContentRaw,
 } from '../agents/hi/hi-bot.js'
 
 // 存储消息ID和撤回信息
@@ -289,7 +289,7 @@ class PuppetBridge extends PUPPET.Puppet {
 
     try {
       if (this.isLoggedIn) {
-        if (code === 10000) {
+        if (code === 10000 && roomId) {
           // 你邀请"瓦力"加入了群聊
           // "超超超哥"邀请"瓦力"加入了群聊
           // "ledongmao"邀请"瓦力"加入了群聊

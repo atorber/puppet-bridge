@@ -113,7 +113,7 @@ class Bridge extends EventEmitter {
       const token = this.appAccessToken as string
       // axios 的 config.headers 在拦截器中总是存在
       config.headers.Authorization = `Bearer-${token}`
-      config.headers.LOGID = Date.now().toString()
+      config.headers['LOGID'] = Date.now().toString()
       return config
     })
 

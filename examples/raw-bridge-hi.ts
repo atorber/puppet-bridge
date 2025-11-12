@@ -10,11 +10,11 @@ console.log('rootPath:', rootPath)
 async function main () {
   console.info('Hi Bridge starting...')
   const bridge = new Bridge({
-    apiBaseUrl: process.env.HI_API_BASE_URL || '',
-    appKey: process.env.HI_APP_KEY || '',
-    appSecret: process.env.HI_APP_SECRET || '',
-    selfId: process.env.HI_SELF_ID || '',
-    selfName: process.env.HI_SELF_NAME || '',
+    apiBaseUrl: process.env['HI_API_BASE_URL'] || '',
+    appKey: process.env['HI_APP_KEY'] || '',
+    appSecret: process.env['HI_APP_SECRET'] || '',
+    selfId: process.env['HI_SELF_ID'] || '',
+    selfName: process.env['HI_SELF_NAME'] || '',
   })
 
   // bridge.on('heartbeat', (message) => {

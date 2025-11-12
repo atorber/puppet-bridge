@@ -48,7 +48,7 @@ async function onLogin (user: Contact) {
   const contact = await bot.Contact.find({ id: 'luyuchao' })
   log.info('contact：', contact)
   const name = await bot.currentUser.name()
-  contact.say(`Hi,我是数字员工${name}，很高兴认识你`)
+  await contact?.say(`Hi,我是数字员工${name}，很高兴认识你`)
 
   const room = await bot.Room.find({ id: '11837093' })
   log.info('room：', room)
@@ -176,11 +176,11 @@ async function onMessage (msg: Message) {
 }
 
 const puppet = new PuppetBridge({
-  apiBaseUrl: process.env.HI_API_BASE_URL || '',
-  appKey: process.env.HI_APP_KEY || '',
-  appSecret: process.env.HI_APP_SECRET || '',
-  selfId: process.env.HI_SELF_ID || '',
-  selfName: process.env.HI_SELF_NAME || '',
+  apiBaseUrl: process.env['HI_API_BASE_URL'] || '',
+  appKey: process.env['HI_APP_KEY'] || '',
+  appSecret: process.env['HI_APP_SECRET'] || '',
+  selfId: process.env['HI_SELF_ID'] || '',
+  selfName: process.env['HI_SELF_NAME'] || '',
 })
 const bot = WechatyBuilder.build({
   name: 'ding-dong-bot',
