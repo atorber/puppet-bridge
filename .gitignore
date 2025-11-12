@@ -71,3 +71,4 @@ file/*
 msgStore.json
 msgStore-wxbot.json
 tests/test2.js
+.docs/*

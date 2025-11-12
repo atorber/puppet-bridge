@@ -9,7 +9,7 @@ import {
 import { FileBox } from 'file-box'
 
 import { PuppetBridgeTtttupupWxhelperV3091019 as PuppetBridge } from '../src/mod.js'
-import qrcodeTerminal from 'qrcode-terminal'
+import * as qrcodeTerminal from 'qrcode-terminal'
 import * as fs from 'fs'
 
 // 初始化检查当前文件加下是否存在日志文件info.log，如果不存在则创建
@@ -176,7 +176,7 @@ const onReady = async () => {
   const room = await bot.Room.find({ topic:'大师是群主' })
   log.info('room：', room)
 
-  const contact = await bot.Contact.find({ name:'luyuchao' })
+  const contact = await bot.Contact.find({ name:'ledongmao' })
   log.info('contact', contact)
 
   // if (room && contact) {

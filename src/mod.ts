@@ -9,6 +9,7 @@ import { PuppetBridge as PuppetBridgeTtttupupWxhelperV3091019 } from './puppet/p
 // import { PuppetBridge as PuppetBridgeLich0821WeChatFerryV3091027 } from './puppet-bridge-lich0821-WeChatFerry-3091027.js'
 import { PuppetBridge } from './puppet/puppet-bridge-lich0821-WeChatFerry-391027.js'
 import { PuppetBridge as PuppetGeWe } from './puppet/puppet-bridge-ipad.js'
+import { PuppetBridge as PuppetBridgeHi } from './puppet/puppet-bridge-hi.js'
 import { Client as Gewe } from './agents/Devo919-Gewechat/client/mod.js'
 
 export {
@@ -23,6 +24,7 @@ export {
   PuppetBridgeTtttupupWxhelperV3090223,
   PuppetBridgeTtttupupWxhelperV3091019,
   PuppetBridgeCixingguangming55555WechatBotV3091027,
+  PuppetBridgeHi,
   Gewe,
 }
 export default PuppetBridge

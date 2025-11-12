@@ -1,6 +1,6 @@
 {
   "name": "wechaty-puppet-bridge",
-  "version": "0.16.0",
+  "version": "0.17.2",
   "description": "Puppet Bridge for Wechaty",
   "type": "module",
   "exports": {
@@ -28,6 +28,8 @@
     "start:ripe": "cross-env WECHATY_LOG=verbose NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/ripe-wechaty-3090223.ts",
     "start:ripe:info": "cross-env WECHATY_LOG=info NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/ripe-wechaty-3090223.ts",
     "start:ripe:demo": "cross-env WECHATY_LOG=info NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/demo.ts",
+    "start:ripe:hi:info": "cross-env WECHATY_LOG=info NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/ripe-wechaty-hi.ts",
+    "start:raw-bridge-hi:info": "cross-env BROLOG_LEVEL=info NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/raw-bridge-hi.ts",
     "start:raw-bridge-jwping-wxbot:info": "cross-env BROLOG_LEVEL=info NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/raw-bridge-jwping-wxbot.ts",
     "start:ripe-bridge-jwping-wxbot:info": "cross-env WECHATY_LOG=info NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/ripe-wechaty-jwping-wxbot-3090825.ts",
     "start:raw-bridge-ttttupup-wxhelper:info": "cross-env BROLOG_LEVEL=info NODE_OPTIONS=\"--no-warnings --loader=ts-node/esm\" node examples/raw-bridge-ttttupup-wxhelper.ts",
@@ -94,10 +96,12 @@
     "wechaty-puppet": "^1.10.2"
   },
   "dependencies": {
+    "@types/mqtt": "^0.0.34",
     "@zippybee/wechatcore": "^2.1.13",
     "axios": "^1.6.5",
     "cuid": "^2.1.8",
     "dotenv": "^16.4.5",
+    "mqtt": "^5.14.1",
     "qrcode-terminal": "^0.12.0",
     "sudo-prompt": "^9.2.1",
     "ws": "^8.16.0",
@@ -115,5 +119,10 @@
   "publishConfig": {
     "access": "public",
     "tag": "latest"
+  },
+  "git": {
+    "scripts": {
+      "pre-push": "npx git-scripts-pre-push"
+    }
   }
 }

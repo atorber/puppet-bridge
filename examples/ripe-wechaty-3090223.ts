@@ -38,7 +38,7 @@ async function onLogin (user: Contact) {
 
   // 发送@好友消息
   // const room = await bot.Room.find({topic:'大师是群主'})
-  // const contact = await bot.Contact.find({name:'luyuchao'})
+  // const contact = await bot.Contact.find({name:'ledongmao'})
   // log.info('room：', room)
   // if(room && contact){
   //   const contacts:Contact[]= [contact]
