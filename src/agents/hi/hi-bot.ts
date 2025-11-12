@@ -6,7 +6,7 @@ import { log } from 'wechaty-puppet'
 import crypto from 'crypto'
 import mqtt, { type MqttClient } from 'mqtt'
 
-// 如流API响应类型
+// hiAPI响应类型
 interface ApiResponse<T = any> {
   code?: string
   errcode?: number
@@ -170,7 +170,7 @@ class Bridge extends EventEmitter {
 
       log.verbose('Bridge', 'getAppAccessToken response: %s', JSON.stringify(response.data, null, 2))
 
-      // 如流 API 响应格式：{ code: "ok", data: { app_access_token: "xxx", expire: 7200 } }
+      // hi API 响应格式：{ code: "ok", data: { app_access_token: "xxx", expire: 7200 } }
       if (response.data.code === 'ok' && response.data.data) {
         const tokenData = response.data.data
         this.appAccessToken = tokenData.app_access_token
@@ -205,7 +205,7 @@ class Bridge extends EventEmitter {
         },
       })
 
-      // 如流 API 响应是嵌套的
+      // hi API 响应是嵌套的
       const result = response.data.data || response.data
       const isSuccess = response.data.code === 'ok' || result.errcode === 0
 
@@ -231,7 +231,7 @@ class Bridge extends EventEmitter {
         },
       })
 
-      // 如流 API 响应是嵌套的
+      // hi API 响应是嵌套的
       const result = response.data.data || response.data
       const isSuccess = response.data.code === 'ok' || result.errcode === 0
 
@@ -266,7 +266,7 @@ class Bridge extends EventEmitter {
       // 打印完整的响应数据用于调试
       log.verbose('Bridge', 'messageSendTextWithKey response: %s', JSON.stringify(response.data, null, 2))
 
-      // 如流 API 响应是嵌套的：{ code: "ok", data: { errcode: 0, errmsg: "ok", msgkey: "..." } }
+      // hi API 响应是嵌套的：{ code: "ok", data: { errcode: 0, errmsg: "ok", msgkey: "..." } }
       const result = response.data.data || response.data
 
       log.verbose('Bridge', 'result.errcode: %s', result.errcode)
@@ -328,7 +328,7 @@ class Bridge extends EventEmitter {
         },
       )
 
-      // 如流群聊 API 响应是三层嵌套：{ code: "ok", data: { errcode: 0, data: { messageid, msgseqid, ctime } } }
+      // hi群聊 API 响应是三层嵌套：{ code: "ok", data: { errcode: 0, data: { messageid, msgseqid, ctime } } }
       log.verbose('Bridge', 'messageSendTextToGroup response: %s', JSON.stringify(response.data, null, 2))
       if (response.data.code !== 'ok' || !response.data.data) {
         throw new Error(`Failed to send group message: code=${response.data.code}, error=${response.data.errmsg || 'unknown error'}`)
@@ -397,7 +397,7 @@ class Bridge extends EventEmitter {
       // 打印完整的响应数据用于调试
       log.verbose('Bridge', 'messageSendTextAt response: %s', JSON.stringify(response.data, null, 2))
 
-      // 如流群聊 API 响应是三层嵌套：{ code: "ok", data: { errcode: 0, data: { messageid, msgseqid, ctime } } }
+      // hi群聊 API 响应是三层嵌套：{ code: "ok", data: { errcode: 0, data: { messageid, msgseqid, ctime } } }
       if (response.data.code !== 'ok' || !response.data.data) {
         throw new Error(`Failed to send group @ message: code=${response.data.code}, error=${response.data.errmsg || 'unknown error'}`)
       }
@@ -452,7 +452,7 @@ class Bridge extends EventEmitter {
       // 打印完整的响应数据用于调试
       log.verbose('Bridge', 'messageSendPictureToGroup response: %s', JSON.stringify(response.data, null, 2))
 
-      // 如流群聊 API 响应是三层嵌套：{ code: "ok", data: { errcode: 0, data: { messageid, msgseqid, ctime } } }
+      // hi群聊 API 响应是三层嵌套：{ code: "ok", data: { errcode: 0, data: { messageid, msgseqid, ctime } } }
       if (response.data.code !== 'ok' || !response.data.data) {
         throw new Error(`Failed to send group image: code=${response.data.code}, error=${response.data.errmsg || 'unknown error'}`)
       }
@@ -506,7 +506,7 @@ class Bridge extends EventEmitter {
       // 打印完整的响应数据用于调试
       log.verbose('Bridge', 'messageSendUrlToGroup response: %s', JSON.stringify(response.data, null, 2))
 
-      // 如流群聊 API 响应是三层嵌套：{ code: "ok", data: { errcode: 0, data: { messageid, msgseqid, ctime } } }
+      // hi群聊 API 响应是三层嵌套：{ code: "ok", data: { errcode: 0, data: { messageid, msgseqid, ctime } } }
       if (response.data.code !== 'ok' || !response.data.data) {
         throw new Error(`Failed to send group url: code=${response.data.code}, error=${response.data.errmsg || 'unknown error'}`)
       }
@@ -774,10 +774,10 @@ class Bridge extends EventEmitter {
   }
 
   /**
-   * 登录（如流机器人不需要登录，直接返回成功）
+   * 登录（hi机器人不需要登录，直接返回成功）
    */
   async login (): Promise<void> {
-    log.verbose('Bridge', 'login() - 如流机器人无需登录')
+    log.verbose('Bridge', 'login() - hi机器人无需登录')
     await this.ensureToken()
 
     // 初始化 MQTT 连接
@@ -867,18 +867,18 @@ class Bridge extends EventEmitter {
   }
 
   /**
-   * 重连（如流机器人不需要重连）
+   * 重连（hi机器人不需要重连）
    */
   async reconnection (): Promise<void> {
-    log.verbose('Bridge', 'reconnection() - 如流机器人无需重连')
+    log.verbose('Bridge', 'reconnection() - hi机器人无需重连')
     await this.ensureToken()
   }
 
   /**
-   * 获取二维码（如流机器人不需要二维码）
+   * 获取二维码（hi机器人不需要二维码）
    */
   async contactSelfQRCode (): Promise<string> {
-    log.verbose('Bridge', 'contactSelfQRCode() - 如流机器人无需二维码')
+    log.verbose('Bridge', 'contactSelfQRCode() - hi机器人无需二维码')
     return ''
   }
 

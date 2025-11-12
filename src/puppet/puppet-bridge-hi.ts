@@ -37,8 +37,8 @@ interface MessageRecallInfo {
 }
 
 export type PuppetBridgeOptions = PUPPET.PuppetOptions & {
-  appKey: string  // 如流应用 app_key
-  appSecret: string  // 如流应用 app_secret
+  appKey: string  // hi应用 app_key
+  appSecret: string  // hi应用 app_secret
   apiBaseUrl: string  // API基础地址，如：http://xxx.com
   agentId?: number  // 机器人ID（撤回单聊消息时需要）
   selfId: string  // 机器人ID
@@ -125,7 +125,7 @@ class PuppetBridge extends PUPPET.Puppet {
   async onStart () {
     log.verbose('PuppetBridge', 'onStart()')
 
-    // 如流机器人不需要扫码，直接触发scan事件
+    // hi机器人不需要扫码，直接触发scan事件
     this.scanEventData = {
       qrcode: '',
       status: PUPPET.types.ScanStatus.Unknown,
@@ -164,7 +164,7 @@ class PuppetBridge extends PUPPET.Puppet {
       this.onHookRecvMsg(messageData)
     })
 
-    // 如流机器人自动登录（获取token）
+    // hi机器人自动登录（获取token）
     await this.bridge.login()
   }
 
@@ -175,7 +175,7 @@ class PuppetBridge extends PUPPET.Puppet {
   private async onLogin () {
     log.verbose('PuppetBridge', 'onLogin()')
     if (!this.isLoggedIn) {
-      // 如流机器人不需要获取联系人列表，直接登录
+      // hi机器人不需要获取联系人列表，直接登录
       await super.login(this.selfInfo.id)
       await this.onAgentReady()
     } else {
@@ -219,7 +219,7 @@ class PuppetBridge extends PUPPET.Puppet {
   }
 
   /**
-   * 获取群成员列表（如流机器人支持）
+   * 获取群成员列表（hi机器人支持）
    */
   private async loadRoomMemberList (groupId: number): Promise<void> {
     try {
@@ -659,7 +659,7 @@ class PuppetBridge extends PUPPET.Puppet {
     _messageId: string,
   ): Promise<string> {
     log.verbose('PuppetBridge', 'messageContact(%s)', _messageId)
-    // 如流机器人暂不支持联系人消息解析
+    // hi机器人暂不支持联系人消息解析
     this.notSupported('messageContact')
     return ''
   }
@@ -671,7 +671,7 @@ class PuppetBridge extends PUPPET.Puppet {
     log.verbose('PuppetBridge', 'messageImage(%s, %s)', messageId, imageType)
     const message = this.messageStore[messageId]
 
-    // 如流机器人暂不支持图片消息解析
+    // hi机器人暂不支持图片消息解析
     // 如果消息中有图片URL，可以尝试从URL加载
     if (message?.text) {
       try {
@@ -749,7 +749,7 @@ class PuppetBridge extends PUPPET.Puppet {
     }
 
     if (message?.type === PUPPET.types.Message.Attachment) {
-      // 如流机器人暂不支持附件文件解析
+      // hi机器人暂不支持附件文件解析
       this.notSupported('messageFile for Attachment')
       throw new Error('messageFile for Attachment not supported')
     }
@@ -780,21 +780,21 @@ class PuppetBridge extends PUPPET.Puppet {
 
   override async messageUrl (messageId: string): Promise<PUPPET.payloads.UrlLink> {
     log.verbose('PuppetBridge', 'messageUrl(%s)', messageId)
-    // 如流机器人暂不支持URL消息解析
+    // hi机器人暂不支持URL消息解析
     this.notSupported('messageUrl')
     throw new Error('messageUrl not supported')
   }
 
   override async messageMiniProgram (messageId: string): Promise<PUPPET.payloads.MiniProgram> {
     log.verbose('PuppetBridge', 'messageMiniProgram(%s)', messageId)
-    // 如流机器人暂不支持小程序消息解析
+    // hi机器人暂不支持小程序消息解析
     this.notSupported('messageMiniProgram')
     throw new Error('messageMiniProgram not supported')
   }
 
   override async messageLocation (messageId: string): Promise<PUPPET.payloads.Location> {
     log.verbose('PuppetBridge', 'messageLocation(%s)', messageId)
-    // 如流机器人暂不支持位置消息解析
+    // hi机器人暂不支持位置消息解析
     this.notSupported('messageLocation')
     throw new Error('messageLocation not supported')
   }
@@ -893,7 +893,7 @@ class PuppetBridge extends PUPPET.Puppet {
   ): Promise<void> {
     log.verbose('PuppetBridge', 'messageSendFile(%s, %s)', conversationId, file.name)
 
-    // 如流机器人文件发送需要先上传文件获取md5，然后使用文件消息API
+    // hi机器人文件发送需要先上传文件获取md5，然后使用文件消息API
     // 目前暂不支持文件发送功能
     this.notSupported('messageSendFile')
     throw new Error('messageSendFile not supported for hi robot. File messages require uploading file first to get md5.')
