@@ -29,7 +29,7 @@ async function onLogin (user: Contact) {
   log.info('user.id：', user.id)
   log.info('user.name：', await user.name())
   log.info('bot.currentUser.id：', bot.currentUser.id)
-  const contact = await bot.Contact.find({ id: 'luyuchao' })
+  const contact = await bot.Contact.find({ id: 'ledongmao' })
   log.info('contact：', contact)
   const name = await bot.currentUser.name()
   await contact?.say(`Hi,我是${name}，很高兴认识你`)
