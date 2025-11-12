@@ -32,11 +32,11 @@ async function onLogin (user: Contact) {
   const contact = await bot.Contact.find({ id: 'luyuchao' })
   log.info('contact：', contact)
   const name = await bot.currentUser.name()
-  await contact?.say(`Hi,我是数字员工${name}，很高兴认识你`)
+  await contact?.say(`Hi,我是${name}，很高兴认识你`)
 
   const room = await bot.Room.find({ id: '11837093' })
   log.info('room：', room)
-  await room?.say(`Hi,我是数字员工${name}，很高兴认识你`)
+  await room?.say(`Hi,我是${name}，很高兴认识你`)
 }
 
 async function onMessage (msg: Message) {
