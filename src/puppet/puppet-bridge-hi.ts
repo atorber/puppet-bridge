@@ -689,6 +689,9 @@ class PuppetBridge extends PUPPET.Puppet {
           // 发送@消息
           const result = await this.bridge.messageSendTextAt(groupId, text, mentionIdList)
 
+          // result 直接是 { messageid, msgseqid, ctime }
+          log.verbose('PuppetBridge', 'messageSendText - @ message result: %s', JSON.stringify(result))
+
           // 保存撤回信息
           this.messageRecallMap[messageId] = {
             groupId,
@@ -698,7 +701,7 @@ class PuppetBridge extends PUPPET.Puppet {
         } else {
           // 发送普通群聊消息
           const result = await this.bridge.messageSendTextToGroup(groupId, text)
-
+          log.info('PuppetBridge', 'messageSendText - group message result: %s', JSON.stringify(result))
           // 保存撤回信息
           this.messageRecallMap[messageId] = {
             groupId,

@@ -29,7 +29,7 @@ interface RoomMemberResponse {
   agentInfoList?: Array<{ agentId: number }>
 }
 
-// 群聊消息发送响应
+// 群聊消息发送响应（方法返回的是解析后的最终数据）
 interface GroupMessageResponse {
   messageid: number
   msgseqid: number
@@ -314,21 +314,33 @@ class Bridge extends EventEmitter {
       )
 
       // 打印完整的响应数据用于调试
-      log.verbose('Bridge', 'messageSendTextToGroup response: %s', JSON.stringify(response.data, null, 2))
+      log.info('Bridge', '==================== messageSendTextToGroup 响应开始 ====================')
+      log.info('Bridge', 'response.status: %s', response.status)
+      log.info('Bridge', 'response.data (完整): %s', JSON.stringify(response.data, null, 2))
+      log.info('Bridge', 'response.data.code: %s', response.data.code)
+      log.info('Bridge', 'response.data.errcode: %s', response.data.errcode)
+      log.info('Bridge', 'response.data.data: %s', JSON.stringify(response.data.data, null, 2))
+      if (response.data.data) {
+        log.info('Bridge', 'response.data.data.errcode: %s', (response.data.data as any).errcode)
+        log.info('Bridge', 'response.data.data.data: %s', JSON.stringify((response.data.data as any).data, null, 2))
+      }
+      log.info('Bridge', '==================== messageSendTextToGroup 响应结束 ====================')
 
       // 如流群聊 API 响应是三层嵌套：{ code: "ok", data: { errcode: 0, data: { messageid, msgseqid, ctime } } }
       if (response.data.code !== 'ok' || !response.data.data) {
         throw new Error(`Failed to send group message: code=${response.data.code}, error=${response.data.errmsg || 'unknown error'}`)
       }
 
+      // 第二层：response.data.data = { errcode: 0, errmsg: "ok", data: {...} }
       const innerData = response.data.data
-      if (innerData.errcode !== 0) {
-        const errorMsg = `Failed to send group message: errcode=${innerData.errcode}, errmsg=${innerData.errmsg || 'unknown error'}`
+      if ((innerData as any).errcode !== 0) {
+        const errorMsg = `Failed to send group message: errcode=${(innerData as any).errcode}, errmsg=${(innerData as any).errmsg || 'unknown error'}`
         log.error('Bridge', '✗ 群聊消息发送失败 - groupId: %s, error: %s', groupId, errorMsg)
         throw new Error(errorMsg)
       }
 
-      const msgData = innerData.data as GroupMessageResponse
+      // 第三层：innerData.data = { messageid, msgseqid, ctime }
+      const msgData = (innerData as any).data
       log.info('Bridge', '✓ 群聊消息发送成功 - groupId: %s, messageid: %s, msgseqid: %s',
         groupId, msgData.messageid, msgData.msgseqid)
       return msgData
@@ -387,15 +399,17 @@ class Bridge extends EventEmitter {
         throw new Error(`Failed to send group @ message: code=${response.data.code}, error=${response.data.errmsg || 'unknown error'}`)
       }
 
+      // 第二层：response.data.data = { errcode: 0, errmsg: "ok", data: {...} }
       const innerData = response.data.data
-      if (innerData.errcode !== 0) {
-        const errorMsg = `Failed to send group @ message: errcode=${innerData.errcode}, errmsg=${innerData.errmsg || 'unknown error'}`
+      if ((innerData as any).errcode !== 0) {
+        const errorMsg = `Failed to send group @ message: errcode=${(innerData as any).errcode}, errmsg=${(innerData as any).errmsg || 'unknown error'}`
         log.error('Bridge', '✗ 群聊@消息发送失败 - groupId: %s, atUsers: %s, error: %s',
           groupId, atUserIds.join(','), errorMsg)
         throw new Error(errorMsg)
       }
 
-      const msgData = innerData.data as GroupMessageResponse
+      // 第三层：innerData.data = { messageid, msgseqid, ctime }
+      const msgData = (innerData as any).data
       log.info('Bridge', '✓ 群聊@消息发送成功 - groupId: %s, atUsers: %s, messageid: %s, msgseqid: %s',
         groupId, atUserIds.join(','), msgData.messageid, msgData.msgseqid)
       return msgData
@@ -440,14 +454,16 @@ class Bridge extends EventEmitter {
         throw new Error(`Failed to send group image: code=${response.data.code}, error=${response.data.errmsg || 'unknown error'}`)
       }
 
+      // 第二层：response.data.data = { errcode: 0, errmsg: "ok", data: {...} }
       const innerData = response.data.data
-      if (innerData.errcode !== 0) {
-        const errorMsg = `Failed to send group image: errcode=${innerData.errcode}, errmsg=${innerData.errmsg || 'unknown error'}`
+      if ((innerData as any).errcode !== 0) {
+        const errorMsg = `Failed to send group image: errcode=${(innerData as any).errcode}, errmsg=${(innerData as any).errmsg || 'unknown error'}`
         log.error('Bridge', '✗ 群聊图片发送失败 - groupId: %s, error: %s', groupId, errorMsg)
         throw new Error(errorMsg)
       }
 
-      const msgData = innerData.data as GroupMessageResponse
+      // 第三层：innerData.data = { messageid, msgseqid, ctime }
+      const msgData = (innerData as any).data
       log.info('Bridge', '✓ 群聊图片发送成功 - groupId: %s, messageid: %s, msgseqid: %s',
         groupId, msgData.messageid, msgData.msgseqid)
       return msgData
@@ -492,14 +508,16 @@ class Bridge extends EventEmitter {
         throw new Error(`Failed to send group url: code=${response.data.code}, error=${response.data.errmsg || 'unknown error'}`)
       }
 
+      // 第二层：response.data.data = { errcode: 0, errmsg: "ok", data: {...} }
       const innerData = response.data.data
-      if (innerData.errcode !== 0) {
-        const errorMsg = `Failed to send group url: errcode=${innerData.errcode}, errmsg=${innerData.errmsg || 'unknown error'}`
+      if ((innerData as any).errcode !== 0) {
+        const errorMsg = `Failed to send group url: errcode=${(innerData as any).errcode}, errmsg=${(innerData as any).errmsg || 'unknown error'}`
         log.error('Bridge', '✗ 群聊链接发送失败 - groupId: %s, url: %s, error: %s', groupId, url, errorMsg)
         throw new Error(errorMsg)
       }
 
-      const msgData = innerData.data as GroupMessageResponse
+      // 第三层：innerData.data = { messageid, msgseqid, ctime }
+      const msgData = (innerData as any).data
       log.info('Bridge', '✓ 群聊链接发送成功 - groupId: %s, url: %s, messageid: %s, msgseqid: %s',
         groupId, url, msgData.messageid, msgData.msgseqid)
       return msgData
@@ -524,7 +542,10 @@ class Bridge extends EventEmitter {
         agentid: this.agentId,
       })
 
-      // 单聊撤回响应是非嵌套的
+      // 打印响应数据用于调试
+      log.verbose('Bridge', 'messageRecallSingle response: %s', JSON.stringify(response.data, null, 2))
+
+      // 单聊撤回响应格式：{ "errcode": 0, "errmsg": "ok" }（非嵌套）
       if (response.data.errcode !== 0) {
         const errorMsg = `Failed to recall message: errcode=${response.data.errcode}, errmsg=${response.data.errmsg || 'unknown error'}`
         log.error('Bridge', '✗ 单聊消息撤回失败 - msgkey: %s, error: %s', msgkey, errorMsg)
@@ -554,7 +575,10 @@ class Bridge extends EventEmitter {
         msgseqid,
       })
 
-      // 群聊撤回响应是非嵌套的
+      // 打印响应数据用于调试
+      log.verbose('Bridge', 'messageRecallGroup response: %s', JSON.stringify(response.data, null, 2))
+
+      // 群聊撤回响应格式：{ "errcode": 0, "errmsg": "ok" }（非嵌套）
       if (response.data.errcode !== 0) {
         const errorMsg = `Failed to recall group message: errcode=${response.data.errcode}, errmsg=${response.data.errmsg || 'unknown error'}`
         log.error('Bridge', '✗ 群聊消息撤回失败 - groupId: %s, messageid: %s, error: %s',
