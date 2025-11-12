@@ -459,15 +459,15 @@ class PuppetBridge extends PUPPET.Puppet {
         if (code === 10000 || code === 10002) {
           // 你邀请"瓦力"加入了群聊
           // "超超超哥"邀请"瓦力"加入了群聊
-          // "luyuchao"邀请"瓦力"加入了群聊
+          // "ledongmao"邀请"瓦力"加入了群聊
           // "超超超哥"邀请你加入了群聊，群聊参与人还有：瓦力
 
           // 你将"瓦力"移出了群聊
-          // 你被"luyuchao"移出群聊
+          // 你被"ledongmao"移出群聊
 
           // 你修改群名为“瓦力专属”
           // 你修改群名为“大师是群主”
-          // "luyuchao"修改群名为“北辰香麓欣麓园抗疫”
+          // "ledongmao"修改群名为“北辰香麓欣麓园抗疫”
 
           const room = this.roomStore[roomId]
           //  log.info('room=========================', room)

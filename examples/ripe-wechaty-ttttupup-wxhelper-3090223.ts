@@ -184,7 +184,7 @@ bot.on('ready', async () => {
   const room = await bot.Room.find({ topic:'大师是群主' })
   log.info('room：', room)
 
-  const contact = await bot.Contact.find({ name:'luyuchao' })
+  const contact = await bot.Contact.find({ name:'ledongmao' })
   log.info('contact', contact)
 
   if (room && contact) {
