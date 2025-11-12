@@ -116,6 +116,7 @@ class PuppetBridge extends PUPPET.Puppet {
       phone: [],
       type: PUPPET.types.Contact.Individual,
     }
+    this.contactStore[this.selfInfo.id] = this.selfInfo
   }
 
   override version () {
