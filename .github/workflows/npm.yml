@@ -24,7 +24,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: Install Dependencies
-        run: npm install
+        run: npm ci
 
       - name: Test
         run: npm test
@@ -47,7 +47,7 @@ jobs:
           node-version: ${{ matrix.node}}
 
       - name: Install Dependencies
-        run: npm install
+        run: npm ci
 
       - name: Generate Package JSON
         run: ./scripts/generate-package-json.sh
@@ -64,11 +64,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: 20
           registry-url: https://registry.npmjs.org/
 
       - name: Install Dependencies
-        run: npm install
+        run: npm ci
 
       - name: Generate Package JSON
         run: ./scripts/generate-package-json.sh
