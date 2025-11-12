@@ -25,6 +25,10 @@ jobs:
 
       - name: Install Dependencies
         run: npm ci
+      
+      - name: Install Platform-specific Dependencies (Windows)
+        if: runner.os == 'Windows'
+        run: npm install --force @swc/core-win32-x64-msvc
 
       - name: Test
         run: npm test
@@ -48,6 +52,10 @@ jobs:
 
       - name: Install Dependencies
         run: npm ci
+      
+      - name: Install Platform-specific Dependencies (Windows)
+        if: runner.os == 'Windows'
+        run: npm install --force @swc/core-win32-x64-msvc
 
       - name: Generate Package JSON
         run: ./scripts/generate-package-json.sh
