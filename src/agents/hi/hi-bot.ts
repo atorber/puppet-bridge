@@ -3,7 +3,8 @@
 import axios, { type AxiosInstance } from 'axios'
 import { EventEmitter } from 'events'
 import { log } from 'wechaty-puppet'
-import * as crypto from 'crypto'
+import crypto from 'crypto'
+import mqtt, { type MqttClient } from 'mqtt'
 
 // 如流API响应类型
 interface ApiResponse<T = any> {
@@ -79,7 +80,12 @@ class Bridge extends EventEmitter {
   private tokenExpireTime: number = 0
   private agentId?: number
   private selfId: string
-  private selfName: string
+  // MQTT 客户端
+  private mqttClient?: MqttClient
+  private mqttBrokerUrl?: string
+  private mqttUsername?: string
+  private mqttPassword?: string
+  private mqttTopic?: string
 
   constructor (options: {
     appKey: string
@@ -88,6 +94,11 @@ class Bridge extends EventEmitter {
     agentId?: number
     selfId: string
     selfName: string
+    // MQTT 配置
+    mqttBrokerUrl?: string
+    mqttUsername?: string
+    mqttPassword?: string
+    mqttTopic?: string
   }) {
     super()
     this.appKey = options.appKey
@@ -95,7 +106,11 @@ class Bridge extends EventEmitter {
     this.apiBaseUrl = options.apiBaseUrl
     this.agentId = options.agentId
     this.selfId = options.selfId
-    this.selfName = options.selfName
+    this.mqttBrokerUrl = options.mqttBrokerUrl
+    this.mqttUsername = options.mqttUsername
+    this.mqttPassword = options.mqttPassword
+    this.mqttTopic = options.mqttTopic
+
     // 创建HTTP客户端
     this.httpClient = axios.create({
       baseURL: this.apiBaseUrl,
@@ -313,20 +328,8 @@ class Bridge extends EventEmitter {
         },
       )
 
-      // 打印完整的响应数据用于调试
-      log.info('Bridge', '==================== messageSendTextToGroup 响应开始 ====================')
-      log.info('Bridge', 'response.status: %s', response.status)
-      log.info('Bridge', 'response.data (完整): %s', JSON.stringify(response.data, null, 2))
-      log.info('Bridge', 'response.data.code: %s', response.data.code)
-      log.info('Bridge', 'response.data.errcode: %s', response.data.errcode)
-      log.info('Bridge', 'response.data.data: %s', JSON.stringify(response.data.data, null, 2))
-      if (response.data.data) {
-        log.info('Bridge', 'response.data.data.errcode: %s', (response.data.data as any).errcode)
-        log.info('Bridge', 'response.data.data.data: %s', JSON.stringify((response.data.data as any).data, null, 2))
-      }
-      log.info('Bridge', '==================== messageSendTextToGroup 响应结束 ====================')
-
       // 如流群聊 API 响应是三层嵌套：{ code: "ok", data: { errcode: 0, data: { messageid, msgseqid, ctime } } }
+      log.verbose('Bridge', 'messageSendTextToGroup response: %s', JSON.stringify(response.data, null, 2))
       if (response.data.code !== 'ok' || !response.data.data) {
         throw new Error(`Failed to send group message: code=${response.data.code}, error=${response.data.errmsg || 'unknown error'}`)
       }
@@ -623,11 +626,163 @@ class Bridge extends EventEmitter {
   }
 
   /**
+   * 初始化 MQTT 连接
+   */
+  private initMqtt (): void {
+    if (!this.mqttBrokerUrl || !this.mqttTopic) {
+      log.warn('Bridge', 'MQTT not configured, message receiving disabled')
+      return
+    }
+
+    try {
+      // 确保 broker URL 有协议前缀
+      let brokerUrl = this.mqttBrokerUrl
+      if (!brokerUrl.startsWith('mqtt://') && !brokerUrl.startsWith('mqtts://') && !brokerUrl.startsWith('ws://') && !brokerUrl.startsWith('wss://')) {
+        brokerUrl = `mqtt://${brokerUrl}`
+        log.info('Bridge', 'Added mqtt:// prefix to broker URL: %s', brokerUrl)
+      }
+
+      log.info('Bridge', 'Initializing MQTT connection to %s', brokerUrl)
+      log.info('Bridge', 'MQTT config: username=%s, topic=%s', this.mqttUsername || 'N/A', this.mqttTopic)
+
+      const connectOptions: mqtt.IClientOptions = {
+        clientId: `hi-robot-${this.selfId}-${Date.now()}`,
+        clean: true,
+        reconnectPeriod: 5000,
+      }
+
+      if (this.mqttUsername) {
+        connectOptions.username = this.mqttUsername
+      }
+      if (this.mqttPassword) {
+        connectOptions.password = this.mqttPassword
+      }
+
+      this.mqttClient = mqtt.connect(brokerUrl, connectOptions)
+    } catch (error: any) {
+      log.error('Bridge', '✗ Failed to initialize MQTT: %s', error.message)
+      return
+    }
+
+    this.mqttClient.on('connect', () => {
+      try {
+        log.info('Bridge', '✓ MQTT connected successfully')
+        if (this.mqttClient && this.mqttTopic) {
+          this.mqttClient.subscribe(this.mqttTopic, (err) => {
+            try {
+              if (err) {
+                log.error('Bridge', '✗ Failed to subscribe to topic %s: %s', this.mqttTopic, err.message)
+              } else {
+                log.info('Bridge', '✓ Subscribed to MQTT topic: %s', this.mqttTopic)
+              }
+            } catch (logError) {
+              console.error('MQTT subscribe callback error:', logError)
+            }
+          })
+        }
+      } catch (error) {
+        console.error('MQTT connect event error:', error)
+      }
+    })
+
+    this.mqttClient.on('message', (topic, message) => {
+      try {
+        const messageStr = message.toString()
+        log.info('Bridge', '==================== MQTT 消息接收开始 ====================')
+        log.info('Bridge', 'MQTT topic: %s', topic)
+        log.info('Bridge', 'MQTT message (raw): %s', messageStr)
+        log.info('Bridge', 'MQTT message length: %s bytes', message.length)
+
+        try {
+          log.info('Bridge', '==================== MQTT 消息接收开始 ====================')
+          log.info('Bridge', 'MQTT topic: %s', topic)
+          log.info('Bridge', 'MQTT message (raw): %s', messageStr)
+          log.info('Bridge', 'MQTT message length: %s bytes', message.length)
+        } catch (logError) {
+          log.error('Bridge', 'Log error, using console instead: %s', logError)
+        }
+
+        // 解析消息
+        const messageData = JSON.parse(messageStr)
+        log.info('Bridge', 'MQTT message (parsed): %s', JSON.stringify(messageData, null, 2))
+        log.info('Bridge', '==================== MQTT 消息接收结束 ====================')
+
+        try {
+          log.info('Bridge', 'MQTT message (parsed): %s', JSON.stringify(messageData, null, 2))
+          log.info('Bridge', '==================== MQTT 消息接收结束 ====================')
+        } catch (logError) {
+          log.error('Bridge', 'Log error in message handler: %s', logError)
+        }
+
+        this.handleMqttMessage(messageData)
+      } catch (error: any) {
+        log.error('Bridge', '✗ Error parsing MQTT message: %s', error.message)
+        log.error('Bridge', 'Raw message that failed to parse: %s', message.toString())
+      }
+    })
+
+    this.mqttClient.on('error', (error) => {
+      log.error('Bridge', '✗ MQTT error: %s', error.message || error.toString())
+      log.error('Bridge', 'MQTT error details: %s', error)
+      // 不触发 error 事件，避免中断程序
+    })
+
+    this.mqttClient.on('close', () => {
+      log.info('Bridge', 'MQTT connection closed')
+      try {
+        log.warn('Bridge', 'MQTT connection closed')
+      } catch (e) {
+        // ignore
+      }
+    })
+
+    this.mqttClient.on('reconnect', () => {
+      log.info('Bridge', 'MQTT reconnecting...')
+      try {
+        log.info('Bridge', 'MQTT reconnecting...')
+      } catch (e) {
+        // ignore
+      }
+    })
+  }
+
+  /**
+   * 处理 MQTT 接收到的消息
+   */
+  private handleMqttMessage (messageData: any): void {
+    log.info('Bridge', '========== handleMqttMessage 开始处理 ==========')
+    log.info('Bridge', 'Message Data Type: %s', typeof messageData)
+    log.info('Bridge', 'Message Data Keys: %s', Object.keys(messageData).join(', '))
+
+    if (messageData.header) {
+      log.info('Bridge', 'Header: %s', JSON.stringify(messageData.header, null, 2))
+      log.info('Bridge', '  - fromuserid: %s', messageData.header.fromuserid)
+      log.info('Bridge', '  - toid: %s', messageData.header.toid)
+      log.info('Bridge', '  - totype: %s', messageData.header.totype)
+      log.info('Bridge', '  - msgtype: %s', messageData.header.msgtype)
+      log.info('Bridge', '  - messageid: %s', messageData.header.messageid)
+    }
+
+    if (messageData.body) {
+      log.info('Bridge', 'Body (%s items): %s', messageData.body.length, JSON.stringify(messageData.body, null, 2))
+    }
+
+    log.info('Bridge', '========== handleMqttMessage 触发事件 ==========')
+
+    // 触发 message 事件，由 puppet 层处理
+    this.emit('message', messageData)
+  }
+
+  /**
    * 登录（如流机器人不需要登录，直接返回成功）
    */
   async login (): Promise<void> {
     log.verbose('Bridge', 'login() - 如流机器人无需登录')
     await this.ensureToken()
+
+    // 初始化 MQTT 连接
+    this.initMqtt()
+
     this.emit('login')
     this.emit('ready')
   }
@@ -637,6 +792,19 @@ class Bridge extends EventEmitter {
    */
   async logout (): Promise<void> {
     log.verbose('Bridge', 'logout()')
+
+    // 断开 MQTT 连接
+    if (this.mqttClient) {
+      try {
+        this.mqttClient.end(false, () => {
+          log.info('Bridge', 'MQTT client closed')
+        })
+        this.mqttClient = undefined
+      } catch (error: any) {
+        log.error('Bridge', 'Error closing MQTT client: %s', error.message)
+      }
+    }
+
     this.appAccessToken = null
     this.tokenExpireTime = 0
     this.emit('logout')
@@ -657,14 +825,14 @@ class Bridge extends EventEmitter {
   /**
    * 设置回调地址（暂不支持）
    */
-  async setCallback (url: string): Promise<void> {
+  async setCallback (_url: string): Promise<void> {
     log.warn('Bridge', 'setCallback not supported for hi robot')
   }
 
   /**
    * 设置回调主机（暂不支持）
    */
-  async setCallbackHost (host: string): Promise<void> {
+  async setCallbackHost (_host: string): Promise<void> {
     log.warn('Bridge', 'setCallbackHost not supported for hi robot')
   }
 
@@ -693,7 +861,7 @@ class Bridge extends EventEmitter {
   /**
    * 获取群成员昵称（暂不支持，使用getRoomMemberList代替）
    */
-  async getMemberNickName (wxid: string, roomid: string | number): Promise<{ content: string }> {
+  async getMemberNickName (wxid: string, _roomid: string | number): Promise<{ content: string }> {
     log.warn('Bridge', 'getMemberNickName not supported, use getRoomMemberList instead')
     return { content: JSON.stringify({ nick: wxid }) }
   }
@@ -718,8 +886,8 @@ class Bridge extends EventEmitter {
    * 发送联系人（暂不支持）
    */
   async messageSendContact (
-    wxid: string,
-    contactId: string,
+    _wxid: string,
+    _contactId: string,
   ): Promise<void> {
     log.warn('Bridge', 'messageSendContact not supported for hi robot')
     throw new Error('messageSendContact not supported')
@@ -729,8 +897,8 @@ class Bridge extends EventEmitter {
    * 发送链接（单聊）
    */
   async messageSendUrl (
-    wxid: string,
-    urlLinkPayload: any,
+    _wxid: string,
+    _urlLinkPayload: any,
   ): Promise<void> {
     log.warn('Bridge', 'messageSendUrl for single chat not supported, use group chat instead')
     throw new Error('messageSendUrl for single chat not supported')
@@ -740,8 +908,8 @@ class Bridge extends EventEmitter {
    * 发送小程序（暂不支持）
    */
   async messageSendMiniProgram (
-    wxid: string,
-    miniProgramPayload: any,
+    _wxid: string,
+    _miniProgramPayload: any,
   ): Promise<void> {
     log.warn('Bridge', 'messageSendMiniProgram not supported for hi robot')
     throw new Error('messageSendMiniProgram not supported')
@@ -751,8 +919,8 @@ class Bridge extends EventEmitter {
    * 发送位置（暂不支持）
    */
   async messageSendLocation (
-    wxid: string,
-    locationPayload: any,
+    _wxid: string,
+    _locationPayload: any,
   ): Promise<void | string> {
     log.warn('Bridge', 'messageSendLocation not supported for hi robot')
     throw new Error('messageSendLocation not supported')
@@ -762,9 +930,9 @@ class Bridge extends EventEmitter {
    * 转发消息（暂不支持）
    */
   async messageForward (
-    wxid: string,
-    messageId: string,
-    messageType: number,
+    _wxid: string,
+    _messageId: string,
+    _messageType: number,
   ): Promise<void> {
     log.warn('Bridge', 'messageForward not supported for hi robot')
     throw new Error('messageForward not supported')

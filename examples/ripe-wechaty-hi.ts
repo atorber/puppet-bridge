@@ -1,3 +1,4 @@
+/* eslint-disable sort-keys */
 import {
   Contact,
   Message,
@@ -35,7 +36,7 @@ async function onLogin (user: Contact) {
 
   const room = await bot.Room.find({ id: '11837093' })
   log.info('room：', room)
-  room?.say(`Hi,我是数字员工${name}，很高兴认识你`)
+  await room?.say(`Hi,我是数字员工${name}，很高兴认识你`)
 }
 
 async function onMessage (msg: Message) {
@@ -160,6 +161,10 @@ const puppet = new PuppetBridge({
   appSecret: process.env['HI_APP_SECRET'] || '',
   selfId: process.env['HI_SELF_ID'] || '',
   selfName: process.env['HI_SELF_NAME'] || '',
+  mqttBrokerUrl: process.env['MQTT_BROKER_URL'] || '',
+  mqttUsername: process.env['MQTT_USERNAME'] || '',
+  mqttPassword: process.env['MQTT_PASSWORD'] || '',
+  mqttTopic: process.env['MQTT_TOPIC'] || '',
 })
 
 const bot = WechatyBuilder.build({

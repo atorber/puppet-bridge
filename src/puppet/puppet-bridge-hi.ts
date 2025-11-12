@@ -1,3 +1,4 @@
+/* eslint-disable sort-keys */
 /* eslint-disable no-console */
 // import cuid from 'cuid'
 // import path from 'path'
@@ -23,7 +24,7 @@ import {
 
 import {
   Bridge,
-  MessageRaw,
+  // MessageRaw,
   // ContentRaw,
 } from '../agents/hi/hi-bot.js'
 
@@ -42,6 +43,11 @@ export type PuppetBridgeOptions = PUPPET.PuppetOptions & {
   agentId?: number  // 机器人ID（撤回单聊消息时需要）
   selfId: string  // 机器人ID
   selfName: string  // 机器人名称
+  // MQTT 配置（用于接收消息）
+  mqttBrokerUrl?: string  // MQTT broker 地址，如：mqtt://mqtt.example.com
+  mqttUsername?: string  // MQTT 用户名
+  mqttPassword?: string  // MQTT 密码
+  mqttTopic?: string  // 订阅的 topic，如：ruyu/robot/messages
 }
 
 class PuppetBridge extends PUPPET.Puppet {
@@ -89,6 +95,10 @@ class PuppetBridge extends PUPPET.Puppet {
       apiBaseUrl: options.apiBaseUrl,
       appKey: options.appKey,
       appSecret: options.appSecret,
+      mqttBrokerUrl: options.mqttBrokerUrl,
+      mqttPassword: options.mqttPassword,
+      mqttTopic: options.mqttTopic,
+      mqttUsername: options.mqttUsername,
       selfId: options.selfId,
       selfName: options.selfName,
     })
@@ -147,6 +157,11 @@ class PuppetBridge extends PUPPET.Puppet {
       } catch (e) {
         log.error('emit error fail:', e)
       }
+    })
+
+    // 监听 MQTT 接收到的消息
+    this.bridge.on('message', (messageData: any) => {
+      this.onHookRecvMsg(messageData)
     })
 
     // 如流机器人自动登录（获取token）
@@ -245,158 +260,293 @@ class PuppetBridge extends PUPPET.Puppet {
         }
       }
 
-      this.roomStore[roomId].memberIdList = memberIdList
-      log.verbose('PuppetBridge', 'loadRoomMemberList success, groupId: %s, memberCount: %s', groupId, memberIdList.length)
+      if (this.roomStore[roomId]) {
+        this.roomStore[roomId]!.memberIdList = memberIdList
+        log.verbose('PuppetBridge', 'loadRoomMemberList success, groupId: %s, memberCount: %s', groupId, memberIdList.length)
+      }
     } catch (error: any) {
       log.error('PuppetBridge', 'loadRoomMemberList error: %s', error.message)
     }
   }
 
   /**
-   * 处理接收到的消息（保留用于未来扩展）
+   * 处理接收到的 MQTT 消息
+   * 消息格式：
+   * - 旧格式（群聊）: { header: {...}, body: [...] }
+   * - 新格式（单聊）: { FromUserId, Content, MsgType, MsgId, ... }
    */
-  private onHookRecvMsg (messageRaw: MessageRaw) {
-    log.info('onHookRecvMsg', JSON.stringify(messageRaw, undefined, 2))
-    const that = this
-    const type = PUPPET.types.Message.Unknown
-    const roomId = messageRaw.id1
-    const listenerId = messageRaw.id2
-    const talkerId = messageRaw.id2 || messageRaw.id1 || this.currentUserId || ''
-    const wxid = messageRaw.wxid || messageRaw.id1
-    const text = messageRaw.content as string
-    const code = messageRaw.type
+  private onHookRecvMsg (messageRaw: any) {
+    log.info('PuppetBridge', '==================== onHookRecvMsg 开始处理 ====================')
+    log.info('PuppetBridge', 'Raw message: %s', JSON.stringify(messageRaw, undefined, 2))
 
+    // 判断消息格式
+    if (messageRaw.header) {
+      // 旧格式（群聊消息）
+      this.handleGroupMessage(messageRaw)
+    } else if (messageRaw.FromUserId) {
+      // 新格式（单聊消息）
+      this.handlePrivateMessage(messageRaw)
+    } else {
+      log.error('PuppetBridge', '✗ onHookRecvMsg: invalid message format')
+
+    }
+  }
+
+  /**
+   * 处理单聊消息（新格式）
+   */
+  private handlePrivateMessage (messageRaw: any) {
+    log.info('PuppetBridge', '---------- 处理单聊消息 ----------')
+
+    // 提取消息信息
+    const fromUserId = messageRaw.FromUserId  // 发送者ID
+    const fromUserName = messageRaw.FromUserName || fromUserId  // 发送者名称
+    const content = messageRaw.Content  // 消息内容
+    const msgType = messageRaw.MsgType  // 消息类型：text, image, file, etc.
+    const msgId = messageRaw.MsgId  // 消息ID
+    const createTime = parseInt(messageRaw.CreateTime || '0', 10)  // 创建时间
+    const picUrl = messageRaw.PicUrl  // 图片URL
+    const fileUrl = messageRaw.FileUrl  // 文件URL
+
+    log.info('PuppetBridge', 'Message info:')
+    log.info('PuppetBridge', '  - FromUserId (发送者ID): %s', fromUserId)
+    log.info('PuppetBridge', '  - FromUserName (发送者名称): %s', fromUserName)
+    log.info('PuppetBridge', '  - Content (内容): %s', content)
+    log.info('PuppetBridge', '  - MsgType (类型): %s', msgType)
+    log.info('PuppetBridge', '  - MsgId (消息ID): %s', msgId)
+    log.info('PuppetBridge', '  - CreateTime (时间): %s', createTime)
+    if (picUrl) log.info('PuppetBridge', '  - PicUrl (图片URL): %s', picUrl)
+    if (fileUrl) log.info('PuppetBridge', '  - FileUrl (文件URL): %s', fileUrl)
+
+    // 单聊消息
+    const roomId = ''
+    const listenerId = this.selfInfo.id  // 接收者是机器人自己
+    const talkerId = fromUserId  // 发送者
+
+    // 解析消息类型和内容
+    let text = content || ''
+    let type = PUPPET.types.Message.Unknown
+    const mentionIdList: string[] = []
+
+    switch (msgType) {
+      case 'text':
+        type = PUPPET.types.Message.Text
+        break
+      case 'image':
+        type = PUPPET.types.Message.Image
+        // 图片消息，将 URL 保存到 text 字段
+        if (picUrl) {
+          text = JSON.stringify({ url: picUrl, t: messageRaw.t })
+        }
+        break
+      case 'file':
+        type = PUPPET.types.Message.Attachment
+        // 文件消息，将 URL 保存到 text 字段
+        if (fileUrl) {
+          text = JSON.stringify({ url: fileUrl, filename: messageRaw.FileName })
+        }
+        break
+      case 'audio':
+        type = PUPPET.types.Message.Audio
+        break
+      case 'video':
+        type = PUPPET.types.Message.Video
+        break
+      default:
+        type = PUPPET.types.Message.Unknown
+        log.warn('PuppetBridge', 'Unknown message type: %s', msgType)
+    }
+
+    const messageId = String(msgId)
     const payload: PUPPET.payloads.Message = {
-      id: messageRaw.id,
-      listenerId: roomId ? '' : listenerId,
-      roomId: roomId || '',
+      id: messageId,
+      listenerId,
+      mentionIdList,
+      roomId,
       talkerId,
       text,
-      timestamp: Date.now(),
-      // toId,
+      timestamp: createTime > 0 ? createTime * 1000 : Date.now(),  // 转换为毫秒
       type,
     }
-    //  log.info('payloadType----------', PUPPET.types.Message[type])
-    //  log.info('payload----------', payload)
 
-    if (talkerId && (!this.contactStore[talkerId] || !this.contactStore[talkerId]?.name)) {
-      void this.loadContactList()
+    log.info('PuppetBridge', 'Message payload created:')
+    log.info('PuppetBridge', '  - messageId: %s', messageId)
+    log.info('PuppetBridge', '  - type: %s (%s)', type, PUPPET.types.Message[type])
+    log.info('PuppetBridge', '  - text: %s', text)
+    log.info('PuppetBridge', '  - talkerId: %s', talkerId)
+    log.info('PuppetBridge', '  - listenerId: %s', listenerId)
+    log.info('PuppetBridge', 'Full payload: %s', JSON.stringify(payload, undefined, 2))
+
+    // 保存到消息store
+    this.messageStore[messageId] = payload
+    log.verbose('PuppetBridge', '✓ Message saved to store')
+
+    // 如果发送者不在联系人列表中，创建联系人
+    if (talkerId && !this.contactStore[talkerId]) {
+      this.contactStore[talkerId] = {
+        alias: '',
+        avatar: '',
+        friend: true,
+        gender: PUPPET.types.ContactGender.Unknown,
+        id: talkerId,
+        name: fromUserName,
+        phone: [],
+        type: PUPPET.types.Contact.Individual,
+      }
+      log.info('PuppetBridge', '✓ Created new contact: %s (name: %s)', talkerId, fromUserName)
     }
 
-    if (roomId && (!this.roomStore[roomId] || !this.roomStore[roomId]?.topic)) {
-      void this.loadRoomList()
-    }
-
+    // 触发消息事件
     try {
       if (this.isLoggedIn) {
-        if (code === 10000 && roomId) {
-          // 你邀请"瓦力"加入了群聊
-          // "超超超哥"邀请"瓦力"加入了群聊
-          // "ledongmao"邀请"瓦力"加入了群聊
-          // "超超超哥"邀请你加入了群聊，群聊参与人还有：瓦力
-
-          // 你将"瓦力"移出了群聊
-          // 你被"ledongmao"移出群聊
-
-          // 你修改群名为“瓦力专属”
-          // 你修改群名为“大师是群主”
-          // "ledongmao"修改群名为“北辰香麓欣麓园抗疫”
-
-          const room = this.roomStore[roomId]
-          //  log.info('room=========================', room)
-          let topic = ''
-          const oldTopic = room ? room.topic : ''
-
-          if (text.indexOf('修改群名为') !== -1) {
-            const arrInfo = text.split('修改群名为')
-            let changer = this.selfInfo
-            if (arrInfo[0] && room) {
-              topic = arrInfo[1]?.split(/“|”|"/)[1] || ''
-              //  topic = arrInfo[1] || ''
-              this.roomStore[roomId] = room
-              room.topic = topic
-              if (arrInfo[0] === '你') {
-                //  changer = this.selfInfo
-              } else {
-                const name = arrInfo[0].split(/“|”|"/)[1] || ''
-                for (const i in this.contactStore) {
-                  if (this.contactStore[i] && this.contactStore[i]?.name === name) {
-                    changer = this.contactStore[i]
-                  }
-                }
-
-              }
-            }
-            //  log.info(room)
-            //  log.info(changer)
-            //  log.info(oldTopic)
-            //  log.info(topic)
-            const changerId = changer.id
-            this.emit('room-topic', { changerId, newTopic: topic, oldTopic, roomId })
-
-          }
-          if (text.indexOf('加入了群聊') !== -1) {
-            const inviteeList = []
-            let inviter = this.selfInfo
-            const arrInfo = text.split(/邀请|加入了群聊/)
-
-            if (arrInfo[0]) {
-              topic = arrInfo[0]?.split(/“|”|"/)[1] || ''
-              if (arrInfo[0] === '你') {
-                //  changer = this.selfInfo
-              } else {
-                const name = arrInfo[0].split(/“|”|"/)[1] || ''
-                for (const i in this.contactStore) {
-                  if (this.contactStore[i] && this.contactStore[i]?.name === name) {
-                    inviter = this.contactStore[i]
-                  }
-                }
-              }
-            }
-
-            if (arrInfo[1]) {
-              topic = arrInfo[1]?.split(/“|”|"/)[1] || ''
-              if (arrInfo[1] === '你') {
-                inviteeList.push(this.selfInfo.id)
-              } else {
-                const name = arrInfo[1].split(/“|”|"/)[1] || ''
-                for (const i in this.contactStore) {
-                  if (this.contactStore[i] && this.contactStore[i]?.name === name) {
-                    if (this.contactStore[i]?.id && room?.memberIdList.includes(this.contactStore[i]?.id || '')) {
-                      inviteeList.push(this.contactStore[i]?.id)
-                    }
-                  }
-                }
-
-              }
-            }
-            //  log.info(inviteeList)
-            //  log.info(inviter)
-            //  log.info(room)
-
-            this.emit('room-join', { inviteeIdList: inviteeList, inviterId: inviter.id, roomId })
-          }
-        } else {
-          this.messageStore[payload.id] = payload
-          this.emit('message', { messageId: payload.id })
-        }
+        log.info('PuppetBridge', '✓ Emitting message event to Wechaty: %s', messageId)
+        this.emit('message', { messageId })
+        log.info('PuppetBridge', '==================== onHookRecvMsg 处理完成 ====================')
+      } else {
+        log.warn('PuppetBridge', '⚠ Received message but not logged in, ignoring')
       }
     } catch (e) {
-      log.error('emit message fail:', e)
+      log.error('PuppetBridge', '✗ emit message fail:', e)
+    }
+  }
+
+  /**
+   * 处理群聊消息（旧格式）
+   */
+  private handleGroupMessage (messageRaw: any) {
+    log.info('PuppetBridge', '---------- 处理群聊消息 ----------')
+
+    const header = messageRaw.header
+    const body = messageRaw.body || []
+
+    // 提取消息信息
+    const fromuserid = header.fromuserid  // 发送者ID
+    const toid = header.toid  // 接收者ID（群ID或用户ID）
+    const totype = header.totype  // GROUP 或 SESSION
+    const msgtype = header.msgtype  // TEXT, IMAGE, MIXED 等
+    const messageid = header.messageid  // 消息ID
+    const servertime = header.servertime  // 服务器时间
+
+    log.info('PuppetBridge', 'Message info:')
+    log.info('PuppetBridge', '  - fromuserid (发送者): %s', fromuserid)
+    log.info('PuppetBridge', '  - toid (接收者): %s', toid)
+    log.info('PuppetBridge', '  - totype (类型): %s', totype)
+    log.info('PuppetBridge', '  - msgtype (消息类型): %s', msgtype)
+    log.info('PuppetBridge', '  - messageid: %s', messageid)
+    log.info('PuppetBridge', '  - servertime: %s', servertime)
+
+    // 判断是群聊还是单聊
+    const isGroup = totype === 'GROUP'
+    const roomId = isGroup ? String(toid) : ''
+    const listenerId = isGroup ? '' : this.selfInfo.id
+    const talkerId = fromuserid
+
+    // 解析消息内容
+    let text = ''
+    let type = PUPPET.types.Message.Unknown
+    const mentionIdList: string[] = []
+
+    // 遍历 body 提取内容
+    for (const item of body) {
+      if (item.type === 'TEXT') {
+        text += item.content || ''
+        if (type === PUPPET.types.Message.Unknown) {
+          type = PUPPET.types.Message.Text
+        }
+      } else if (item.type === 'AT') {
+        // 记录被@的信息
+        if (item.robotid) {
+          // @机器人
+          mentionIdList.push(String(item.robotid))
+        }
+      } else if (item.type === 'IMAGE') {
+        type = PUPPET.types.Message.Image
+        // 图片内容可能在 item.content 或 item.url
+        if (item.url) {
+          text = JSON.stringify({ url: item.url, content: item.content })
+        } else if (item.content) {
+          text = item.content
+        }
+      } else if (item.type === 'LINK') {
+        type = PUPPET.types.Message.Url
+        text = JSON.stringify(item)
+      }
     }
 
-  }
+    // 去除文本前后空格
+    text = text.trim()
 
-  private async loadContactList () {
-    // 如流机器人暂不支持获取联系人列表
-    log.verbose('PuppetBridge', 'loadContactList() - not supported for hi robot')
-    // 不执行任何操作，避免报错
-  }
+    // 创建消息载荷
+    const messageId = String(messageid)
+    const payload: PUPPET.payloads.Message = {
+      id: messageId,
+      listenerId,
+      mentionIdList,
+      roomId,
+      talkerId,
+      text,
+      timestamp: servertime || Date.now(),
+      type,
+    }
 
-  private async loadRoomList () {
-    // 如流机器人暂不支持获取群列表
-    log.verbose('PuppetBridge', 'loadRoomList() - not supported for hi robot')
-    // 不执行任何操作，避免报错
+    log.info('PuppetBridge', 'Message payload created:')
+    log.info('PuppetBridge', '  - messageId: %s', messageId)
+    log.info('PuppetBridge', '  - type: %s (%s)', type, PUPPET.types.Message[type])
+    log.info('PuppetBridge', '  - text: %s', text)
+    log.info('PuppetBridge', '  - talkerId: %s', talkerId)
+    log.info('PuppetBridge', '  - roomId: %s', roomId || 'N/A (单聊)')
+    log.info('PuppetBridge', '  - listenerId: %s', listenerId || 'N/A (群聊)')
+    log.info('PuppetBridge', '  - mentionIdList: %s', JSON.stringify(mentionIdList))
+    log.info('PuppetBridge', 'Full payload: %s', JSON.stringify(payload, undefined, 2))
+
+    // 保存到消息store
+    this.messageStore[messageId] = payload
+    log.verbose('PuppetBridge', '✓ Message saved to store')
+
+    // 如果发送者不在联系人列表中，创建联系人
+    if (talkerId && !this.contactStore[talkerId]) {
+      this.contactStore[talkerId] = {
+        alias: '',
+        avatar: '',
+        friend: false,
+        gender: PUPPET.types.ContactGender.Unknown,
+        id: talkerId,
+        name: talkerId,
+        phone: [],
+        type: PUPPET.types.Contact.Individual,
+      }
+      log.info('PuppetBridge', '✓ Created new contact: %s', talkerId)
+    }
+
+    // 如果是群聊且群不在列表中，创建群
+    if (roomId && !this.roomStore[roomId]) {
+      this.roomStore[roomId] = {
+        adminIdList: [],
+        avatar: '',
+        external: false,
+        id: roomId,
+        memberIdList: [],
+        ownerId: '',
+        topic: `Group ${toid}`,
+      }
+      log.info('PuppetBridge', '✓ Created new room: %s (Group %s)', roomId, toid)
+
+      // 异步获取群成员列表
+      void this.loadRoomMemberList(parseInt(roomId, 10))
+    }
+
+    // 触发消息事件
+    try {
+      if (this.isLoggedIn) {
+        log.info('PuppetBridge', '✓ Emitting message event to Wechaty: %s', messageId)
+        this.emit('message', { messageId })
+        log.info('PuppetBridge', '==================== onHookRecvMsg 处理完成 ====================')
+      } else {
+        log.warn('PuppetBridge', '⚠ Received message but not logged in, ignoring')
+      }
+    } catch (e) {
+      log.error('PuppetBridge', '✗ emit message fail:', e)
+    }
   }
 
   /**
@@ -506,10 +656,9 @@ class PuppetBridge extends PUPPET.Puppet {
  *
  */
   override async messageContact (
-    messageId: string,
+    _messageId: string,
   ): Promise<string> {
-    log.verbose('PuppetBridge', 'messageContact(%s)', messageId)
-    const message = this.messageStore[messageId]
+    log.verbose('PuppetBridge', 'messageContact(%s)', _messageId)
     // 如流机器人暂不支持联系人消息解析
     this.notSupported('messageContact')
     return ''
@@ -590,8 +739,6 @@ class PuppetBridge extends PUPPET.Puppet {
     const message = this.messageStore[id]
     //  log.verbose('messageFile', String(message))
     log.info('messageFile:', message)
-    const dataPath = ''
-    let fileName = ''
 
     if (message?.type === PUPPET.types.Message.Image) {
       return this.messageImage(
@@ -611,7 +758,7 @@ class PuppetBridge extends PUPPET.Puppet {
       const text = JSON.parse(message.text)
       try {
         try {
-          fileName = text.md5 + '.png'
+          const fileName = text.md5 + '.png'
           return FileBox.fromUrl(text.cdnurl, { name: fileName })
         } catch (err) {
           log.error('messageFile fail:', err)
